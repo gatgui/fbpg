@@ -1,0 +1,9 @@
+*.o
+*.obj
+*.d
+*.a
+*.exe
+*.lib
+calc
+calc.lexer.*
+calc.parser.*
