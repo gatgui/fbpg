@@ -1,0 +1,5 @@
+test = function ()
+  print("hello world!!!" .. "\n")
+end
+
+test()

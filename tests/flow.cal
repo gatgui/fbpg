@@ -1,0 +1,30 @@
+
+squaredLength = function (x, y)
+  return x*x + y*y
+end
+
+print(squaredLength(3, 3) .. "\n")
+
+i = 0
+while i < 20 do
+  print(i .. "\n")
+  i = i + 1
+  if i >= 10 then
+    print("early exit\n")
+    break
+  end
+end
+
+x = 4
+y = 4
+
+if x == y then
+  print("x equals y\n")
+else
+  print("x does not equal y\n")
+end
+
+y = 5
+if x != y then
+  print("As expected\n")
+end

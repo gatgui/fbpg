@@ -1,0 +1,19 @@
+
+a = sin(0.6)
+b = cos(-0.2)
+c = (a + b) / 0.5
+print(c .. "\n")
+
+
+squared = function (x)
+  return x * x
+end
+
+a = 1.0
+b = 2.1
+c = -3.7
+
+print( "Result: " .. (squared(a) + squared(b) + squared(c)) .. "\n")
+
+print("String with escaped \"quotes\"\n")
+// print("String with escaped "quotes\"\n")

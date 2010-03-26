@@ -1,0 +1,57 @@
+
+CORE_SRC=src/builtins.cpp src/context.cpp src/instruction.cpp src/object.cpp src/stack.cpp
+CORE_OBJ=$(CORE_SRC:.cpp=.obj)
+
+CALC_SRC=src/calc.parser.c src/calc.lexer.c
+CALC_OBJ=src/calc.parser.obj src/calc.lexer.obj
+
+CCFLAGS=/nologo /O2 /W4 /EHsc /Iinclude /Iwin32 /MT /c
+#CCFLAGS=/nologo /Od /Zi /W4 /EHsc /Iinclude /Iwin32 /MT /c
+
+CPPDEFINES=/D_CRT_SECURE_NO_WARNINGS /DYYERROR_VERBOSE
+
+#LINKFLAGS=/nologo /debug
+LINKFLAGS=/nologo /release
+
+all: core calc
+
+core: core.lib
+
+calc: calc.exe
+
+core.lib: $(CORE_OBJ)
+	lib /nologo /out:core.lib $(CORE_OBJ)
+
+calc.exe: $(CALC_OBJ) core.lib
+	link $(LINKFLAGS) /out:calc.exe $(CALC_OBJ) core.lib
+
+.c.obj:
+	cl $(CCFLAGS) $(CPPDEFINES) /Fo$@ /Tp$<
+
+.cpp.obj:
+	cl $(CCFLAGS) $(CPPDEFINES) /c /Fo$@ /Tp$<
+
+src/calc.lexer.c: src/calc.l
+	flex -osrc/calc.lexer.c src/calc.l
+
+src/calc.parser.h src/calc.parser.c src/calc.parser.output: src/calc.y
+	bison -v -d -o src/calc.parser.c src/calc.y
+
+src/builtins.obj: src/builtins.cpp src/builtins.h src/object.h src/stack.h src/context.h
+
+src/context.obj: src/context.cpp src/context.h src/object.h
+
+src/instruction.obj: src/instruction.cpp src/instruction.h src/stack.h src/object.h src/context.h
+
+src/object.obj: src/object.cpp src/object.h src/instruction.h src/stack.h src/context.h
+
+src/stack.obj: src/stack.cpp src/stack.h src/object.h
+
+clean:
+	del /Q src/*.obj
+	del /Q src/*.lexer.*
+	del /Q src/*.parser.*
+	del /Q calc.exe
+	del /Q core.lib
+
+
