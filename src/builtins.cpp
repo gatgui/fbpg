@@ -83,57 +83,6 @@ class Div : public CFunction {
     }
 };
 
-// --- math
-
-class Sin : public CFunction {
-  public:
-    Sin() : CFunction(1, true) {}
-    virtual ~Sin() {}
-    virtual Object* clone() const {return new Sin();}
-    virtual int call(Stack &stack, Context &) {
-      double r = sin(stack.popDouble());
-      stack.pushDouble(r);
-      return EVAL_NEXT;
-    }
-};
-
-class Cos : public CFunction {
-  public:
-    Cos() : CFunction(1, true) {}
-    virtual ~Cos() {}
-    virtual Object* clone() const {return new Cos();}
-    virtual int call(Stack &stack, Context &) {
-      double r = cos(stack.popDouble());
-      stack.pushDouble(r);
-      return EVAL_NEXT;
-    }
-};
-
-class Tan : public CFunction {
-  public:
-    Tan() : CFunction(1, true) {}
-    virtual ~Tan() {}
-    virtual Object* clone() const {return new Tan();}
-    virtual int call(Stack &stack, Context &) {
-      double r = tan(stack.popDouble());
-      stack.pushDouble(r);
-      return EVAL_NEXT;
-    }
-};
-
-// floor
-// ceil
-// abs
-// exp
-// pow
-// log
-// acos
-// asin
-// atan
-// atan2
-// sqrt
-// constants?
-
 // --- comparison
 
 class Equal : public CFunction {
@@ -287,6 +236,45 @@ class Print : public CFunction {
 
 // ---
 
+template <double (*Func)(double)>
+class OneArgFunc : public CFunction {
+  public:
+    OneArgFunc() : CFunction(1, true) {}
+    virtual ~OneArgFunc() {}
+    virtual Object* clone() const {return new OneArgFunc<Func>();}
+    virtual int call(Stack &stack, Context &) {
+      double o = stack.popDouble();
+      stack.pushDouble(Func(o));
+      return EVAL_NEXT;
+    }
+};
+
+template <double (*Func)(double, double)>
+class TwoArgFunc : public CFunction {
+  public:
+    TwoArgFunc() : CFunction(2, true) {}
+    virtual ~TwoArgFunc() {}
+    virtual Object* clone() const {return new TwoArgFunc<Func>();}
+    virtual int call(Stack &stack, Context &) {
+      double o1 = stack.popDouble();
+      double o0 = stack.popDouble();
+      stack.pushDouble(Func(o0, o1));
+      return EVAL_NEXT;
+    }
+};
+
+double degrees(double rv) {
+  static double conv = 180.0 / M_PI;
+  return rv * conv;
+}
+
+double radians(double dv) {
+  static double conv = M_PI / 180.0;
+  return dv * conv;
+}
+
+// ---
+
 void RegisterBuiltins(Context &ctx) {
   // operators
   RegisterCFunction<Minus>(ctx, "__uminus__");
@@ -306,9 +294,43 @@ void RegisterBuiltins(Context &ctx) {
   RegisterCFunction<And>(ctx, "and");
   RegisterCFunction<Or>(ctx, "or");
   // math function
-  RegisterCFunction<Cos>(ctx, "cos");
-  RegisterCFunction<Sin>(ctx, "sin");
-  RegisterCFunction<Tan>(ctx, "tan");
+  RegisterCFunction<OneArgFunc<degrees> >(ctx, "degrees");
+  RegisterCFunction<OneArgFunc<radians> >(ctx, "radians");
+  RegisterCFunction<OneArgFunc<ceil> >(ctx, "ceil");
+  RegisterCFunction<OneArgFunc<floor> >(ctx, "floor");
+  RegisterCFunction<OneArgFunc<round> >(ctx, "round");
+  RegisterCFunction<OneArgFunc<trunc> >(ctx, "trunc");
+  RegisterCFunction<OneArgFunc<fabs> >(ctx, "abs");
+  RegisterCFunction<OneArgFunc<sqrt> >(ctx, "sqrt");
+  RegisterCFunction<OneArgFunc<cbrt> >(ctx, "cbrt");
+  RegisterCFunction<OneArgFunc<exp> >(ctx, "exp");
+  RegisterCFunction<OneArgFunc<exp2> >(ctx, "exp2");
+  RegisterCFunction<OneArgFunc<log> >(ctx, "log");
+  RegisterCFunction<OneArgFunc<log2> >(ctx, "log2");
+  RegisterCFunction<OneArgFunc<log10> >(ctx, "log10");
+  RegisterCFunction<OneArgFunc<cos> >(ctx, "cos");
+  RegisterCFunction<OneArgFunc<sin> >(ctx, "sin");
+  RegisterCFunction<OneArgFunc<tan> >(ctx, "tan");
+  RegisterCFunction<OneArgFunc<cosh> >(ctx, "cosh");
+  RegisterCFunction<OneArgFunc<sinh> >(ctx, "sinh");
+  RegisterCFunction<OneArgFunc<tanh> >(ctx, "tanh");
+  RegisterCFunction<OneArgFunc<acos> >(ctx, "acos");
+  RegisterCFunction<OneArgFunc<asin> >(ctx, "asin");
+  RegisterCFunction<OneArgFunc<atan> >(ctx, "atan");
+  RegisterCFunction<OneArgFunc<acosh> >(ctx, "acosh");
+  RegisterCFunction<OneArgFunc<asinh> >(ctx, "asinh");
+  RegisterCFunction<OneArgFunc<atanh> >(ctx, "atanh");
+  RegisterCFunction<TwoArgFunc<atan2> >(ctx, "atan2");
+  RegisterCFunction<TwoArgFunc<fmod> >(ctx, "mod");
+  RegisterCFunction<TwoArgFunc<remainder> >(ctx, "remainder");
+  RegisterCFunction<TwoArgFunc<hypot> >(ctx, "hypot");
+  RegisterCFunction<TwoArgFunc<pow> >(ctx, "pow");
+  RegisterCFunction<TwoArgFunc<fmin> >(ctx, "min");
+  RegisterCFunction<TwoArgFunc<fmax> >(ctx, "max");
+  // math constants
+  Object *o = NULL;
+  o = new Double(M_PI); ctx.setVar("PI", o); o->decRef();
+  // don't care the others
   // utilities
   RegisterCFunction<Print>(ctx, "print");
 }

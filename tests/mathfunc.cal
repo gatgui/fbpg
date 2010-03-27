@@ -1,19 +1,36 @@
 
+
+print("PI/2 = " .. PI/2 .. "\n")
+print("PI/4 = " .. PI/4 .. "\n")
+print("PI/6 = " .. PI/6 .. "\n")
+print("sin(PI/4) = " .. sin(PI/4) .. "\n")
+print("sqrt(2)/2 = " .. sqrt(2)/2 .. "\n")
+print("cos(PI) = " .. cos(PI) .. "\n")
+print("tan(PI/2) = " .. tan(0.5*PI) .. "\n")
+print("atan(1) = " .. atan(1) .. "\n")
+print("atan2(1, sqrt(2)/2) = " .. atan2(1, sqrt(2)/2) .. "\n")
+print("acos(0.5) = " .. acos(0.5) .. "\n")
+print("hypot(2, 4) = " .. hypot(2, 4) .. "\n")
+print("abs(-2.71) = " .. abs(-2.71) .. "\n")
+print("ceil(-2.71) = " .. ceil(-2.71) .. "\n")
+print("floor(-2.71) = " .. floor(-2.71) .. "\n")
+print("round(-2.71) = " .. round(-2.71) .. "\n")
+print("trunc(-2.71) = " .. trunc(-2.71) .. "\n")
+print("cbrt(8) = " .. cbrt(8) .. "\n")
+print("log(0.2) = " .. log(0.2) .. "\n")
+print("log2(0.2) = " .. log2(0.2) .. "\n")
+print("log10(0.2) = " .. log10(0.2) .. "\n")
+print("exp(1.3) = " .. exp(1.3) .. "\n")
+print("exp2(1.3) = " .. exp2(1.3) .. "\n")
+print("log(exp(10)) = " .. log(exp(10)) .. "\n")
+print("log2(exp2(10)) = " .. log2(exp2(10)) .. "\n")
+print("pow(2, 4) = " .. pow(2, 4) .. "\n")
+print("mod(6.34, 2) = " .. mod(6.34, 2) .. "\n")
+print("remainder(6.34, 2) = " .. remainder(6.34, 2) .. "\n")
+print("max(6.34, 5.987) = " .. max(6.34, 5.987) .. "\n")
+print("min(6.34, 5.987) = " .. min(6.34, 5.987) .. "\n")
+
 a = sin(0.6)
 b = cos(-0.2)
 c = (a + b) / 0.5
-print("(" .. a .. "+" .. b .. ")/0.5 = " .. c .. "\n")
-
-
-squared = function (x)
-  return x * x
-end
-
-a = 1.0
-b = 2.1
-c = -3.7
-
-print( "Result: " .. (squared(a) + squared(b) + squared(c)) .. "\n")
-
-print("String with escaped \"quotes\"\n")
-// print("String with escaped "quotes\"\n")
+print("(sin(0.6) + cos(-0.2)) / 0.5 = " .. c .. "\n")
