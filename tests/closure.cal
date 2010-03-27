@@ -1,0 +1,20 @@
+
+createCounter = function (n)
+  i = 0
+  fn = function ()
+    if i >= n then
+      return false
+    else
+      i = i + 1
+      return true
+    end
+  end
+  return fn
+end
+
+
+counter = createCounter(10)
+while counter() do
+  print("Counter\n")
+end
+
