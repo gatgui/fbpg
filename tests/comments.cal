@@ -1,0 +1,14 @@
+/*
+
+This is a comment that spans
+on
+several lines */
+
+x = 10 // single line comment
+
+y = /* embedded
+        comment */ 20
+
+z /* again */ = 30
+
+print(x+y+z .. "\n")

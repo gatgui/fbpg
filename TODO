@@ -8,6 +8,8 @@ CODE:
 - Take care of unused return values (polluting the stack)
 - Check if function return value is coherent in all its execution paths
 - Add more assert style tests! (to check if the language behaves as expected when changed)
+- Better exceptions
+- Store instruction location (file, line, column) for exceptions
 
 LANGUAGE:
 - Get rid of ".." syntax for concatenating strings. Simply use "+"
@@ -17,6 +19,7 @@ LANGUAGE:
   double +-*/ integer -> double
   integer +-*/ integer -> integer
 - Add % operator for integer division
+- Add exception handling
 - Add explicit conversion operator: float(v), int(v), string(v), boolean(v)
 - Add closure support
 - Add structure support (one step towards classes)

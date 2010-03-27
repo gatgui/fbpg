@@ -1,3 +1,5 @@
+%locations
+
 %{
 #include "context.h"
 #include "stack.h"
@@ -9,14 +11,9 @@
 extern int yylex();
 extern FILE *yyin;
 
-void yyerror(char *fmt, ...) {
-  va_list l;
-  va_start(l, fmt);
-  vfprintf(stderr, fmt, l);
-  va_end(l);
-}
-
 CodeSegment *gTopCode = 0;
+
+void yyerror(char *fmt, ...);
 
 %}
 
@@ -314,6 +311,26 @@ block : /* empty */   {
       ;
 
 %%
+
+void yyerror(char *fmt, ...) {
+  va_list l;
+  va_start(l, fmt);
+  
+  if (yylloc.first_line) {
+    if (yylloc.first_line != yylloc.last_line) {
+      fprintf(stderr, "%d:%d - %d.%d -> ", yylloc.first_line, yylloc.first_column,
+                                              yylloc.last_line, yylloc.last_column);
+    } else if (yylloc.first_column != yylloc.last_column) {
+      fprintf(stderr, "%d:%d-%d -> ", yylloc.first_line, yylloc.first_column,
+                                           yylloc.last_column);
+    } else {
+      fprintf(stderr, "%d:%d -> ", yylloc.first_line, yylloc.first_column);
+    }
+  }
+  
+  vfprintf(stderr, fmt, l);
+  va_end(l);
+}
 
 int main(int argc, char **argv) {
   if (argc < 2) {

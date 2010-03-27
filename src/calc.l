@@ -2,6 +2,8 @@
 %option nodefault
 %option yylineno
 
+%x MULTILINE_COMMENT
+
 %{
 #include "context.h"
 #include "stack.h"
@@ -10,13 +12,22 @@
 #include "builtins.h"
 #include "calc.parser.h"
 
+int yycolumn = 1;
 bool gEchoTokens = false;
+
+extern void yyerror(char *fmt, ...);
 
 static void echoToken(const char *s = 0) {
   if (gEchoTokens) {
     fprintf(stdout, "<Token: \"%s\">\n", (s != 0 ? s : yytext));
   }
 }
+
+#define YY_USER_ACTION \
+  yylloc.first_line = yylloc.last_line = yylineno; \
+  yylloc.first_column = yycolumn; \
+  yylloc.last_column = yycolumn + yyleng - 1; \
+  yycolumn += yyleng;
 
 %}
 
@@ -27,9 +38,6 @@ ALPHANUM  ([a-zA-Z0-9])
 WORD      ([a-zA-Z0-9_])
 
 %%
-
-  /* Comments */
-^[ \t]*"//".*$                  {fprintf(stdout, "Comment line: %s\n", yytext);}
 
   /* Punctuation */
 "(" |
@@ -184,8 +192,20 @@ WORD      ([a-zA-Z0-9_])
                                   return STRING;
                                 }
 
+  /* Comments */
+"//".*$                         { /* do nothing */ }
+"/*"                            { BEGIN MULTILINE_COMMENT; }
+<MULTILINE_COMMENT>"*/"         { BEGIN INITIAL; }
+<MULTILINE_COMMENT>\n           { yycolumn = 1; }
+<MULTILINE_COMMENT>.            { /* do nothing */ }
+<MULTILINE_COMMENT><<EOF>>      { yyerror("unclosed comment"); }
+
   /* Whitespaces */
-"\n"                            { echoToken("eol"); return EOL; }
+"\n"                            {
+                                  echoToken("eol");
+                                  yycolumn = 1;
+                                  return EOL;
+                                }
 [ \t]                           { /* ignore whitespace */ }
 .                               {
                                   fprintf(stderr, "Mystery character: %c\n", yytext[0]);
