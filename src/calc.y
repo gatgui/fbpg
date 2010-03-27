@@ -44,11 +44,13 @@ CodeSegment *gTopCode = 0;
 %type <sl> paramlist
 
 %right '='
-%nonassoc NEQ EQ LT GT LTE GTE
+%left CONCAT
 %left AND OR
-%left '+' '-' CONCAT
+%nonassoc NOT
+%nonassoc NEQ EQ LT GT LTE GTE
+%left '+' '-'
 %left '*' '/'
-%nonassoc NOT UMINUS
+%nonassoc UMINUS
 
 %start block
 
@@ -88,7 +90,7 @@ expr  : expr '+' expr   {
       | expr '/' expr   {
                           $1->merge($3);
                           delete $3;
-                          $1->push_back(new Call("-"));
+                          $1->push_back(new Call("/"));
                           $$ = $1;
                         }
       | expr CONCAT expr  {
@@ -132,6 +134,22 @@ expr  : expr '+' expr   {
                           delete $3;
                           $1->push_back(new Call(">="));
                           $$ = $1;
+                        }
+      | expr AND expr   {
+                          $1->merge($3);
+                          delete $3;
+                          $1->push_back(new Call("and"));
+                          $$ = $1;
+                        }
+      | expr OR expr    {
+                          $1->merge($3);
+                          delete $3;
+                          $1->push_back(new Call("or"));
+                          $$ = $1;
+                        }
+      | NOT expr        {
+                          $2->append(new Call("not"));
+                          $$ = $2;
                         }
       | INTEGER         {
                           $$ = new CodeSegment();
@@ -186,10 +204,6 @@ exprlist  : /* empty */       { $$ = NULL; }
                               }
           ;
 
-  //stmt  : expr                                        {
-  //                                                      $$ = $1;
-  //                                                    }
-  //      | IF expr THEN body END                       {
 stmt  : IF expr THEN body END                       {
                                                       $1->setCode($2);
                                                       $3->setCode($4);

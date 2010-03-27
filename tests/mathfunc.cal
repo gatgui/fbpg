@@ -2,7 +2,7 @@
 a = sin(0.6)
 b = cos(-0.2)
 c = (a + b) / 0.5
-print(c .. "\n")
+print("(" .. a .. "+" .. b .. ")/0.5 = " .. c .. "\n")
 
 
 squared = function (x)

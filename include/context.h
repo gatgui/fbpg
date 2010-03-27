@@ -29,4 +29,11 @@ class Context {
     ObjectMap mVars;
 };
 
+template <class FuncClass>
+void RegisterCFunction(Context &ctx, const std::string &name) {
+  CFunction *f = new FuncClass();
+  ctx.setVar(name, f);
+  f->decRef();
+}
+
 #endif
