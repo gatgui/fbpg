@@ -455,8 +455,9 @@ int main(int argc, char **argv) {
     std::cout << std::endl << "Evaluate code..." << std::endl;
     
     try {
-    
-      Context ctx;
+      
+      CallStack callstack;
+      Context ctx(callstack);
       Stack stack;
       
       RegisterBuiltins(ctx);

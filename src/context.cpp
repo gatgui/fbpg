@@ -1,8 +1,12 @@
 #include "context.h"
 #include <sstream>
 
-Context::Context(Context *p)
-  : mParent(p) {
+Context::Context(CallStack &cs)
+  : mParent(0), mCallStack(cs) {
+}
+
+Context::Context(Context &p)
+  : mParent(&p), mCallStack(p.getCallStack()) {
 }
 
 Context::~Context() {

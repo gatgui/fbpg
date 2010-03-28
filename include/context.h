@@ -2,6 +2,7 @@
 #define __context_h_
 
 #include "object.h"
+#include "callstack.h"
 #include <map>
 
 class Context {
@@ -9,7 +10,8 @@ class Context {
     
     typedef std::map<std::string, Object*> ObjectMap;
     
-    Context(Context *p = 0);
+    Context(CallStack &cs);
+    Context(Context &p);
     ~Context();
     
     void clear();
@@ -23,10 +25,24 @@ class Context {
     
     void toStream(std::ostream &os, const std::string &indent="") const;
     
+    inline CallStack& getCallStack() {
+      return mCallStack;
+    }
+    
+    inline const CallStack& getCallStack() const {
+      return mCallStack;
+    }
+    
+  private:
+    
+    Context();
+    Context& operator=(Context &);
+    
   protected:
     
     Context *mParent;
     ObjectMap mVars;
+    CallStack &mCallStack;
 };
 
 template <class FuncClass>

@@ -347,7 +347,7 @@ int Block::call(Stack &stack, Context &ctx) {
     return EVAL_NEXT;
   }
   // here failure
-  Context fctx(&ctx);
+  Context fctx(ctx);
   int numArgs = int(mArgs.size());
   for (int i=numArgs-1; i>=0; --i) {
     Object *o = stack.pop();

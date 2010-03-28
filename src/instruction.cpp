@@ -215,7 +215,7 @@ bool If::evalCondition(Stack &stack, Context &ctx) const {
 int If::eval(Stack &stack, Context &ctx) {
   if (evalCondition(stack, ctx)) {
     if (mCode) {
-      Context ictx(&ctx);
+      Context ictx(ctx);
       return mCode->call(stack, ictx);
     }
   }
@@ -292,12 +292,12 @@ bool IfElse::evalCondition(Stack &stack, Context &ctx) const {
 int IfElse::eval(Stack &stack, Context &ctx) {
   if (evalCondition(stack, ctx)) {
     if (mIfCode) {
-      Context ictx(&ctx);
+      Context ictx(ctx);
       return mIfCode->call(stack, ictx);
     }
   } else {
     if (mElseCode) {
-      Context ictx(&ctx);
+      Context ictx(ctx);
       return mElseCode->call(stack, ictx);
     }
   }
@@ -368,7 +368,7 @@ bool While::evalCondition(Stack &stack, Context &ctx) const {
 
 int While::eval(Stack &stack, Context &ctx) {
   int rv = EVAL_NEXT;
-  Context wctx(&ctx);
+  Context wctx(ctx);
   while (evalCondition(stack, ctx)) {
     if (mBody) {
       rv = mBody->call(stack, wctx);
