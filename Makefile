@@ -6,7 +6,7 @@ CCFLAGS=-MMD -O0 -g -ggdb -Iinclude -W -Wall -DYYERROR_VERBOSE
 
 LINKFLAGS=-L. -lcore
 
-CORE_SRC=src/builtins.cpp src/context.cpp src/instruction.cpp src/object.cpp src/stack.cpp
+CORE_SRC=src/builtins.cpp src/context.cpp src/instruction.cpp src/object.cpp src/stack.cpp src/callstack.cpp
 CORE_OBJ=$(CORE_SRC:.cpp=.o)
 CORE_DEP=($CORE_SRC:.cpp=.d)
 
