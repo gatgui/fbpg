@@ -12,10 +12,13 @@
 #include "builtins.h"
 #include "calc.parser.h"
 
+// from parser
+extern char *gFilename;
+extern void yyerror(char *fmt, ...);
+
+// lexer globals
 int yycolumn = 1;
 bool gEchoTokens = false;
-
-extern void yyerror(char *fmt, ...);
 
 static void echoToken(const char *s = 0) {
   if (gEchoTokens) {
@@ -27,6 +30,7 @@ static void echoToken(const char *s = 0) {
   yylloc.first_line = yylloc.last_line = yylineno; \
   yylloc.first_column = yycolumn; \
   yylloc.last_column = yycolumn + yyleng - 1; \
+  yylloc.filename = gFilename; \
   yycolumn += yyleng;
 
 %}

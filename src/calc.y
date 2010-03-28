@@ -8,14 +8,54 @@
 #include "builtins.h"
 #include <cstdarg>
 
+// from lexer
+extern bool gEchoTokens;
 extern int yylex();
 extern FILE *yyin;
 
+// parser globals
 CodeSegment *gTopCode = 0;
+char *gFilename = 0;
 
 void yyerror(char *fmt, ...);
 
 %}
+
+%code requires {
+// overrides location informations
+
+typedef struct YYLTYPE {
+  int first_line;
+  int first_column;
+  int last_line;
+  int last_column;
+  char *filename;
+} YYLTYPE;
+
+#define YYLTYPE_IS_DECLARED 1
+
+#define YYLLOC_DEFAULT(Current, Rhs, N) \
+  do { \
+    if (YYID (N)) { \
+      (Current).first_line   = YYRHSLOC (Rhs, 1).first_line; \
+      (Current).first_column = YYRHSLOC (Rhs, 1).first_column; \
+      (Current).last_line    = YYRHSLOC (Rhs, N).last_line; \
+      (Current).last_column  = YYRHSLOC (Rhs, N).last_column; \
+      (Current).filename     = YYRHSLOC (Rhs, 1).filename; \
+    } else { \
+      (Current).first_line   = (Current).last_line = YYRHSLOC (Rhs, 0).last_line; \
+      (Current).first_column = (Current).last_column = YYRHSLOC (Rhs, 0).last_column; \
+      (Current).filename     = NULL; \
+    } \
+  } while (YYID (0))
+
+#define YY_LOCATION_PRINT(File, Loc) \
+  fprintf(File, "%s: %d.%d-%d.%d", \
+                ((Loc).filename ? (Loc).filename : ""), \
+                (Loc).first_line, (Loc).first_column, \
+                (Loc).last_line,  (Loc).last_column)
+
+}
 
 %union {
   String  *s;
@@ -317,14 +357,27 @@ void yyerror(char *fmt, ...) {
   va_start(l, fmt);
   
   if (yylloc.first_line) {
+    
     if (yylloc.first_line != yylloc.last_line) {
-      fprintf(stderr, "%d:%d - %d.%d -> ", yylloc.first_line, yylloc.first_column,
-                                              yylloc.last_line, yylloc.last_column);
+      fprintf(stderr, "In file \"%s\", line %d, column %d to line %d, column %d: ",
+                      yylloc.filename,
+                      yylloc.first_line,
+                      yylloc.first_column,
+                      yylloc.last_line,
+                      yylloc.last_column);
+      
     } else if (yylloc.first_column != yylloc.last_column) {
-      fprintf(stderr, "%d:%d-%d -> ", yylloc.first_line, yylloc.first_column,
-                                           yylloc.last_column);
+      fprintf(stderr, "In file \"%s\", line %d, column %d to %d: ",
+                      yylloc.filename,
+                      yylloc.first_line,
+                      yylloc.first_column,
+                      yylloc.last_column);
+      
     } else {
-      fprintf(stderr, "%d:%d -> ", yylloc.first_line, yylloc.first_column);
+      fprintf(stderr, "In file \"%s\", line %d, column %d: ",
+                      yylloc.filename,
+                      yylloc.first_line,
+                      yylloc.first_column);
     }
   }
   
@@ -337,6 +390,8 @@ int main(int argc, char **argv) {
     fprintf(stderr, "Usage: calc <filename>\n");
     return 1;
   }
+  
+  gFilename = argv[1];
   
   FILE *f = fopen(argv[1], "r");
 
@@ -355,8 +410,6 @@ int main(int argc, char **argv) {
   }
   
   int rv = 0;
-  
-  extern bool gEchoTokens;
   
   if (lexonly) {
     gEchoTokens = true;
