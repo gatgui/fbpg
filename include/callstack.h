@@ -6,10 +6,29 @@
 #include <exception>
 #include <stdexcept>
 
+class Location {
+  public:
+    
+    Location();
+    Location(const std::string &filename, int line, int col);
+    Location(const Location &rhs);
+    
+    Location& operator=(const Location &rhs);
+    
+    std::string toString() const;
+    
+  protected:
+    
+    std::string mFilename;
+    int mLine;
+    int mColumn;
+};
+
 class CallInfo {
   public:
     
-    CallInfo(const std::string &filename, int line, int col, const std::string &func="");
+    CallInfo();
+    CallInfo(const Location &loc, const std::string &func);
     CallInfo(const CallInfo &rhs);
     ~CallInfo();
     
@@ -19,9 +38,7 @@ class CallInfo {
     
   protected:
     
-    std::string mFilename;
-    int mLine;
-    int mColumn;
+    Location mLocation;
     std::string mFuncname;
 };
 

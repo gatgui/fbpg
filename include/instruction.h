@@ -7,6 +7,7 @@
 #include <iostream>
 #include "stack.h"
 #include "context.h"
+#include "callstack.h"
 
 
 enum {
@@ -19,24 +20,32 @@ enum {
 class Instruction {
   public:
     
-    Instruction();
+    Instruction(const Location &loc);
     virtual ~Instruction();
     
     virtual int eval(Stack &stack, Context &ctx) = 0;
     virtual Instruction* clone() const = 0;
     virtual int stackConsumption(Context &) const = 0;
     virtual void toStream(std::ostream &os, const std::string &heading="") const = 0;
+    
+    inline const Location& getLocation() const {
+      return mLocation;
+    }
+    
+  protected:
+    
+    Location mLocation;
 };
 
 class Push : public Instruction {
   public:
     
-    Push(Object *o);
-    Push(bool v);
-    Push(long v);
-    Push(double v);
-    Push(const char *v);
-    Push(const std::string &v);
+    Push(const Location &loc, Object *o);
+    Push(const Location &loc, bool v);
+    Push(const Location &loc, long v);
+    Push(const Location &loc, double v);
+    Push(const Location &loc, const char *v);
+    Push(const Location &loc, const std::string &v);
     virtual ~Push();
     
     virtual Instruction* clone() const;
@@ -52,7 +61,7 @@ class Push : public Instruction {
 class Get : public Instruction {
   public:
     
-    Get(const std::string &name);
+    Get(const Location &loc, const std::string &name);
     virtual ~Get();
     
     virtual Instruction* clone() const;
@@ -68,7 +77,7 @@ class Get : public Instruction {
 class Set : public Instruction {
   public:
     
-    Set(const std::string &name);
+    Set(const Location &loc, const std::string &name);
     virtual ~Set();
     
     virtual Instruction* clone() const;
@@ -84,7 +93,7 @@ class Set : public Instruction {
 class Call : public Instruction {
   public:
     
-    Call(const std::string &name);
+    Call(const Location &loc, const std::string &name);
     virtual ~Call();
     
     virtual Instruction* clone() const;
@@ -100,7 +109,7 @@ class Call : public Instruction {
 class If : public Instruction {
   public:
     
-    If(Block *cond, Block *code);
+    If(const Location &loc, Block *cond, Block *code);
     virtual ~If();
     
     virtual Instruction* clone() const;
@@ -119,7 +128,7 @@ class If : public Instruction {
 class IfElse : public Instruction {
   public:
     
-    IfElse(Block *cond, Block *ifCode, Block *elseCode);
+    IfElse(const Location &loc, Block *cond, Block *ifCode, Block *elseCode);
     virtual ~IfElse();
     
     virtual Instruction* clone() const;
@@ -139,7 +148,7 @@ class IfElse : public Instruction {
 class While : public Instruction {
   public:
     
-    While(Block *cond, Block *body);
+    While(const Location &loc, Block *cond, Block *body);
     virtual ~While();
     
     virtual Instruction* clone() const;
@@ -158,7 +167,7 @@ class While : public Instruction {
 class Break : public Instruction {
   public:
     
-    Break();
+    Break(const Location &loc);
     virtual ~Break();
     
     virtual Instruction* clone() const;
@@ -170,7 +179,7 @@ class Break : public Instruction {
 class Continue : public Instruction {
   public:
     
-    Continue();
+    Continue(const Location &loc);
     virtual ~Continue();
     
     virtual Instruction* clone() const;
@@ -182,7 +191,7 @@ class Continue : public Instruction {
 class Return : public Instruction {
   public:
     
-    Return();
+    Return(const Location &loc);
     virtual ~Return();
     
     virtual Instruction* clone() const;

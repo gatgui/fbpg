@@ -3,13 +3,45 @@
 
 // ---
 
-CallInfo::CallInfo(const std::string &filename, int line, int col, const std::string &func)
-  : mFilename(filename), mLine(line), mColumn(col), mFuncname(func) {
+Location::Location()
+  : mFilename(""), mLine(0), mColumn(0) {
+}
+
+Location::Location(const std::string &filename, int line, int col)
+  : mFilename(filename), mLine(line), mColumn(col) {
+}
+
+Location::Location(const Location &rhs)
+  : mFilename(rhs.mFilename), mLine(rhs.mLine), mColumn(rhs.mColumn) {
+}
+
+Location& Location::operator=(const Location &rhs) {
+  if (this != &rhs) {
+    mFilename = rhs.mFilename;
+    mLine = rhs.mLine;
+    mColumn = rhs.mColumn;
+  }
+  return *this;
+}
+
+std::string Location::toString() const {
+  std::ostringstream oss;
+  oss << "file \"" << mFilename << "\", line " << mLine << ", column " << mColumn;
+  return oss.str();
+}
+
+// ---
+
+CallInfo::CallInfo()
+  : mFuncname("") {
+}
+
+CallInfo::CallInfo(const Location &loc, const std::string &func)
+  : mLocation(loc), mFuncname(func) {
 }
 
 CallInfo::CallInfo(const CallInfo &rhs)
-  : mFilename(rhs.mFilename), mLine(rhs.mLine), mColumn(rhs.mColumn),
-    mFuncname(rhs.mFuncname) {
+  : mLocation(rhs.mLocation), mFuncname(rhs.mFuncname) {
 }
 
 CallInfo::~CallInfo() {
@@ -17,9 +49,7 @@ CallInfo::~CallInfo() {
 
 CallInfo& CallInfo::operator=(const CallInfo &rhs) {
   if (this != &rhs) {
-    mFilename = rhs.mFilename;
-    mLine = rhs.mLine;
-    mColumn = rhs.mColumn;
+    mLocation = rhs.mLocation;
     mFuncname = rhs.mFuncname;
   }
   return *this;
@@ -27,7 +57,7 @@ CallInfo& CallInfo::operator=(const CallInfo &rhs) {
 
 std::string CallInfo::toString() const {
   std::ostringstream oss;
-  oss << "From \"" << mFilename << "\", line " << mLine << ", column " << mColumn;
+  oss << "From " << mLocation.toString();
   if (mFuncname.length() > 0) {
     oss << ", in function \"" << mFuncname << "\"";
   }

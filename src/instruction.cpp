@@ -2,7 +2,8 @@
 
 unsigned long gNumInstructions = 0;
 
-Instruction::Instruction() {
+Instruction::Instruction(const Location &loc)
+  : mLocation(loc) {
   ++gNumInstructions;
 }
 
@@ -15,28 +16,28 @@ Instruction::~Instruction() {
 
 // ---
 
-Push::Push(Object *o)
-  : Instruction(), mValue(o) {
+Push::Push(const Location &loc, Object *o)
+  : Instruction(loc), mValue(o) {
 }
 
-Push::Push(bool v)
-  : Instruction(), mValue(new Boolean(v)) {
+Push::Push(const Location &loc, bool v)
+  : Instruction(loc), mValue(new Boolean(v)) {
 }
 
-Push::Push(long v)
-  : Instruction(), mValue(new Integer(v)) {
+Push::Push(const Location &loc, long v)
+  : Instruction(loc), mValue(new Integer(v)) {
 }
 
-Push::Push(double v)
-  : Instruction(), mValue(new Double(v)) {
+Push::Push(const Location &loc, double v)
+  : Instruction(loc), mValue(new Double(v)) {
 }
 
-Push::Push(const char *v)
-  : Instruction(), mValue(new String(v)) {
+Push::Push(const Location &loc, const char *v)
+  : Instruction(loc), mValue(new String(v)) {
 }
 
-Push::Push(const std::string &v)
-  : Instruction(), mValue(new String(v)) {
+Push::Push(const Location &loc, const std::string &v)
+  : Instruction(loc), mValue(new String(v)) {
 }
 
 Push::~Push() {
@@ -44,7 +45,7 @@ Push::~Push() {
 }
 
 Instruction* Push::clone() const {
-  return new Push(mValue->clone());
+  return new Push(getLocation(), mValue->clone());
 }
 
 int Push::stackConsumption(Context &) const {
@@ -71,15 +72,15 @@ void Push::toStream(std::ostream &os, const std::string &heading) const {
 
 // ---
 
-Get::Get(const std::string &name)
-  : Instruction(), mName(name) {
+Get::Get(const Location &loc, const std::string &name)
+  : Instruction(loc), mName(name) {
 }
 
 Get::~Get() {
 }
 
 Instruction* Get::clone() const {
-  return new Get(mName);
+  return new Get(getLocation(), mName);
 }
 
 int Get::stackConsumption(Context &) const {
@@ -101,15 +102,15 @@ void Get::toStream(std::ostream &os, const std::string &heading) const {
 
 // ---
 
-Set::Set(const std::string &name)
-  : Instruction(), mName(name) {
+Set::Set(const Location &loc, const std::string &name)
+  : Instruction(loc), mName(name) {
 }
 
 Set::~Set() {
 }
 
 Instruction* Set::clone() const {
-  return new Set(mName);
+  return new Set(getLocation(), mName);
 }
 
 int Set::stackConsumption(Context &) const {
@@ -129,15 +130,15 @@ void Set::toStream(std::ostream &os, const std::string &heading) const {
 
 // ---
 
-Call::Call(const std::string &name)
-  : Instruction(), mFnName(name) {
+Call::Call(const Location &loc, const std::string &name)
+  : Instruction(loc), mFnName(name) {
 }
 
 Call::~Call() {
 }
 
 Instruction* Call::clone() const {
-  return new Call(mFnName);
+  return new Call(getLocation(), mFnName);
 }
 
 int Call::stackConsumption(Context &ctx) const {
@@ -170,8 +171,8 @@ void Call::toStream(std::ostream &os, const std::string &heading) const {
 
 // ---
 
-If::If(Block *cond, Block *code)
-  : Instruction(), mCond(cond), mCode(code) {
+If::If(const Location &loc, Block *cond, Block *code)
+  : Instruction(loc), mCond(cond), mCode(code) {
 }
 
 If::~If() {
@@ -186,7 +187,7 @@ If::~If() {
 }
 
 Instruction* If::clone() const {
-  return new If((mCond ? (Block*)mCond->clone() : 0), (mCode ? (Block*)mCode->clone() : 0));
+  return new If(getLocation(), (mCond ? (Block*)mCond->clone() : 0), (mCode ? (Block*)mCode->clone() : 0));
 }
 
 int If::stackConsumption(Context &ctx) const {
@@ -236,8 +237,8 @@ void If::toStream(std::ostream &os, const std::string &heading) const {
 
 // ---
 
-IfElse::IfElse(Block *cond, Block *ifCode, Block *elseCode)
-  : Instruction(), mCond(cond), mIfCode(ifCode), mElseCode(elseCode) {
+IfElse::IfElse(const Location &loc, Block *cond, Block *ifCode, Block *elseCode)
+  : Instruction(loc), mCond(cond), mIfCode(ifCode), mElseCode(elseCode) {
 }
 
 IfElse::~IfElse() {
@@ -256,7 +257,8 @@ IfElse::~IfElse() {
 }
 
 Instruction* IfElse::clone() const {
-  return new IfElse((mCond ? (Block*)mCond->clone() : 0),
+  return new IfElse(getLocation(),
+                    (mCond ? (Block*)mCond->clone() : 0),
                     (mIfCode ? (Block*)mIfCode->clone() : 0),
                     (mElseCode ? (Block*)mElseCode->clone() : 0));
 }
@@ -322,8 +324,8 @@ void IfElse::toStream(std::ostream &os, const std::string &heading) const {
 
 // ---
 
-While::While(Block *cond, Block *body)
-  : Instruction(), mCond(cond), mBody(body) {
+While::While(const Location &loc, Block *cond, Block *body)
+  : Instruction(loc), mCond(cond), mBody(body) {
 }
 
 While::~While() {
@@ -338,7 +340,8 @@ While::~While() {
 }
 
 Instruction* While::clone() const {
-  return new While((Block*)(mCond ? mCond->clone() : 0),
+  return new While(getLocation(),
+                   (Block*)(mCond ? mCond->clone() : 0),
                    (Block*)(mBody ? mBody->clone() : 0));
 }
 
@@ -396,15 +399,15 @@ void While::toStream(std::ostream &os, const std::string &heading) const {
 
 // ---
 
-Break::Break()
-  : Instruction() {
+Break::Break(const Location &loc)
+  : Instruction(loc) {
 }
 
 Break::~Break() {
 }
 
 Instruction* Break::clone() const {
-  return new Break();
+  return new Break(getLocation());
 }
 
 int Break::stackConsumption(Context &) const {
@@ -421,15 +424,15 @@ void Break::toStream(std::ostream &os, const std::string &heading) const {
 
 // ---
 
-Return::Return()
-  : Instruction() {
+Return::Return(const Location &loc)
+  : Instruction(loc) {
 }
 
 Return::~Return() {
 }
 
 Instruction* Return::clone() const {
-  return new Return();
+  return new Return(getLocation());
 }
 
 int Return::stackConsumption(Context &) const {
@@ -446,15 +449,15 @@ void Return::toStream(std::ostream &os, const std::string &heading) const {
 
 // ---
 
-Continue::Continue()
-  : Instruction() {
+Continue::Continue(const Location &loc)
+  : Instruction(loc) {
 }
 
 Continue::~Continue() {
 }
 
 Instruction* Continue::clone() const {
-  return new Return();
+  return new Return(getLocation());
 }
 
 int Continue::stackConsumption(Context &) const {

@@ -6,6 +6,7 @@
 #include "object.h"
 #include "instruction.h"
 #include "builtins.h"
+#include "callstack.h"
 #include <cstdarg>
 
 // from lexer
@@ -54,6 +55,8 @@ typedef struct YYLTYPE {
                 ((Loc).filename ? (Loc).filename : ""), \
                 (Loc).first_line, (Loc).first_column, \
                 (Loc).last_line,  (Loc).last_column)
+
+Location MakeLocation(YYLTYPE &);
 
 }
 
@@ -109,124 +112,124 @@ paramlist : /* empty */           {
 expr  : expr '+' expr   {
                           $1->merge($3);
                           delete $3;
-                          $1->push_back(new Call("+"));
+                          $1->push_back(new Call(MakeLocation(@$), "+"));
                           $$ = $1;
                         }
       | expr '-' expr   {
                           $1->merge($3);
                           delete $3;
-                          $1->push_back(new Call("-"));
+                          $1->push_back(new Call(MakeLocation(@$), "-"));
                           $$ = $1;
                         }
       | expr '*' expr   {
                           $1->merge($3);
                           delete $3;
-                          $1->push_back(new Call("*"));
+                          $1->push_back(new Call(MakeLocation(@$), "*"));
                           $$ = $1;
                         }
       | expr '/' expr   {
                           $1->merge($3);
                           delete $3;
-                          $1->push_back(new Call("/"));
+                          $1->push_back(new Call(MakeLocation(@$), "/"));
                           $$ = $1;
                         }
       | expr CONCAT expr  {
                             $1->merge($3);
                             delete $3;
-                            $1->push_back(new Call(".."));
+                            $1->push_back(new Call(MakeLocation(@$), ".."));
                             $$ = $1;
                           }
       | expr EQ expr    {
                           $1->merge($3);
                           delete $3;
-                          $1->push_back(new Call("=="));
+                          $1->push_back(new Call(MakeLocation(@$), "=="));
                           $$ = $1;
                         }
       | expr NEQ expr   {
                           $1->merge($3);
                           delete $3;
-                          $1->push_back(new Call("!="));
+                          $1->push_back(new Call(MakeLocation(@$), "!="));
                           $$ = $1;
                         }
       | expr LT expr    {
                           $1->merge($3);
                           delete $3;
-                          $1->push_back(new Call("<"));
+                          $1->push_back(new Call(MakeLocation(@$), "<"));
                           $$ = $1;
                         }
       | expr GT expr    {
                           $1->merge($3);
                           delete $3;
-                          $1->push_back(new Call(">"));
+                          $1->push_back(new Call(MakeLocation(@$), ">"));
                           $$ = $1;
                         }
       | expr LTE expr   {
                           $1->merge($3);
                           delete $3;
-                          $1->push_back(new Call("<="));
+                          $1->push_back(new Call(MakeLocation(@$), "<="));
                           $$ = $1;
                         }
       | expr GTE expr   {
                           $1->merge($3);
                           delete $3;
-                          $1->push_back(new Call(">="));
+                          $1->push_back(new Call(MakeLocation(@$), ">="));
                           $$ = $1;
                         }
       | expr AND expr   {
                           $1->merge($3);
                           delete $3;
-                          $1->push_back(new Call("and"));
+                          $1->push_back(new Call(MakeLocation(@$), "and"));
                           $$ = $1;
                         }
       | expr OR expr    {
                           $1->merge($3);
                           delete $3;
-                          $1->push_back(new Call("or"));
+                          $1->push_back(new Call(MakeLocation(@$), "or"));
                           $$ = $1;
                         }
       | NOT expr        {
-                          $2->append(new Call("not"));
+                          $2->append(new Call(MakeLocation(@$), "not"));
                           $$ = $2;
                         }
       | INTEGER         {
                           $$ = new CodeSegment();
-                          $$->push_back(new Push($1));
+                          $$->push_back(new Push(MakeLocation(@$), $1));
                         }
       | REAL            {
                           $$ = new CodeSegment();
-                          $$->push_back(new Push($1));
+                          $$->push_back(new Push(MakeLocation(@$), $1));
                         }
       | STRING          {
                           $$ = new CodeSegment();
-                          $$->push_back(new Push($1));
+                          $$->push_back(new Push(MakeLocation(@$), $1));
                         }
       | TRUE            {
                           $$ = new CodeSegment();
-                          $$->push_back(new Push($1));
+                          $$->push_back(new Push(MakeLocation(@$), $1));
                         }
       | FALSE           {
                           $$ = new CodeSegment();
-                          $$->push_back(new Push($1));
+                          $$->push_back(new Push(MakeLocation(@$), $1));
                         }
       | SYMBOL          {
                           $$ = new CodeSegment();
-                          $$->push_back(new Get($1->getValue()));
+                          $$->push_back(new Get(MakeLocation(@$), $1->getValue()));
                           delete $1;
                         }
       | '(' expr ')'    {
                           $$ = $2;
                         }
       | '-' expr %prec UMINUS   {
-                                  $2->append(new Call("__uminus__"));
+                                  $2->append(new Call(MakeLocation(@$), "__uminus__"));
                                   $$ = $2;
                                 }
       | SYMBOL '(' exprlist ')' {
                                   if ($3 != NULL) {
-                                    $3->append(new Call($1->getValue()));
+                                    $3->append(new Call(MakeLocation(@$), $1->getValue()));
                                     $$ = $3;
                                   } else {
                                     $$ = new CodeSegment();
-                                    $$->append(new Call($1->getValue()));
+                                    $$->append(new Call(MakeLocation(@$), $1->getValue()));
                                   }
                                   delete $1;
                                 }
@@ -247,7 +250,7 @@ stmt  : IF expr THEN body END                       {
                                                       cond->setCode($2);
                                                       body->setCode($4);
                                                       $$ = new CodeSegment();
-                                                      $$->append(new If(cond, body));
+                                                      $$->append(new If(MakeLocation(@$), cond, body));
                                                     }
       | IF expr THEN body ELSE body END             {
                                                       Block *cond = new Block();
@@ -257,7 +260,7 @@ stmt  : IF expr THEN body END                       {
                                                       body1->setCode($4);
                                                       body2->setCode($6);
                                                       $$ = new CodeSegment();
-                                                      $$->append(new IfElse(cond, body1, body2));
+                                                      $$->append(new IfElse(MakeLocation(@$), cond, body1, body2));
                                                     }
       | WHILE expr DO body END                      {
                                                       Block *cond = new Block();
@@ -265,7 +268,7 @@ stmt  : IF expr THEN body END                       {
                                                       cond->setCode($2);
                                                       body->setCode($4);
                                                       $$ = new CodeSegment();
-                                                      $$->append(new While(cond, body));
+                                                      $$->append(new While(MakeLocation(@$), cond, body));
                                                     }
       | RETURN                                      {
                                                       $$ = new CodeSegment();
@@ -295,22 +298,22 @@ stmt  : IF expr THEN body END                       {
                                                       }
                                                       fn->setCode($7);
                                                       $$ = new CodeSegment();
-                                                      $$->append(new Push(fn));
-                                                      $$->append(new Set($1->getValue()));
+                                                      $$->append(new Push(MakeLocation(@3), fn));
+                                                      $$->append(new Set(MakeLocation(@$), $1->getValue()));
                                                       delete $1;
                                                     }
       | SYMBOL '=' expr                             {
-                                                      $3->append(new Set($1->getValue()));
+                                                      $3->append(new Set(MakeLocation(@$), $1->getValue()));
                                                       delete $1;
                                                       $$ = $3;
                                                     }
       | SYMBOL '(' exprlist ')'                     {
                                                       if ($3 != NULL) {
-                                                        $3->append(new Call($1->getValue()));
+                                                        $3->append(new Call(MakeLocation(@$), $1->getValue()));
                                                         $$ = $3;
                                                       } else {
                                                         $$ = new CodeSegment();
-                                                        $$->append(new Call($1->getValue()));
+                                                        $$->append(new Call(MakeLocation(@$), $1->getValue()));
                                                       }
                                                       delete $1;
                                                     }
@@ -359,6 +362,10 @@ block : /* empty */   {
       ;
 
 %%
+
+Location MakeLocation(YYLTYPE &loc) {
+  return Location(loc.filename, loc.first_line, loc.first_column);
+}
 
 void yyerror(char *fmt, ...) {
   va_list l;
@@ -411,10 +418,16 @@ int main(int argc, char **argv) {
   yyin = f;
   
   bool lexonly = false;
-  if (argc >= 3) {
-    if (!strcmp(argv[2], "-lo") || !strcmp(argv[2], "--lex-only")) {
+  bool printCode = false;
+  
+  for (int i=2; i<argc; ++i) {
+    if (!strcmp(argv[i], "-lo") || !strcmp(argv[i], "--lex-only")) {
       lexonly = true;
+    
+    } else if (!strcmp(argv[i], "-pc") || !strcmp(argv[i], "--print-code")) {
+      printCode = true;
     }
+    
   }
   
   int rv = 0;
@@ -433,11 +446,11 @@ int main(int argc, char **argv) {
       rv = yyparse();
     }
     
-    std::cout << std::endl << "Returned code segment:" << std::endl;
-    
-    gTopCode->toStream(std::cout, "  ");
-    
-    std::cout << std::endl;
+    if (printCode) {
+      std::cout << std::endl << "Returned code segment:" << std::endl;
+      gTopCode->toStream(std::cout, "  ");
+      std::cout << std::endl;
+    }
     
     std::cout << std::endl << "Evaluate code..." << std::endl;
     

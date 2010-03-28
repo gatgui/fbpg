@@ -11,11 +11,13 @@
 #include "object.h"
 #include "instruction.h"
 #include "builtins.h"
+#include "callstack.h"
 #include "calc.parser.h"
 
 // from parser
 extern char *gFilename;
 extern void yyerror(char *fmt, ...);
+extern Location MakeLocation(YYLTYPE &);
 
 // lexer globals
 int yycolumn = 1;
@@ -89,17 +91,17 @@ WORD      ([a-zA-Z0-9_])
                                 }
 "return"                        {
                                   echoToken();
-                                  yylval.inst = new Return();
+                                  yylval.inst = new Return(MakeLocation(yylloc));
                                   return RETURN;
                                 }
 "break"                         {
                                   echoToken();
-                                  yylval.inst = new Break();
+                                  yylval.inst = new Break(MakeLocation(yylloc));
                                   return BREAK;
                                 }
 "continue"                      {
                                   echoToken();
-                                  yylval.inst = new Continue();
+                                  yylval.inst = new Continue(MakeLocation(yylloc));
                                   return CONTINUE;
                                 }
 "or"                            { echoToken(); return OR; }
