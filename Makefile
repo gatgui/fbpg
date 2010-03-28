@@ -31,7 +31,7 @@ calc: core $(CALC_OBJ)
 .c.o:
 	$(CC) -o $@ $(CCFLAGS) -c $<
 
-src/%.lexer.c: src/%.l
+src/%.lexer.c src/%.lexer.h: src/%.l
 	flex -o $@ $^
 
 src/%.parser.h src/%.parser.c src/%.parser.output: src/%.y

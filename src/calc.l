@@ -1,6 +1,7 @@
 %option noyywrap
 %option nodefault
 %option yylineno
+%option header-file="src/calc.lexer.h"
 
 %x MULTILINE_COMMENT
 
@@ -69,40 +70,13 @@ WORD      ([a-zA-Z0-9_])
 ".."                            { echoToken(); return CONCAT; }
 
   /* Keywords */
-"if"                            {
-                                  echoToken();
-                                  yylval.blk = new Block();
-                                  return IF;
-                                }
-"then"                          {
-                                  echoToken();
-                                  yylval.blk = new Block();
-                                  return THEN;
-                                }
-"else"                          {
-                                  echoToken();
-                                  yylval.blk = new Block();
-                                  return ELSE;
-                                }
-"while"                         {
-                                  echoToken();
-                                  yylval.blk = new Block();
-                                  return WHILE;
-                                }
-"do"                            {
-                                  echoToken();
-                                  yylval.blk = new Block();
-                                  return DO;
-                                }
-"function"                      {
-                                  echoToken(); 
-                                  yylval.blk = new Block();
-                                  return FUNC;
-                                }
-"end"                           {
-                                  echoToken();
-                                  return END;
-                                }
+"if"                            { echoToken(); return IF; }
+"then"                          { echoToken(); return THEN; }
+"else"                          { echoToken(); return ELSE; }
+"while"                         { echoToken(); return WHILE; }
+"do"                            { echoToken(); return DO; }
+"function"                      { echoToken(); return FUNC; }
+"end"                           { echoToken(); return END; }
 "true"                          {
                                   echoToken();
                                   yylval.b = new Boolean(true);
@@ -128,18 +102,9 @@ WORD      ([a-zA-Z0-9_])
                                   yylval.inst = new Continue();
                                   return CONTINUE;
                                 }
-"or"                            {
-                                  echoToken();
-                                  return OR;
-                                }
-"and"                           {
-                                  echoToken();
-                                  return AND;
-                                }
-"not"                           {
-                                  echoToken();
-                                  return NOT;
-                                }
+"or"                            { echoToken(); return OR; }
+"and"                           { echoToken(); return AND; }
+"not"                           { echoToken(); return NOT; }
 
   /* Literals */
 {DIGIT}+                        {

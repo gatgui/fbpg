@@ -73,9 +73,9 @@ typedef struct YYLTYPE {
 %token <d> REAL
 %token <s> STRING SYMBOL
 %token <b> TRUE FALSE
-%token <blk> FUNC IF THEN ELSE DO WHILE
+ // %token <blk> 
 %token <inst> RETURN BREAK CONTINUE
-%token NEQ EQ LT GT LTE GTE AND OR NOT END EOL
+%token NEQ EQ LT GT LTE GTE AND OR NOT END EOL FUNC IF THEN ELSE DO WHILE
 
 %type <cs> expr exprlist stmt stmtlist block body
 %type <sl> paramlist
@@ -242,23 +242,30 @@ exprlist  : /* empty */       { $$ = NULL; }
           ;
 
 stmt  : IF expr THEN body END                       {
-                                                      $1->setCode($2);
-                                                      $3->setCode($4);
+                                                      Block *cond = new Block();
+                                                      Block *body = new Block();
+                                                      cond->setCode($2);
+                                                      body->setCode($4);
                                                       $$ = new CodeSegment();
-                                                      $$->append(new If($1, $3));
+                                                      $$->append(new If(cond, body));
                                                     }
       | IF expr THEN body ELSE body END             {
-                                                      $1->setCode($2);
-                                                      $3->setCode($4);
-                                                      $5->setCode($6);
+                                                      Block *cond = new Block();
+                                                      Block *body1 = new Block();
+                                                      Block *body2 = new Block();
+                                                      cond->setCode($2);
+                                                      body1->setCode($4);
+                                                      body2->setCode($6);
                                                       $$ = new CodeSegment();
-                                                      $$->append(new IfElse($1, $3, $5));
+                                                      $$->append(new IfElse(cond, body1, body2));
                                                     }
       | WHILE expr DO body END                      {
-                                                      $1->setCode($2);
-                                                      $3->setCode($4);
+                                                      Block *cond = new Block();
+                                                      Block *body = new Block();
+                                                      cond->setCode($2);
+                                                      body->setCode($4);
                                                       $$ = new CodeSegment();
-                                                      $$->append(new While($1, $3));
+                                                      $$->append(new While(cond, body));
                                                     }
       | RETURN                                      {
                                                       $$ = new CodeSegment();
@@ -277,17 +284,18 @@ stmt  : IF expr THEN body END                       {
                                                       $$->push_back($1);
                                                     }
       | SYMBOL '=' FUNC '(' paramlist ')' body END  {
+                                                      Block *fn = new Block();
                                                       if ($5 != NULL) {
                                                         for (size_t i=0; i<$5->size(); ++i) {
                                                           String *s = (*($5))[i];
-                                                          $3->addArgument(s->getValue());
+                                                          fn->addArgument(s->getValue());
                                                           delete s;
                                                         }
                                                         delete $5;
                                                       }
-                                                      $3->setCode($7);
+                                                      fn->setCode($7);
                                                       $$ = new CodeSegment();
-                                                      $$->append(new Push($3));
+                                                      $$->append(new Push(fn));
                                                       $$->append(new Set($1->getValue()));
                                                       delete $1;
                                                     }
@@ -413,9 +421,9 @@ int main(int argc, char **argv) {
   
   if (lexonly) {
     gEchoTokens = true;
-    int token = yylex();
+    int token = YYLEX;
     while (token != 0) {
-      token = yylex();
+      token = YYLEX;
     }
   } else {
     
