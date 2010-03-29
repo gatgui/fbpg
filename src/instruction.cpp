@@ -1,9 +1,10 @@
 #include "instruction.h"
+#include "exception.h"
+#include <sstream>
 
 unsigned long gNumInstructions = 0;
 
-Instruction::Instruction(const Location &loc)
-  : mLocation(loc) {
+Instruction::Instruction(const Location &loc) : mLocation(loc) {
   ++gNumInstructions;
 }
 
@@ -48,15 +49,15 @@ Instruction* Push::clone() const {
   return new Push(getLocation(), mValue->clone());
 }
 
-int Push::stackConsumption(Context &) const {
-  return 1;
-}
-
-int Push::eval(Stack &stack, Context &) {
+int Push::eval(Stack &stack, Context &ctx) {
   // need an additonal incRef here or when decRef is called on the popped value from the stack
   // (as it should always be the case) we end up deleting the object.
   mValue->incRef();
-  stack.push(mValue);
+  if (!stack.push(mValue)) {
+    std::ostringstream oss;
+    oss << stack.getError() << " (In " << getLocation().toString() << ")";
+    throw Exception(ctx.getCallStack(), oss.str());
+  }
   return EVAL_NEXT;
 }
 
@@ -83,12 +84,13 @@ Instruction* Get::clone() const {
   return new Get(getLocation(), mName);
 }
 
-int Get::stackConsumption(Context &) const {
-  return 1;
-}
-
 int Get::eval(Stack &stack, Context &ctx) {
   Object *o = ctx.getVar(mName);
+  if (o == 0) {
+    std::ostringstream oss;
+    oss << "Undefined variable \"" << mName << "\" in context. (In " << getLocation().toString() << ")";
+    throw Exception(ctx.getCallStack(), oss.str());
+  }
   stack.push(o);
   // Do not decRef, objects on stack must have at least double reference
   // not to be destroyed when popped
@@ -111,10 +113,6 @@ Set::~Set() {
 
 Instruction* Set::clone() const {
   return new Set(getLocation(), mName);
-}
-
-int Set::stackConsumption(Context &) const {
-  return -1;
 }
 
 int Set::eval(Stack &stack, Context &ctx) {
@@ -141,27 +139,22 @@ Instruction* Call::clone() const {
   return new Call(getLocation(), mFnName);
 }
 
-int Call::stackConsumption(Context &ctx) const {
-	// this one sucks... should it be hard-coded?
-	// what if there are reference to not yet defined functions...
-  Object *o = ctx.getCallable(mFnName);
-  if (o == NULL) {
-    return 0;
-  } else {
-    int n = ((Callable*)o)->stackConsumption(ctx);
-    o->decRef();
-    return n;
-  }
-}
-
 int Call::eval(Stack &stack, Context &ctx) {
   Object *o = ctx.getCallable(mFnName);
   if (o == NULL) {
-    throw std::runtime_error("No \""+mFnName+"\" function defined");
+    std::ostringstream oss;
+    oss << "Undefined function \"" << mFnName << "\" in context. (In " << getLocation().toString() << ")";
+    throw Exception(ctx.getCallStack(), oss.str());
   }
   //return o->call(stack, ctx);
-  o->call(stack, ctx);
+  ctx.getCallStack().push_back(CallInfo(getLocation(), mFnName));
+  bool failed = false;
+  o->call(stack, ctx, failed);
+  if (failed) {
+    throw Exception(ctx.getCallStack(), o->getError());
+  }
   o->decRef();
+  ctx.getCallStack().pop_back();
   return EVAL_NEXT;
 }
 
@@ -190,33 +183,42 @@ Instruction* If::clone() const {
   return new If(getLocation(), (mCond ? (Block*)mCond->clone() : 0), (mCode ? (Block*)mCode->clone() : 0));
 }
 
-int If::stackConsumption(Context &ctx) const {
-  if (mCode != 0) {
-    int sc = mCode->stackConsumption(ctx);
-    if (sc != 0) {
-      throw std::runtime_error("\"if\" statement body must leave stack globaly unchanged");
-    }
-  }
-  return 0;
-}
-
 bool If::evalCondition(Stack &stack, Context &ctx) const {
   if (mCond == 0) {
-    throw std::runtime_error("Missing condition for \"if\" statement");
+    std::ostringstream oss;
+    oss << "Missing condition for \"if\" statement. (In " << getLocation().toString() << ")";
+    throw Exception(ctx.getCallStack(), oss.str());
   }
   int sz = stack.size();
-  mCond->call(stack, ctx);
-  if (stack.size() - sz != 1) {
-    throw std::runtime_error("Detected stack corruption while evaluating \"if\" condition");
+  bool failed = false;
+  mCond->call(stack, ctx, failed);
+  if (failed) {
+    throw Exception(ctx.getCallStack(), mCond->getError());
   }
-  return stack.popBoolean();
+  if (stack.size() - sz != 1) {
+    std::ostringstream oss;
+    oss << "Detected stack corruption while evaluating \"if\" condition. (In " << getLocation().toString() << ")";
+    throw Exception(ctx.getCallStack(), oss.str());
+  }
+  bool rv = stack.popBoolean(failed);
+  if (failed) {
+    throw Exception(ctx.getCallStack(), stack.getError());
+  }
+  return rv;
 }
 
 int If::eval(Stack &stack, Context &ctx) {
   if (evalCondition(stack, ctx)) {
     if (mCode) {
       Context ictx(ctx);
-      return mCode->call(stack, ictx);
+      bool failed = false;
+      int rv = mCode->call(stack, ictx, failed);
+      if (failed) {
+        std::ostringstream oss;
+        oss << mCode->getError() << " (In " << getLocation().toString() << ")";
+        throw Exception(ctx.getCallStack(), oss.str());
+      }
+      return rv;
     }
   }
   return EVAL_NEXT;
@@ -263,42 +265,54 @@ Instruction* IfElse::clone() const {
                     (mElseCode ? (Block*)mElseCode->clone() : 0));
 }
 
-int IfElse::stackConsumption(Context &ctx) const {
-  if (mIfCode != 0) {
-    if (mIfCode->stackConsumption(ctx) != 0) {
-      throw std::runtime_error("\"if/else\" statement \"if\" body must leave stack globaly unchanged");
-    }
-  }
-  if (mElseCode != 0) {
-    if (mElseCode->stackConsumption(ctx) != 0) {
-      throw std::runtime_error("\"if/else\" statement \"else\" body must leave stack globaly unchanged");
-    }
-  }
-  return 0;
-}
-
 bool IfElse::evalCondition(Stack &stack, Context &ctx) const {
   if (mCond == 0) {
-    throw std::runtime_error("Missing condition for \"if/else\" statement");
+    std::ostringstream oss;
+    oss << "Missing condition for \"if/else\" statement. (In " << getLocation().toString() << ")";
+    throw Exception(ctx.getCallStack(), oss.str());
   }
   int sz = stack.size();
-  mCond->call(stack, ctx);
-  if (stack.size() - sz != 1) {
-    throw std::runtime_error("Detected stack corruption while evaluating \"if/else\" condition");
+  bool failed = false;
+  mCond->call(stack, ctx, failed);
+  if (failed) {
+    throw Exception(ctx.getCallStack(), mCond->getError());
   }
-  return stack.popBoolean();
+  if (stack.size() - sz != 1) {
+    std::ostringstream oss;
+    oss << "Detected stack corruption while evaluating \"if/else\" condition. (In " << getLocation().toString() << ")";
+    throw Exception(ctx.getCallStack(), oss.str());
+  }
+  bool rv = stack.popBoolean(failed);
+  if (failed) {
+    throw Exception(ctx.getCallStack(), stack.getError());
+  }
+  return rv;
 }
 
 int IfElse::eval(Stack &stack, Context &ctx) {
   if (evalCondition(stack, ctx)) {
     if (mIfCode) {
       Context ictx(ctx);
-      return mIfCode->call(stack, ictx);
+      bool failed = false;
+      int rv = mIfCode->call(stack, ictx, failed);
+      if (failed) {
+        std::ostringstream oss;
+        oss << mIfCode->getError() << " (In " << getLocation().toString() << ")";
+        throw Exception(ctx.getCallStack(), oss.str());
+      }
+      return rv;
     }
   } else {
     if (mElseCode) {
       Context ictx(ctx);
-      return mElseCode->call(stack, ictx);
+      bool failed = false;
+      int rv = mElseCode->call(stack, ictx, failed);
+      if (failed) {
+        std::ostringstream oss;
+        oss << mElseCode->getError() << " (In " << getLocation().toString() << ")";
+        throw Exception(ctx.getCallStack(), oss.str());
+      }
+      return rv;
     }
   }
   return EVAL_NEXT;
@@ -345,25 +359,28 @@ Instruction* While::clone() const {
                    (Block*)(mBody ? mBody->clone() : 0));
 }
 
-int While::stackConsumption(Context &ctx) const {
-  if (mBody != 0) {
-    if (mBody->stackConsumption(ctx) != 0) {
-      throw std::runtime_error("\"while\" statement body must leave stack globaly unchanged");
-    }
-  }
-  return 0;
-}
-
 bool While::evalCondition(Stack &stack, Context &ctx) const {
   if (mCond == 0) {
-    throw std::runtime_error("Missing condition for \"while\" statement");
+    std::ostringstream oss;
+    oss << "Missing condition for \"while\" statement. (In " << getLocation().toString() << ")";
+    throw Exception(ctx.getCallStack(), oss.str());
   }
   int sz = stack.size();
-  mCond->call(stack, ctx);
-  if (stack.size() - sz != 1) {
-    throw std::runtime_error("Detected stack corruption while evaluating \"while\" condition");
+  bool failed = false;
+  mCond->call(stack, ctx, failed);
+  if (failed) {
+    throw Exception(ctx.getCallStack(), mCond->getError());
   }
-  return stack.popBoolean();
+  if (stack.size() - sz != 1) {
+    std::ostringstream oss;
+    oss << "Detected stack corruption while evaluating \"while\" condition. (In " << getLocation().toString() << ")";
+    throw Exception(ctx.getCallStack(), oss.str());
+  }
+  bool rv = stack.popBoolean(failed);
+  if (failed) {
+    throw Exception(ctx.getCallStack(), stack.getError());
+  }
+  return rv;
 }
 
 int While::eval(Stack &stack, Context &ctx) {
@@ -371,7 +388,13 @@ int While::eval(Stack &stack, Context &ctx) {
   Context wctx(ctx);
   while (evalCondition(stack, ctx)) {
     if (mBody) {
-      rv = mBody->call(stack, wctx);
+      bool failed = false;
+      rv = mBody->call(stack, wctx, failed);
+      if (failed) {
+        std::ostringstream oss;
+        oss << mBody->getError() << " (In " << getLocation().toString() << ")";
+        throw Exception(ctx.getCallStack(), oss.str());
+      }
       if (rv == EVAL_BREAK || rv == EVAL_RETURN) {
         break;
       }
@@ -410,10 +433,6 @@ Instruction* Break::clone() const {
   return new Break(getLocation());
 }
 
-int Break::stackConsumption(Context &) const {
-  return 0;
-}
-
 int Break::eval(Stack &, Context &) {
   return EVAL_BREAK;
 }
@@ -435,10 +454,6 @@ Instruction* Return::clone() const {
   return new Return(getLocation());
 }
 
-int Return::stackConsumption(Context &) const {
-  return 0;
-}
-
 int Return::eval(Stack &, Context &) {
   return EVAL_RETURN;
 }
@@ -458,10 +473,6 @@ Continue::~Continue() {
 
 Instruction* Continue::clone() const {
   return new Return(getLocation());
-}
-
-int Continue::stackConsumption(Context &) const {
-  return 0;
 }
 
 int Continue::eval(Stack &, Context &) {
@@ -503,14 +514,6 @@ void CodeSegment::cleanup() {
     delete (*this)[i];
   }
   clear();
-}
-
-int CodeSegment::stackConsumption(Context &ctx) const {
-  int rv = 0;
-  for (size_t i=0; i<size(); ++i) {
-    rv += (*this)[i]->stackConsumption(ctx);
-  }
-  return rv;
 }
 
 int CodeSegment::eval(Stack &stack, Context &ctx) {

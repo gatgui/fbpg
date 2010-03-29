@@ -19,11 +19,13 @@ Object::~Object() {
   }
 }
 
-bool Object::equal(Object *rhs) const {
+bool Object::equal(Object *rhs, bool &errored) const {
+  errored = false;
   return (this == rhs);
 }
 
-bool Object::lessThan(Object *rhs) const {
+bool Object::lessThan(Object *rhs, bool &errored) const {
+  errored = false;
   return ((void*)this < (void*)rhs);
 }
 
@@ -35,27 +37,33 @@ bool Object::isCallable() const {
   return false;
 }
 
-int Object::call(class Stack &, class Context &) {
-  throw std::runtime_error("Object is not callable");
+int Object::call(class Stack &, class Context &, bool &errored) {
+  errored = true;
+  setError("Object is not callable");
+  return EVAL_FAILURE;
 }
 
 void Object::toStream(std::ostream &os, const std::string &heading) const {
   os << heading << "<Object: 0x" << std::hex << (void*)this << std::dec << ">";
 }
 
-double Object::toDouble() const {
+double Object::toDouble(bool &err) const {
+  err = false;
   return 0.0;
 }
 
-long Object::toInteger() const {
+long Object::toInteger(bool &err) const {
+  err = false;
   return 0;
 }
 
-bool Object::toBoolean() const {
+bool Object::toBoolean(bool &err) const {
+  err = false;
   return false;
 }
 
-std::string Object::toString() const {
+std::string Object::toString(bool &err) const {
+  err = false;
   return "";
 }
 
@@ -76,28 +84,42 @@ void Double::toStream(std::ostream &os, const std::string &heading) const {
   os << heading << mValue;
 }
 
-bool Double::equal(Object *rhs) const {
-  return (mValue == rhs->toDouble());
+bool Double::equal(Object *rhs, bool &err) const {
+  double drhs = rhs->toDouble(err);
+  if (err) {
+    setError(rhs->getError());
+    return false;
+  }
+  return (mValue == drhs);
 }
 
-bool Double::lessThan(Object *rhs) const {
-  return (mValue < rhs->toDouble());
+bool Double::lessThan(Object *rhs, bool &err) const {
+  double drhs = rhs->toDouble(err);
+  if (err) {
+    setError(rhs->getError());
+    return false;
+  }
+  return (mValue < drhs);
 }
 
-double Double::toDouble() const {
+double Double::toDouble(bool &err) const {
+  err = false;
   return mValue;
 }
 
-long Double::toInteger() const {
+long Double::toInteger(bool &err) const {
+  err = false;
   return long(mValue);
 }
 
-bool Double::toBoolean() const {
+bool Double::toBoolean(bool &err) const {
+  err = false;
   return (mValue != 0.0);
 }
 
-std::string Double::toString() const {
+std::string Double::toString(bool &err) const {
   std::ostringstream oss;
+  err = false;
   oss << mValue;
   return oss.str();
 }
@@ -119,27 +141,41 @@ void Integer::toStream(std::ostream &os, const std::string &heading) const {
   os << heading << mValue;
 }
 
-bool Integer::equal(Object *rhs) const {
-  return (mValue == rhs->toInteger());
+bool Integer::equal(Object *rhs, bool &err) const {
+  long irhs = rhs->toInteger(err);
+  if (err) {
+    setError(rhs->getError());
+    return false;
+  }
+  return (mValue == irhs);
 }
 
-bool Integer::lessThan(Object *rhs) const {
-  return (mValue < rhs->toInteger());
+bool Integer::lessThan(Object *rhs, bool &err) const {
+  long irhs = rhs->toInteger(err);
+  if (err) {
+    setError(rhs->getError());
+    return false;
+  }
+  return (mValue < irhs);
 }
 
-double Integer::toDouble() const {
+double Integer::toDouble(bool &err) const {
+  err = false;
   return double(mValue);
 }
 
-long Integer::toInteger() const {
+long Integer::toInteger(bool &err) const {
+  err = false;
   return mValue;
 }
 
-bool Integer::toBoolean() const {
+bool Integer::toBoolean(bool &err) const {
+  err = false;
   return (mValue != 0);
 }
 
-std::string Integer::toString() const {
+std::string Integer::toString(bool &err) const {
+  err = false;
   std::ostringstream oss;
   oss << mValue;
   return oss.str();
@@ -162,35 +198,53 @@ void String::toStream(std::ostream &os, const std::string &heading) const {
   os << heading << mValue;
 }
 
-bool String::equal(Object *rhs) const {
-  return (mValue == rhs->toString());
+bool String::equal(Object *rhs, bool &err) const {
+  std::string srhs = rhs->toString(err);
+  if (err) {
+    setError(rhs->getError());
+    return false;
+  }
+  return (mValue == srhs);
 }
 
-bool String::lessThan(Object *rhs) const {
-  return (strcmp(mValue.c_str(), rhs->toString().c_str()) < 0);
+bool String::lessThan(Object *rhs, bool &err) const {
+  std::string srhs = rhs->toString(err);
+  if (err) {
+    setError(rhs->getError());
+    return false;
+  }
+  return (strcmp(mValue.c_str(), srhs.c_str()) < 0);
 }
 
-double String::toDouble() const {
-  double v;
+double String::toDouble(bool &err) const {
+  double v = 0.0;
   if (sscanf(mValue.c_str(), "%lf", &v) != 1) {
-    throw std::runtime_error("String value cannot be converted to a double");
+    err = true;
+    setError("String not convertible to double");
+  } else {
+    err = false;
   }
   return v;
 }
 
-long String::toInteger() const {
-  long v;
+long String::toInteger(bool &err) const {
+  long v = 0;
   if (sscanf(mValue.c_str(), "%ld", &v) != 1) {
-    throw std::runtime_error("String value cannot be converted to an integer");
+    err = true;
+    setError("String not convertible to integer");
+  } else {
+    err = false;
   }
   return v;
 }
 
-bool String::toBoolean() const {
+bool String::toBoolean(bool &err) const {
+  err = false;
   return (mValue.length() > 0);
 }
 
-std::string String::toString() const {
+std::string String::toString(bool &err) const {
+  err = false;
   return mValue;
 }
 
@@ -212,28 +266,38 @@ void Boolean::toStream(std::ostream &os, const std::string &heading) const {
   os << heading << (mValue ? "true" : "false");
 }
 
-bool Boolean::equal(Object *rhs) const {
-  return (mValue == rhs->toBoolean());
+bool Boolean::equal(Object *rhs, bool &err) const {
+  bool brhs = rhs->toBoolean(err);
+  if (err) {
+    setError(rhs->getError());
+    return false;
+  }
+  return (mValue == brhs);
 }
 
-bool Boolean::lessThan(Object *) const {
-  throw std::runtime_error("Boolean object are not comparable");
+bool Boolean::lessThan(Object *, bool &err) const {
+  err = true;
+  setError("Boolean object are not comparable");
   return false;
 }
 
-double Boolean::toDouble() const {
+double Boolean::toDouble(bool &err) const {
+  err = false;
   return (mValue ? 1.0 : 0.0);
 }
 
-long Boolean::toInteger() const {
+long Boolean::toInteger(bool &err) const {
+  err = false;
   return (mValue ? 1 : 0);
 }
 
-bool Boolean::toBoolean() const {
+bool Boolean::toBoolean(bool &err) const {
+  err = false;
   return mValue;
 }
 
-std::string Boolean::toString() const {
+std::string Boolean::toString(bool &err) const {
+  err = false;
   return (mValue ? "true" : "false");
 }
 
@@ -250,28 +314,33 @@ bool Callable::isCallable() const {
   return true;
 }
 
-bool Callable::lessThan(Object *) const {
-  throw std::runtime_error("Callable object are not comparable");
+bool Callable::lessThan(Object *, bool &err) const {
+  err = true;
+  setError("Callable object are not comparable");
   return false;
 }
 
-double Callable::toDouble() const {
-  throw std::runtime_error("Callable cannot be converted to a double");
+double Callable::toDouble(bool &err) const {
+  err = true;
+  setError("Callable cannot be converted to a double");
   return 0.0;
 }
 
-long Callable::toInteger() const {
-  throw std::runtime_error("Callable cannot be converted to an integer");
+long Callable::toInteger(bool &err) const {
+  err = true;
+  setError("Callable cannot be converted to an integer");
   return 0;
 }
 
-bool Callable::toBoolean() const {
-  throw std::runtime_error("Callable cannot be converted to a boolean");
+bool Callable::toBoolean(bool &err) const {
+  err = true;
+  setError("Callable cannot be converted to a boolean");
   return false;
 }
 
-std::string Callable::toString() const {
-  throw std::runtime_error("Callable cannot be converted to a string");
+std::string Callable::toString(bool &err) const {
+  err = true;
+  setError("Callable cannot be converted to a string");
   return "";
 }
 
@@ -282,10 +351,6 @@ CFunction::CFunction(int nargs, bool hasReturn)
 }
 
 CFunction::~CFunction() {
-}
-
-int CFunction::stackConsumption(Context &) const {
-  return ((mHasReturn ? 1 : 0) - mNumArgs);
 }
 
 void CFunction::toStream(std::ostream &os, const std::string &heading) const {
@@ -323,14 +388,6 @@ void Block::setCode(CodeSegment *cs) {
   mCode = cs;
 }
 
-int Block::stackConsumption(Context &ctx) const {
-  if (mCode != 0) {
-    return mCode->stackConsumption(ctx);
-  } else {
-    return 0;
-  }
-}
-
 Object* Block::clone() const {
   Block *b = new Block();
   for (size_t i=0; i<mArgs.size(); ++i) {
@@ -342,7 +399,8 @@ Object* Block::clone() const {
   return b;
 }
 
-int Block::call(Stack &stack, Context &ctx) {
+int Block::call(Stack &stack, Context &ctx, bool &err) {
+  err = false;
   if (mCode == 0) {
     return EVAL_NEXT;
   }
@@ -351,6 +409,11 @@ int Block::call(Stack &stack, Context &ctx) {
   int numArgs = int(mArgs.size());
   for (int i=numArgs-1; i>=0; --i) {
     Object *o = stack.pop();
+    if (!o) {
+      err = true;
+      setError("Not enough arguments on stack");
+      return EVAL_FAILURE;
+    }
     fctx.setVar(mArgs[i], o);
     o->decRef();
   }

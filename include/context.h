@@ -25,6 +25,13 @@ class Context {
     
     void toStream(std::ostream &os, const std::string &indent="") const;
     
+    template <class FuncClass>
+    void registerCFunction(const std::string &name) {
+      CFunction *f = new FuncClass();
+      setVar(name, f);
+      f->decRef();
+    }
+    
     inline CallStack& getCallStack() {
       return mCallStack;
     }
@@ -45,11 +52,5 @@ class Context {
     CallStack &mCallStack;
 };
 
-template <class FuncClass>
-void RegisterCFunction(Context &ctx, const std::string &name) {
-  CFunction *f = new FuncClass();
-  ctx.setVar(name, f);
-  f->decRef();
-}
 
 #endif

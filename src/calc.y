@@ -7,6 +7,7 @@
 #include "instruction.h"
 #include "builtins.h"
 #include "callstack.h"
+#include "exception.h"
 #include <cstdarg>
 
 // from lexer
@@ -466,8 +467,10 @@ int main(int argc, char **argv) {
       
       delete gTopCode;
       
-    } catch (std::exception &e) {
-      std::cerr << "*** Error: " << e.what() << std::endl;
+    } catch (Exception &e) {
+      std::cerr << "*** Caught exception ***" << std::endl;
+      std::cerr << "  " << e.what() << std::endl;
+      std::cerr << e.getCallStack().toString("    ") << std::endl;
     }
     
     std::cout << std::endl;

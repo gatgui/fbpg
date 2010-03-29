@@ -4,16 +4,25 @@
 #include "context.h"
 #include "instruction.h"
 #include <iostream>
+#ifdef _MSC_VER
+# define _USE_MATH_DEFINES
+#endif
 #include <cmath>
+#ifdef _MSC_VER
+// MSVC and its annoying "deprecated" API
+# define hypot _hypot
+#endif
 
 class Concat : public CFunction {
   public:
     Concat() : CFunction(2, true) {}
     virtual ~Concat() {}
     virtual Object* clone() const {return new Concat();}
-    virtual int call(Stack &stack, Context &) {
-      std::string v1 = stack.popString();
-      std::string v0 = stack.popString();
+    virtual int call(Stack &stack, Context &, bool &failed) {
+      std::string v1 = stack.popString(failed);
+      if (failed) {setError(stack.getError()); return EVAL_FAILURE;}
+      std::string v0 = stack.popString(failed);
+      if (failed) {setError(stack.getError()); return EVAL_FAILURE;}
       stack.pushString(v0+v1);
       return EVAL_NEXT;
     }
@@ -24,9 +33,11 @@ class Add : public CFunction {
     Add() : CFunction(2, true) {}
     virtual ~Add() {}
     virtual Object* clone() const {return new Add();}
-    virtual int call(Stack &stack, Context &) {
-      double v1 = stack.popDouble();
-      double v0 = stack.popDouble();
+    virtual int call(Stack &stack, Context &, bool &failed) {
+      double v1 = stack.popDouble(failed);
+      if (failed) {setError(stack.getError()); return EVAL_FAILURE;}
+      double v0 = stack.popDouble(failed);
+      if (failed) {setError(stack.getError()); return EVAL_FAILURE;}
       stack.pushDouble(v0+v1);
       return EVAL_NEXT;
     }
@@ -37,9 +48,11 @@ class Sub : public CFunction {
     Sub() : CFunction(2, true) {}
     virtual ~Sub() {}
     virtual Object* clone() const {return new Sub();}
-    virtual int call(Stack &stack, Context &) {
-      double v1 = stack.popDouble();
-      double v0 = stack.popDouble();
+    virtual int call(Stack &stack, Context &, bool &failed) {
+      double v1 = stack.popDouble(failed);
+      if (failed) {setError(stack.getError()); return EVAL_FAILURE;}
+      double v0 = stack.popDouble(failed);
+      if (failed) {setError(stack.getError()); return EVAL_FAILURE;}
       stack.pushDouble(v0-v1);
       return EVAL_NEXT;
     }
@@ -50,8 +63,9 @@ class Minus : public CFunction {
     Minus() : CFunction(1, true) {}
     virtual ~Minus() {}
     virtual Object* clone() const {return new Minus();}
-    virtual int call(Stack &stack, Context &) {
-      double v = stack.popDouble();
+    virtual int call(Stack &stack, Context &, bool &failed) {
+      double v = stack.popDouble(failed);
+      if (failed) {setError(stack.getError()); return EVAL_FAILURE;}
       stack.pushDouble(-v);
       return EVAL_NEXT;
     }
@@ -62,9 +76,11 @@ class Mult : public CFunction {
     Mult() : CFunction(2, true) {}
     virtual ~Mult() {}
     virtual Object* clone() const {return new Mult();}
-    virtual int call(Stack &stack, Context &) {
-      double v1 = stack.popDouble();
-      double v0 = stack.popDouble();
+    virtual int call(Stack &stack, Context &, bool &failed) {
+      double v1 = stack.popDouble(failed);
+      if (failed) {setError(stack.getError()); return EVAL_FAILURE;}
+      double v0 = stack.popDouble(failed);
+      if (failed) {setError(stack.getError()); return EVAL_FAILURE;}
       stack.pushDouble(v0*v1);
       return EVAL_NEXT;
     }
@@ -75,9 +91,11 @@ class Div : public CFunction {
     Div() : CFunction(2, true) {}
     virtual ~Div() {}
     virtual Object* clone() const {return new Div();}
-    virtual int call(Stack &stack, Context &) {
-      double v1 = stack.popDouble();
-      double v0 = stack.popDouble();
+    virtual int call(Stack &stack, Context &, bool &failed) {
+      double v1 = stack.popDouble(failed);
+      if (failed) {setError(stack.getError()); return EVAL_FAILURE;}
+      double v0 = stack.popDouble(failed);
+      if (failed) {setError(stack.getError()); return EVAL_FAILURE;}
       stack.pushDouble(v0/v1);
       return EVAL_NEXT;
     }
@@ -90,10 +108,13 @@ class Equal : public CFunction {
     Equal() : CFunction(2, true) {}
     virtual ~Equal() {}
     virtual Object* clone() const {return new Equal();}
-    virtual int call(Stack &stack, Context &) {
+    virtual int call(Stack &stack, Context &, bool &failed) {
       Object *o2 = stack.pop();
       Object *o1 = stack.pop();
-      stack.pushBoolean(o1->equal(o2));
+      failed = (!o1 || !o2);
+      if (failed) {setError(stack.getError()); return EVAL_FAILURE;}
+      stack.pushBoolean(o1->equal(o2, failed));
+      if (failed) {setError(stack.getError()); return EVAL_FAILURE;}
       o1->decRef();
       o2->decRef();
       return EVAL_NEXT;
@@ -105,10 +126,13 @@ class NotEqual : public CFunction {
     NotEqual() : CFunction(2, true) {}
     virtual ~NotEqual() {}
     virtual Object* clone() const {return new NotEqual();}
-    virtual int call(Stack &stack, Context &) {
+    virtual int call(Stack &stack, Context &, bool &failed) {
       Object *o2 = stack.pop();
       Object *o1 = stack.pop();
-      stack.pushBoolean(o1->notEqual(o2));
+      failed = (!o1 || !o2);
+      if (failed) {setError(stack.getError()); return EVAL_FAILURE;}
+      stack.pushBoolean(o1->notEqual(o2, failed));
+      if (failed) {setError(stack.getError()); return EVAL_FAILURE;}
       o1->decRef();
       o2->decRef();
       return EVAL_NEXT;
@@ -120,10 +144,13 @@ class LessThan : public CFunction {
     LessThan() : CFunction(2, true) {}
     virtual ~LessThan() {}
     virtual Object* clone() const {return new LessThan();}
-    virtual int call(Stack &stack, Context &) {
+    virtual int call(Stack &stack, Context &, bool &failed) {
       Object *o2 = stack.pop();
       Object *o1 = stack.pop();
-      stack.pushBoolean(o1->lessThan(o2));
+      failed = (!o1 || !o2);
+      if (failed) {setError(stack.getError()); return EVAL_FAILURE;}
+      stack.pushBoolean(o1->lessThan(o2, failed));
+      if (failed) {setError(stack.getError()); return EVAL_FAILURE;}
       o1->decRef();
       o2->decRef();
       return EVAL_NEXT;
@@ -135,10 +162,13 @@ class GreaterThan : public CFunction {
     GreaterThan() : CFunction(2, true) {}
     virtual ~GreaterThan() {}
     virtual Object* clone() const {return new GreaterThan();}
-    virtual int call(Stack &stack, Context &) {
+    virtual int call(Stack &stack, Context &, bool &failed) {
       Object *o2 = stack.pop();
       Object *o1 = stack.pop();
-      stack.pushBoolean(o1->greaterThan(o2));
+      failed = (!o1 || !o2);
+      if (failed) {setError(stack.getError()); return EVAL_FAILURE;}
+      stack.pushBoolean(o1->greaterThan(o2, failed));
+      if (failed) {setError(stack.getError()); return EVAL_FAILURE;}
       o1->decRef();
       o2->decRef();
       return EVAL_NEXT;
@@ -150,10 +180,13 @@ class LessThanEqual : public CFunction {
     LessThanEqual() : CFunction(2, true) {}
     virtual ~LessThanEqual() {}
     virtual Object* clone() const {return new LessThanEqual();}
-    virtual int call(Stack &stack, Context &) {
+    virtual int call(Stack &stack, Context &, bool &failed) {
       Object *o2 = stack.pop();
       Object *o1 = stack.pop();
-      stack.pushBoolean(o1->lessThanEqual(o2));
+      failed = (!o1 || !o2);
+      if (failed) {setError(stack.getError()); return EVAL_FAILURE;}
+      stack.pushBoolean(o1->lessThanEqual(o2, failed));
+      if (failed) {setError(stack.getError()); return EVAL_FAILURE;}
       o1->decRef();
       o2->decRef();
       return EVAL_NEXT;
@@ -165,10 +198,13 @@ class GreaterThanEqual : public CFunction {
     GreaterThanEqual() : CFunction(2, true) {}
     virtual ~GreaterThanEqual() {}
     virtual Object* clone() const {return new GreaterThanEqual();}
-    virtual int call(Stack &stack, Context &) {
+    virtual int call(Stack &stack, Context &, bool &failed) {
       Object *o2 = stack.pop();
       Object *o1 = stack.pop();
-      stack.pushBoolean(o1->greaterThanEqual(o2));
+      failed = (!o1 || !o2);
+      if (failed) {setError(stack.getError()); return EVAL_FAILURE;}
+      stack.pushBoolean(o1->greaterThanEqual(o2, failed));
+      if (failed) {setError(stack.getError()); return EVAL_FAILURE;}
       o1->decRef();
       o2->decRef();
       return EVAL_NEXT;
@@ -182,9 +218,11 @@ class And : public CFunction {
     And() : CFunction(2, true) {}
     virtual ~And() {}
     virtual Object* clone() const {return new And();}
-    virtual int call(Stack &stack, Context &) {
-      bool b1 = stack.popBoolean();
-      bool b0 = stack.popBoolean();
+    virtual int call(Stack &stack, Context &, bool &failed) {
+      bool b1 = stack.popBoolean(failed);
+      if (failed) {setError(stack.getError()); return EVAL_FAILURE;}
+      bool b0 = stack.popBoolean(failed);
+      if (failed) {setError(stack.getError()); return EVAL_FAILURE;}
       stack.pushBoolean(b0 && b1);
       return EVAL_NEXT;
     }
@@ -195,9 +233,11 @@ class Or : public CFunction {
     Or() : CFunction(2, true) {}
     virtual ~Or() {}
     virtual Object* clone() const {return new Or();}
-    virtual int call(Stack &stack, Context &) {
-      bool b1 = stack.popBoolean();
-      bool b0 = stack.popBoolean();
+    virtual int call(Stack &stack, Context &, bool &failed) {
+      bool b1 = stack.popBoolean(failed);
+      if (failed) {setError(stack.getError()); return EVAL_FAILURE;}
+      bool b0 = stack.popBoolean(failed);
+      if (failed) {setError(stack.getError()); return EVAL_FAILURE;}
       stack.pushBoolean(b0 || b1);
       return EVAL_NEXT;
     }
@@ -208,8 +248,9 @@ class Not : public CFunction {
     Not() : CFunction(1, true) {}
     virtual ~Not() {}
     virtual Object* clone() const {return new Not();}
-    virtual int call(Stack &stack, Context &) {
-      bool b1 = stack.popBoolean();
+    virtual int call(Stack &stack, Context &, bool &failed) {
+      bool b1 = stack.popBoolean(failed);
+      if (failed) {setError(stack.getError()); return EVAL_FAILURE;}
       stack.pushBoolean(!b1);
       return EVAL_NEXT;
     }
@@ -222,14 +263,12 @@ class Print : public CFunction {
     Print() : CFunction(1, false) {}
     virtual ~Print() {}
     virtual Object* clone() const {return new Print();}
-    virtual int call(Stack &stack, Context &) {
+    virtual int call(Stack &stack, Context &, bool &failed) {
       Object *o = stack.pop();
-      if (o == NULL) {
-        std::cout << "<Null>";
-      } else {
-        o->toStream(std::cout);
-        o->decRef();
-      }
+      failed = (o == NULL);
+      if (failed) {setError(stack.getError()); return EVAL_FAILURE;}
+      o->toStream(std::cout);
+      o->decRef();
       return EVAL_NEXT;
     }
 };
@@ -242,8 +281,9 @@ class OneArgFunc : public CFunction {
     OneArgFunc() : CFunction(1, true) {}
     virtual ~OneArgFunc() {}
     virtual Object* clone() const {return new OneArgFunc<Func>();}
-    virtual int call(Stack &stack, Context &) {
-      double o = stack.popDouble();
+    virtual int call(Stack &stack, Context &, bool &failed) {
+      double o = stack.popDouble(failed);
+      if (failed) {setError(stack.getError()); return EVAL_FAILURE;}
       stack.pushDouble(Func(o));
       return EVAL_NEXT;
     }
@@ -255,9 +295,11 @@ class TwoArgFunc : public CFunction {
     TwoArgFunc() : CFunction(2, true) {}
     virtual ~TwoArgFunc() {}
     virtual Object* clone() const {return new TwoArgFunc<Func>();}
-    virtual int call(Stack &stack, Context &) {
-      double o1 = stack.popDouble();
-      double o0 = stack.popDouble();
+    virtual int call(Stack &stack, Context &, bool &failed) {
+      double o1 = stack.popDouble(failed);
+      if (failed) {setError(stack.getError()); return EVAL_FAILURE;}
+      double o0 = stack.popDouble(failed);
+      if (failed) {setError(stack.getError()); return EVAL_FAILURE;}
       stack.pushDouble(Func(o0, o1));
       return EVAL_NEXT;
     }
@@ -277,60 +319,60 @@ double radians(double dv) {
 
 void RegisterBuiltins(Context &ctx) {
   // operators
-  RegisterCFunction<Minus>(ctx, "__uminus__");
-  RegisterCFunction<Concat>(ctx, "..");
-  RegisterCFunction<Add>(ctx, "+");
-  RegisterCFunction<Sub>(ctx, "-");
-  RegisterCFunction<Mult>(ctx, "*");
-  RegisterCFunction<Div>(ctx, "/");
-  RegisterCFunction<Equal>(ctx, "==");
-  RegisterCFunction<NotEqual>(ctx, "!=");
-  RegisterCFunction<LessThan>(ctx, "<");
-  RegisterCFunction<GreaterThan>(ctx, ">");
-  RegisterCFunction<LessThanEqual>(ctx, "<=");
-  RegisterCFunction<GreaterThanEqual>(ctx, ">=");
+  ctx.registerCFunction<Minus>("__uminus__");
+  ctx.registerCFunction<Concat>("..");
+  ctx.registerCFunction<Add>("+");
+  ctx.registerCFunction<Sub>("-");
+  ctx.registerCFunction<Mult>("*");
+  ctx.registerCFunction<Div>("/");
+  ctx.registerCFunction<Equal>("==");
+  ctx.registerCFunction<NotEqual>("!=");
+  ctx.registerCFunction<LessThan>("<");
+  ctx.registerCFunction<GreaterThan>(">");
+  ctx.registerCFunction<LessThanEqual>("<=");
+  ctx.registerCFunction<GreaterThanEqual>(">=");
   // logical operator
-  RegisterCFunction<Not>(ctx, "not");
-  RegisterCFunction<And>(ctx, "and");
-  RegisterCFunction<Or>(ctx, "or");
+  ctx.registerCFunction<Not>("not");
+  ctx.registerCFunction<And>("and");
+  ctx.registerCFunction<Or>("or");
   // math function
-  RegisterCFunction<OneArgFunc<degrees> >(ctx, "degrees");
-  RegisterCFunction<OneArgFunc<radians> >(ctx, "radians");
-  RegisterCFunction<OneArgFunc<ceil> >(ctx, "ceil");
-  RegisterCFunction<OneArgFunc<floor> >(ctx, "floor");
-  RegisterCFunction<OneArgFunc<round> >(ctx, "round");
-  RegisterCFunction<OneArgFunc<trunc> >(ctx, "trunc");
-  RegisterCFunction<OneArgFunc<fabs> >(ctx, "abs");
-  RegisterCFunction<OneArgFunc<sqrt> >(ctx, "sqrt");
-  RegisterCFunction<OneArgFunc<cbrt> >(ctx, "cbrt");
-  RegisterCFunction<OneArgFunc<exp> >(ctx, "exp");
-  RegisterCFunction<OneArgFunc<exp2> >(ctx, "exp2");
-  RegisterCFunction<OneArgFunc<log> >(ctx, "log");
-  RegisterCFunction<OneArgFunc<log2> >(ctx, "log2");
-  RegisterCFunction<OneArgFunc<log10> >(ctx, "log10");
-  RegisterCFunction<OneArgFunc<cos> >(ctx, "cos");
-  RegisterCFunction<OneArgFunc<sin> >(ctx, "sin");
-  RegisterCFunction<OneArgFunc<tan> >(ctx, "tan");
-  RegisterCFunction<OneArgFunc<cosh> >(ctx, "cosh");
-  RegisterCFunction<OneArgFunc<sinh> >(ctx, "sinh");
-  RegisterCFunction<OneArgFunc<tanh> >(ctx, "tanh");
-  RegisterCFunction<OneArgFunc<acos> >(ctx, "acos");
-  RegisterCFunction<OneArgFunc<asin> >(ctx, "asin");
-  RegisterCFunction<OneArgFunc<atan> >(ctx, "atan");
-  RegisterCFunction<OneArgFunc<acosh> >(ctx, "acosh");
-  RegisterCFunction<OneArgFunc<asinh> >(ctx, "asinh");
-  RegisterCFunction<OneArgFunc<atanh> >(ctx, "atanh");
-  RegisterCFunction<TwoArgFunc<atan2> >(ctx, "atan2");
-  RegisterCFunction<TwoArgFunc<fmod> >(ctx, "mod");
-  RegisterCFunction<TwoArgFunc<remainder> >(ctx, "remainder");
-  RegisterCFunction<TwoArgFunc<hypot> >(ctx, "hypot");
-  RegisterCFunction<TwoArgFunc<pow> >(ctx, "pow");
-  RegisterCFunction<TwoArgFunc<fmin> >(ctx, "min");
-  RegisterCFunction<TwoArgFunc<fmax> >(ctx, "max");
+  ctx.registerCFunction<OneArgFunc<degrees> >("degrees");
+  ctx.registerCFunction<OneArgFunc<radians> >("radians");
+  ctx.registerCFunction<OneArgFunc<ceil> >("ceil");
+  ctx.registerCFunction<OneArgFunc<floor> >("floor");
+  ctx.registerCFunction<OneArgFunc<fabs> >("abs");
+  ctx.registerCFunction<OneArgFunc<sqrt> >("sqrt");
+  ctx.registerCFunction<OneArgFunc<exp> >("exp");
+  ctx.registerCFunction<OneArgFunc<log> >("log");
+  ctx.registerCFunction<OneArgFunc<log10> >("log10");
+  ctx.registerCFunction<OneArgFunc<cos> >("cos");
+  ctx.registerCFunction<OneArgFunc<sin> >("sin");
+  ctx.registerCFunction<OneArgFunc<tan> >("tan");
+  ctx.registerCFunction<OneArgFunc<cosh> >("cosh");
+  ctx.registerCFunction<OneArgFunc<sinh> >("sinh");
+  ctx.registerCFunction<OneArgFunc<tanh> >("tanh");
+  ctx.registerCFunction<OneArgFunc<acos> >("acos");
+  ctx.registerCFunction<OneArgFunc<asin> >("asin");
+  ctx.registerCFunction<OneArgFunc<atan> >("atan");
+  ctx.registerCFunction<TwoArgFunc<atan2> >("atan2");
+  ctx.registerCFunction<TwoArgFunc<fmod> >("mod");
+  ctx.registerCFunction<TwoArgFunc<hypot> >("hypot");
+  ctx.registerCFunction<TwoArgFunc<pow> >("pow");
+  //ctx.registerCFunction<OneArgFunc<round> >("round"); // NOT SUPPORTED ON WINDOWS
+  //ctx.registerCFunction<OneArgFunc<trunc> >("trunc"); // NOT SUPPORTED ON WINDOWS
+  //ctx.registerCFunction<OneArgFunc<cbrt> >("cbrt"); // NOT SUPPORTED ON WINDOWS
+  //ctx.registerCFunction<OneArgFunc<exp2> >("exp2"); // NOT SUPPORTED ON WINDOWS
+  //ctx.registerCFunction<OneArgFunc<log2> >("log2"); // NOT SUPPORTED ON WINDOWS
+  //ctx.registerCFunction<OneArgFunc<acosh> >("acosh"); // NOT SUPPORTED ON WINDOWS
+  //ctx.registerCFunction<OneArgFunc<asinh> >("asinh"); // NOT SUPPORTED ON WINDOWS
+  //ctx.registerCFunction<OneArgFunc<atanh> >("atanh"); // NOT SUPPORTED ON WINDOWS
+  //ctx.registerCFunction<TwoArgFunc<remainder> >("remainder"); // NOT SUPPORTED ON WINDOWS
+  //ctx.registerCFunction<TwoArgFunc<fmin> >("min"); // NOT SUPPORTED ON WINDOWS
+  //ctx.registerCFunction<TwoArgFunc<fmax> >("max"); // NOT SUPPORTED ON WINDOWS
   // math constants
   Object *o = NULL;
   o = new Double(M_PI); ctx.setVar("PI", o); o->decRef();
   // don't care the others
   // utilities
-  RegisterCFunction<Print>(ctx, "print");
+  ctx.registerCFunction<Print>("print");
 }

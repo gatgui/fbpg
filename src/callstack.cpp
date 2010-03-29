@@ -59,26 +59,37 @@ std::string CallInfo::toString() const {
   std::ostringstream oss;
   oss << "From " << mLocation.toString();
   if (mFuncname.length() > 0) {
-    oss << ", in function \"" << mFuncname << "\"";
+    oss << ": function \"" << mFuncname << "\"";
   }
   return oss.str();
 }
 
 // ---
 
-Exception::Exception(const CallStack &cs, const std::string &msg)
-  : std::runtime_error(msg), mMessage(msg) {
-  mFullMessage = "*** Exception: ";
-  mFullMessage += mMessage;
-  for (size_t i=0; i<cs.size(); ++i) {
-    mFullMessage += "\n  ";
-    mFullMessage += cs[i].toString();
+CallStack::CallStack() {
+}
+
+CallStack::CallStack(const CallStack &rhs)
+  : std::vector<CallInfo>(rhs) {
+}
+  
+CallStack::~CallStack() {
+}
+
+CallStack& CallStack::operator=(const CallStack &rhs) {
+  std::vector<CallInfo>::operator=(rhs);
+  return *this;
+}
+
+std::string CallStack::toString(const std::string &header) const {
+  std::string s;
+  if (size() > 0) {
+    s += header + (*this)[0].toString();
+    for (size_t i=1; i<size(); ++i) {
+      s += "\n";
+      s += header + (*this)[i].toString();
+    }
   }
+  return s;
 }
 
-Exception::~Exception() throw() {
-}
-
-const char* Exception::what() const throw() {
-  return mFullMessage.c_str();
-}

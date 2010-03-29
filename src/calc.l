@@ -1,7 +1,7 @@
 %option noyywrap
 %option nodefault
 %option yylineno
-%option header-file="src/calc.lexer.h"
+  // %option header-file="src/calc.lexer.h"
 
 %x MULTILINE_COMMENT
 

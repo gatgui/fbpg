@@ -3,8 +3,6 @@
 
 #include <string>
 #include <vector>
-#include <exception>
-#include <stdexcept>
 
 class Location {
   public:
@@ -42,20 +40,16 @@ class CallInfo {
     std::string mFuncname;
 };
 
-typedef std::vector<CallInfo> CallStack;
-
-class Exception : public std::runtime_error {
+class CallStack : public std::vector<CallInfo> {
   public:
     
-    Exception(const CallStack &cs, const std::string &msg);
-    virtual ~Exception() throw();
+    CallStack();
+    CallStack(const CallStack &rhs);
+    virtual ~CallStack();
     
-    virtual const char* what() const throw();
+    CallStack& operator=(const CallStack &rhs);
     
-  protected:
-    
-    std::string mMessage;
-    std::string mFullMessage;
+    std::string toString(const std::string &header="") const;
 };
 
 #endif

@@ -27,31 +27,40 @@ class Object {
     virtual ~Object();
     
     virtual Object* clone() const;
+    
     virtual bool isCallable() const;
-    virtual int call(class Stack &, class Context &);
+    virtual int call(class Stack &, class Context &, bool &);
+    
     virtual void toStream(std::ostream &os, const std::string &heading="") const;
-    virtual bool equal(Object *rhs) const;
-    virtual bool lessThan(Object *rhs) const;
     
-    virtual double toDouble() const;
-    virtual long toInteger() const;
-    virtual bool toBoolean() const;
-    virtual std::string toString() const;
+    virtual double toDouble(bool &) const;
+    virtual long toInteger(bool &) const;
+    virtual bool toBoolean(bool &) const;
+    virtual std::string toString(bool &) const;
     
-    inline bool notEqual(Object *rhs) const {
-      return !equal(rhs);
+    virtual bool equal(Object *rhs, bool &) const;
+    virtual bool lessThan(Object *rhs, bool &) const;
+    
+    // ---
+    
+    inline bool notEqual(Object *rhs, bool &errored) const {
+      return !equal(rhs, errored);
     }
     
-    inline bool lessThanEqual(Object *rhs) const {
-      return (equal(rhs) || lessThan(rhs));
+    inline bool lessThanEqual(Object *rhs, bool &errored) const {
+      bool rv = equal(rhs, errored);
+      if (errored) {
+        return rv;
+      }
+      return (rv || lessThan(rhs, errored));
     }
     
-    inline bool greaterThan(Object *rhs) const {
-      return !lessThanEqual(rhs);
+    inline bool greaterThan(Object *rhs, bool &errored) const {
+      return !lessThanEqual(rhs, errored);
     }
     
-    inline bool greaterThanEqual(Object *rhs) const {
-      return !lessThan(rhs);
+    inline bool greaterThanEqual(Object *rhs, bool &errored) const {
+      return !lessThan(rhs, errored);
     }
     
     inline int type() const {
@@ -71,12 +80,24 @@ class Object {
     inline long refCount() const {
       return mRef;
     }
+    
+    inline const std::string getError() const {
+      return mErrString;
+    }
   
+  protected:
+    
+    inline void setError(const std::string &msg) const {
+      mErrString = msg;
+    }
+    
   protected:
     
     int mType;
     
     long mRef;
+    
+    mutable std::string mErrString;
 };
 
 class Double : public Object {
@@ -87,12 +108,12 @@ class Double : public Object {
     
     virtual Object* clone() const;
     virtual void toStream(std::ostream &os, const std::string &heading="") const;
-    virtual bool equal(Object *rhs) const;
-    virtual bool lessThan(Object *rhs) const;
-    virtual double toDouble() const;
-    virtual long toInteger() const;
-    virtual bool toBoolean() const;
-    virtual std::string toString() const;
+    virtual bool equal(Object *rhs, bool &) const;
+    virtual bool lessThan(Object *rhs, bool &) const;
+    virtual double toDouble(bool &) const;
+    virtual long toInteger(bool &) const;
+    virtual bool toBoolean(bool &) const;
+    virtual std::string toString(bool &) const;
     
     inline double getValue() const {
       return mValue;
@@ -115,12 +136,12 @@ class Integer : public Object {
     
     virtual Object* clone() const;
     virtual void toStream(std::ostream &os, const std::string &heading="") const;
-    virtual bool equal(Object *rhs) const;
-    virtual bool lessThan(Object *rhs) const;
-    virtual double toDouble() const;
-    virtual long toInteger() const;
-    virtual bool toBoolean() const;
-    virtual std::string toString() const;
+    virtual bool equal(Object *rhs, bool &) const;
+    virtual bool lessThan(Object *rhs, bool &) const;
+    virtual double toDouble(bool &) const;
+    virtual long toInteger(bool &) const;
+    virtual bool toBoolean(bool &) const;
+    virtual std::string toString(bool &) const;
     
     inline long getValue() const {
       return mValue;
@@ -143,12 +164,12 @@ class String : public Object {
     
     virtual Object* clone() const;
     virtual void toStream(std::ostream &os, const std::string &heading="") const;
-    virtual bool equal(Object *rhs) const;
-    virtual bool lessThan(Object *rhs) const;
-    virtual double toDouble() const;
-    virtual long toInteger() const;
-    virtual bool toBoolean() const;
-    virtual std::string toString() const;
+    virtual bool equal(Object *rhs, bool &) const;
+    virtual bool lessThan(Object *rhs, bool &) const;
+    virtual double toDouble(bool &) const;
+    virtual long toInteger(bool &) const;
+    virtual bool toBoolean(bool &) const;
+    virtual std::string toString(bool &) const;
     
     inline const std::string& getValue() const {
       return mValue;
@@ -171,12 +192,12 @@ class Boolean : public Object {
     
     virtual Object* clone() const;
     virtual void toStream(std::ostream &os, const std::string &heading="") const;
-    virtual bool equal(Object *rhs) const;
-    virtual bool lessThan(Object *rhs) const;
-    virtual double toDouble() const;
-    virtual long toInteger() const;
-    virtual bool toBoolean() const;
-    virtual std::string toString() const;
+    virtual bool equal(Object *rhs, bool &) const;
+    virtual bool lessThan(Object *rhs, bool &) const;
+    virtual double toDouble(bool &) const;
+    virtual long toInteger(bool &) const;
+    virtual bool toBoolean(bool &) const;
+    virtual std::string toString(bool &) const;
     
     inline bool getValue() const {
       return mValue;
@@ -198,12 +219,11 @@ class Callable : public Object {
     virtual ~Callable();
     
     virtual bool isCallable() const;
-    virtual bool lessThan(Object *rhs) const;
-    virtual double toDouble() const;
-    virtual long toInteger() const;
-    virtual bool toBoolean() const;
-    virtual std::string toString() const;
-    virtual int stackConsumption(class Context &) const = 0;
+    virtual bool lessThan(Object *rhs, bool &) const;
+    virtual double toDouble(bool &) const;
+    virtual long toInteger(bool &) const;
+    virtual bool toBoolean(bool &) const;
+    virtual std::string toString(bool &) const;
 };
 
 class CFunction : public Callable {
@@ -213,7 +233,6 @@ class CFunction : public Callable {
     CFunction(int nargs, bool hasReturn);
     virtual ~CFunction();
     
-    virtual int stackConsumption(class Context &) const;
     virtual void toStream(std::ostream &os, const std::string &heading="") const;
     
   protected:
@@ -229,8 +248,7 @@ class Block : public Callable {
     virtual ~Block();
     
     virtual Object* clone() const;
-    virtual int call(class Stack &stack, class Context &ctx);
-    virtual int stackConsumption(class Context &ctx) const;
+    virtual int call(class Stack &stack, class Context &ctx, bool &errored);
     virtual void toStream(std::ostream &os, const std::string &heading="") const;
     
     void addArgument(const std::string &name);

@@ -12,7 +12,7 @@ class Stack {
     Stack();
     ~Stack();
     
-    void push(Object *o);
+    bool push(Object *o);
     void pushBoolean(bool v);
     void pushInteger(long v);
     void pushDouble(double v);
@@ -23,20 +23,31 @@ class Stack {
     int size() const;
     
     Object* pop(int n = 1); // if n > 1, returns first popped object
-    bool popBoolean();
-    long popInteger();
-    double popDouble();
-    std::string popString();
+    bool popBoolean(bool &err);
+    long popInteger(bool &err);
+    double popDouble(bool &err);
+    std::string popString(bool &err);
     
-    Object* get(int idx = -1) const;
-    bool getBoolean(int idx = -1) const;
-    long getInteger(int idx = -1) const;
-    double getDouble(int idx = -1) const;
-    std::string getString(int idx = -1) const;
+    Object* get(int idx) const;
+    bool getBoolean(int idx, bool &err) const;
+    long getInteger(int idx, bool &err) const;
+    double getDouble(int idx, bool &err) const;
+    std::string getString(int idx, bool &err) const;
+    
+    inline std::string getError() const {
+      return mErrString;
+    }
+    
+  protected:
+    
+    inline void setError(const std::string &m) const {
+      mErrString = m;
+    }
     
   protected:
     
     std::vector<Object*> mStack;
+    mutable std::string mErrString;
 };
 
 #endif
