@@ -1,16 +1,25 @@
 #include "context.h"
 #include <sstream>
 
-Context::Context(CallStack &cs)
-  : mParent(0), mCallStack(cs) {
+Context::Context()
+  : mParent(0), mCallStack(new CallStack()), mRef(1), mCallStackOwned(true) {
 }
 
-Context::Context(Context &p)
-  : mParent(&p), mCallStack(p.getCallStack()) {
+Context::Context(CallStack *cs)
+  : mParent(0), mCallStack(cs), mRef(1), mCallStackOwned(false) {
+}
+
+Context::Context(Context *p)
+  : mParent(p), mCallStack(p->getCallStack()), mRef(1), mCallStackOwned(false) {
+  mParent->incRef();
 }
 
 Context::~Context() {
   clear();
+  if (mCallStackOwned && mCallStack) {
+    delete mCallStack;
+    mCallStack = 0;
+  }
 }
 
 void Context::clear() {

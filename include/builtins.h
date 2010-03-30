@@ -3,6 +3,6 @@
 
 #include "context.h"
 
-void RegisterBuiltins(Context &ctx);
+void RegisterBuiltins(Context *ctx);
 
 #endif

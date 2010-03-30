@@ -10,8 +10,9 @@ class Context {
     
     typedef std::map<std::string, Object*> ObjectMap;
     
-    Context(CallStack &cs);
-    Context(Context &p);
+    Context();
+    Context(CallStack *cs);
+    Context(Context *p);
     ~Context();
     
     void clear();
@@ -28,28 +29,41 @@ class Context {
     template <class FuncClass>
     void registerCFunction(const std::string &name) {
       CFunction *f = new FuncClass();
+      f->setContext(this);
       setVar(name, f);
       f->decRef();
     }
     
-    inline CallStack& getCallStack() {
+    inline CallStack* getCallStack() {
       return mCallStack;
     }
     
-    inline const CallStack& getCallStack() const {
+    inline const CallStack* getCallStack() const {
       return mCallStack;
+    }
+    
+    inline void incRef() {
+      ++mRef;
+    }
+    
+    inline void decRef() {
+      if (--mRef == 0) {
+        delete this;
+      }
     }
     
   private:
     
-    Context();
+    // Context();
     Context& operator=(Context &);
     
   protected:
     
     Context *mParent;
     ObjectMap mVars;
-    CallStack &mCallStack;
+    CallStack *mCallStack;
+    long mRef;
+    bool mCallStackOwned;
 };
 
 

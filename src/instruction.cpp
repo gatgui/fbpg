@@ -49,14 +49,14 @@ Instruction* Push::clone() const {
   return new Push(getLocation(), mValue->clone());
 }
 
-int Push::eval(Stack &stack, Context &ctx) {
+int Push::eval(Stack *stack, Context *ctx) {
   // need an additonal incRef here or when decRef is called on the popped value from the stack
   // (as it should always be the case) we end up deleting the object.
   mValue->incRef();
-  if (!stack.push(mValue)) {
+  if (!stack->push(mValue)) {
     std::ostringstream oss;
-    oss << stack.getError() << " (In " << getLocation().toString() << ")";
-    throw Exception(ctx.getCallStack(), oss.str());
+    oss << stack->getError() << " (In " << getLocation().toString() << ")";
+    throw Exception(oss.str(), ctx->getCallStack());
   }
   return EVAL_NEXT;
 }
@@ -84,14 +84,14 @@ Instruction* Get::clone() const {
   return new Get(getLocation(), mName);
 }
 
-int Get::eval(Stack &stack, Context &ctx) {
-  Object *o = ctx.getVar(mName);
+int Get::eval(Stack *stack, Context *ctx) {
+  Object *o = ctx->getVar(mName);
   if (o == 0) {
     std::ostringstream oss;
     oss << "Undefined variable \"" << mName << "\" in context. (In " << getLocation().toString() << ")";
-    throw Exception(ctx.getCallStack(), oss.str());
+    throw Exception(oss.str(), ctx->getCallStack());
   }
-  stack.push(o);
+  stack->push(o);
   // Do not decRef, objects on stack must have at least double reference
   // not to be destroyed when popped
   //o->decRef();
@@ -115,15 +115,42 @@ Instruction* Set::clone() const {
   return new Set(getLocation(), mName);
 }
 
-int Set::eval(Stack &stack, Context &ctx) {
-  Object *o = stack.pop();
-  ctx.setVar(mName, o);
+int Set::eval(Stack *stack, Context *ctx) {
+  Object *o = stack->pop();
+  ctx->setVar(mName, o);
   o->decRef();
   return EVAL_NEXT;
 }
 
 void Set::toStream(std::ostream &os, const std::string &heading) const {
   os << heading << "Set \"" << mName << "\"";
+}
+
+// ---
+
+DefFunc::DefFunc(const Location &loc, const std::string &name, Block *body)
+  : Instruction(loc), mFnName(name), mBody(body) {
+}
+  
+DefFunc::~DefFunc() {
+  if (mBody) {
+    mBody->decRef();
+    mBody = 0;
+  }
+}
+
+Instruction* DefFunc::clone() const {
+  return new DefFunc(getLocation(), mFnName, (mBody ? 0 : (Block*) mBody->clone()));
+}
+
+int DefFunc::eval(Stack *, Context *ctx) {
+  mBody->setContext(ctx);
+  ctx->setVar(mFnName, mBody);
+  return EVAL_NEXT;
+}
+
+void DefFunc::toStream(std::ostream &os, const std::string &heading) const {
+  os << heading << "DefFunc \"" << mFnName << "\"";
 }
 
 // ---
@@ -139,22 +166,33 @@ Instruction* Call::clone() const {
   return new Call(getLocation(), mFnName);
 }
 
-int Call::eval(Stack &stack, Context &ctx) {
-  Object *o = ctx.getCallable(mFnName);
+int Call::eval(Stack *stack, Context *ctx) {
+  Callable *o = (Callable*) ctx->getCallable(mFnName);
   if (o == NULL) {
     std::ostringstream oss;
     oss << "Undefined function \"" << mFnName << "\" in context. (In " << getLocation().toString() << ")";
-    throw Exception(ctx.getCallStack(), oss.str());
+    throw Exception(oss.str(), ctx->getCallStack());
   }
   //return o->call(stack, ctx);
-  ctx.getCallStack().push_back(CallInfo(getLocation(), mFnName));
+  CallStack *cs = ctx->getCallStack();
+  if (cs) {
+    cs->push_back(CallInfo(getLocation(), mFnName));
+  }
   bool failed = false;
-  o->call(stack, ctx, failed);
+  Context *pctx = o->getContext();
+  Context *fctx = new Context(pctx);
+  o->setContext(fctx);
+  fctx->decRef(); // make o the owner
+  o->call(stack, failed);
+  o->setContext(pctx); // restore parent context
+  pctx->decRef(); // release our reference of pctx
   if (failed) {
-    throw Exception(ctx.getCallStack(), o->getError());
+    throw Exception(o->getError(), cs);
   }
   o->decRef();
-  ctx.getCallStack().pop_back();
+  if (cs) {
+    cs->pop_back();
+  }
   return EVAL_NEXT;
 }
 
@@ -183,40 +221,45 @@ Instruction* If::clone() const {
   return new If(getLocation(), (mCond ? (Block*)mCond->clone() : 0), (mCode ? (Block*)mCode->clone() : 0));
 }
 
-bool If::evalCondition(Stack &stack, Context &ctx) const {
+bool If::evalCondition(Stack *stack, Context *ctx) const {
   if (mCond == 0) {
     std::ostringstream oss;
     oss << "Missing condition for \"if\" statement. (In " << getLocation().toString() << ")";
-    throw Exception(ctx.getCallStack(), oss.str());
+    throw Exception(oss.str(), ctx->getCallStack());
   }
-  int sz = stack.size();
+  int sz = stack->size();
   bool failed = false;
-  mCond->call(stack, ctx, failed);
+  mCond->setContext(ctx);
+  mCond->call(stack, failed);
+  mCond->setContext(0);
   if (failed) {
-    throw Exception(ctx.getCallStack(), mCond->getError());
+    throw Exception(mCond->getError(), ctx->getCallStack());
   }
-  if (stack.size() - sz != 1) {
+  if (stack->size() - sz != 1) {
     std::ostringstream oss;
     oss << "Detected stack corruption while evaluating \"if\" condition. (In " << getLocation().toString() << ")";
-    throw Exception(ctx.getCallStack(), oss.str());
+    throw Exception(oss.str(), ctx->getCallStack());
   }
-  bool rv = stack.popBoolean(failed);
+  bool rv = stack->popBoolean(failed);
   if (failed) {
-    throw Exception(ctx.getCallStack(), stack.getError());
+    throw Exception(stack->getError(), ctx->getCallStack());
   }
   return rv;
 }
 
-int If::eval(Stack &stack, Context &ctx) {
+int If::eval(Stack *stack, Context *ctx) {
   if (evalCondition(stack, ctx)) {
     if (mCode) {
-      Context ictx(ctx);
+      Context *ictx = new Context(ctx);
       bool failed = false;
-      int rv = mCode->call(stack, ictx, failed);
+      mCode->setContext(ictx);
+      ictx->decRef(); // make mCode the owner
+      int rv = mCode->call(stack, failed);
+      mCode->setContext(0);
       if (failed) {
         std::ostringstream oss;
         oss << mCode->getError() << " (In " << getLocation().toString() << ")";
-        throw Exception(ctx.getCallStack(), oss.str());
+        throw Exception(oss.str(), ctx->getCallStack());
       }
       return rv;
     }
@@ -265,52 +308,60 @@ Instruction* IfElse::clone() const {
                     (mElseCode ? (Block*)mElseCode->clone() : 0));
 }
 
-bool IfElse::evalCondition(Stack &stack, Context &ctx) const {
+bool IfElse::evalCondition(Stack *stack, Context *ctx) const {
   if (mCond == 0) {
     std::ostringstream oss;
     oss << "Missing condition for \"if/else\" statement. (In " << getLocation().toString() << ")";
-    throw Exception(ctx.getCallStack(), oss.str());
+    throw Exception(oss.str(), ctx->getCallStack());
   }
-  int sz = stack.size();
+  int sz = stack->size();
   bool failed = false;
-  mCond->call(stack, ctx, failed);
+  mCond->setContext(ctx);
+  mCond->call(stack, failed);
+  mCond->setContext(0);
   if (failed) {
-    throw Exception(ctx.getCallStack(), mCond->getError());
+    throw Exception(mCond->getError(), ctx->getCallStack());
   }
-  if (stack.size() - sz != 1) {
+  if (stack->size() - sz != 1) {
     std::ostringstream oss;
     oss << "Detected stack corruption while evaluating \"if/else\" condition. (In " << getLocation().toString() << ")";
-    throw Exception(ctx.getCallStack(), oss.str());
+    throw Exception(oss.str(), ctx->getCallStack());
   }
-  bool rv = stack.popBoolean(failed);
+  bool rv = stack->popBoolean(failed);
   if (failed) {
-    throw Exception(ctx.getCallStack(), stack.getError());
+    throw Exception(stack->getError(), ctx->getCallStack());
   }
   return rv;
 }
 
-int IfElse::eval(Stack &stack, Context &ctx) {
+int IfElse::eval(Stack *stack, Context *ctx) {
   if (evalCondition(stack, ctx)) {
     if (mIfCode) {
-      Context ictx(ctx);
+      Context *ictx = new Context(ctx);
       bool failed = false;
-      int rv = mIfCode->call(stack, ictx, failed);
+      mIfCode->setContext(ictx);
+      ictx->decRef(); // make mIfCode the owner
+      int rv = mIfCode->call(stack, failed);
+      mIfCode->setContext(0);
       if (failed) {
         std::ostringstream oss;
         oss << mIfCode->getError() << " (In " << getLocation().toString() << ")";
-        throw Exception(ctx.getCallStack(), oss.str());
+        throw Exception(oss.str(), ctx->getCallStack());
       }
       return rv;
     }
   } else {
     if (mElseCode) {
-      Context ictx(ctx);
+      Context *ictx = new Context(ctx);
       bool failed = false;
-      int rv = mElseCode->call(stack, ictx, failed);
+      mElseCode->setContext(ictx);
+      ictx->decRef(); // make mElseCode the owner
+      int rv = mElseCode->call(stack, failed);
+      mElseCode->setContext(0);
       if (failed) {
         std::ostringstream oss;
         oss << mElseCode->getError() << " (In " << getLocation().toString() << ")";
-        throw Exception(ctx.getCallStack(), oss.str());
+        throw Exception(oss.str(), ctx->getCallStack());
       }
       return rv;
     }
@@ -359,41 +410,46 @@ Instruction* While::clone() const {
                    (Block*)(mBody ? mBody->clone() : 0));
 }
 
-bool While::evalCondition(Stack &stack, Context &ctx) const {
+bool While::evalCondition(Stack *stack, Context *ctx) const {
   if (mCond == 0) {
     std::ostringstream oss;
     oss << "Missing condition for \"while\" statement. (In " << getLocation().toString() << ")";
-    throw Exception(ctx.getCallStack(), oss.str());
+    throw Exception(oss.str(), ctx->getCallStack());
   }
-  int sz = stack.size();
+  int sz = stack->size();
   bool failed = false;
-  mCond->call(stack, ctx, failed);
+  mCond->setContext(ctx);
+  mCond->call(stack, failed);
+  mCond->setContext(0);
   if (failed) {
-    throw Exception(ctx.getCallStack(), mCond->getError());
+    throw Exception(mCond->getError(), ctx->getCallStack());
   }
-  if (stack.size() - sz != 1) {
+  if (stack->size() - sz != 1) {
     std::ostringstream oss;
     oss << "Detected stack corruption while evaluating \"while\" condition. (In " << getLocation().toString() << ")";
-    throw Exception(ctx.getCallStack(), oss.str());
+    throw Exception(oss.str(), ctx->getCallStack());
   }
-  bool rv = stack.popBoolean(failed);
+  bool rv = stack->popBoolean(failed);
   if (failed) {
-    throw Exception(ctx.getCallStack(), stack.getError());
+    throw Exception(stack->getError(), ctx->getCallStack());
   }
   return rv;
 }
 
-int While::eval(Stack &stack, Context &ctx) {
+int While::eval(Stack *stack, Context *ctx) {
   int rv = EVAL_NEXT;
-  Context wctx(ctx);
+  Context *wctx = new Context(ctx);
+  mBody->setContext(wctx);
+  wctx->decRef(); // make mBody the owner
   while (evalCondition(stack, ctx)) {
     if (mBody) {
       bool failed = false;
-      rv = mBody->call(stack, wctx, failed);
+      rv = mBody->call(stack, failed);
       if (failed) {
+        mBody->setContext(0);
         std::ostringstream oss;
         oss << mBody->getError() << " (In " << getLocation().toString() << ")";
-        throw Exception(ctx.getCallStack(), oss.str());
+        throw Exception(oss.str(), ctx->getCallStack());
       }
       if (rv == EVAL_BREAK || rv == EVAL_RETURN) {
         break;
@@ -401,6 +457,7 @@ int While::eval(Stack &stack, Context &ctx) {
       // if eval next of continue... proceed to next
     }
   }
+  mBody->setContext(0);
   if (rv != EVAL_RETURN) {
     rv = EVAL_NEXT;
   }
@@ -433,7 +490,7 @@ Instruction* Break::clone() const {
   return new Break(getLocation());
 }
 
-int Break::eval(Stack &, Context &) {
+int Break::eval(Stack *, Context *) {
   return EVAL_BREAK;
 }
 
@@ -454,7 +511,7 @@ Instruction* Return::clone() const {
   return new Return(getLocation());
 }
 
-int Return::eval(Stack &, Context &) {
+int Return::eval(Stack *, Context *) {
   return EVAL_RETURN;
 }
 
@@ -475,7 +532,7 @@ Instruction* Continue::clone() const {
   return new Return(getLocation());
 }
 
-int Continue::eval(Stack &, Context &) {
+int Continue::eval(Stack *, Context *) {
   return EVAL_CONTINUE;
 }
 
@@ -516,7 +573,7 @@ void CodeSegment::cleanup() {
   clear();
 }
 
-int CodeSegment::eval(Stack &stack, Context &ctx) {
+int CodeSegment::eval(Stack *stack, Context *ctx) {
   int rv = EVAL_NEXT;
   for (size_t i=0; i<size(); ++i) {
     rv = (*this)[i]->eval(stack, ctx);

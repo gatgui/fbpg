@@ -37,7 +37,7 @@ bool Object::isCallable() const {
   return false;
 }
 
-int Object::call(class Stack &, class Context &, bool &errored) {
+int Object::call(class Stack *, bool &errored) {
   errored = true;
   setError("Object is not callable");
   return EVAL_FAILURE;
@@ -304,10 +304,36 @@ std::string Boolean::toString(bool &err) const {
 // ---
 
 Callable::Callable()
-  : Object(T_CALLABLE) {
+  : Object(T_CALLABLE), mCtx(0) {
 }
 
 Callable::~Callable() {
+  if (mCtx) {
+    mCtx->decRef();
+  }
+}
+
+Context* Callable::context() {
+  return mCtx;
+}
+
+Context* Callable::getContext() {
+  if (mCtx) {
+    mCtx->incRef();
+    return mCtx;
+  } else {
+    return 0;
+  }
+}
+
+void Callable::setContext(Context *ctx) {
+  if (mCtx) {
+    mCtx->decRef();
+  }
+  mCtx = ctx;
+  if (mCtx) {
+    mCtx->incRef();
+  }
 }
 
 bool Callable::isCallable() const {
@@ -399,25 +425,33 @@ Object* Block::clone() const {
   return b;
 }
 
-int Block::call(Stack &stack, Context &ctx, bool &err) {
+int Block::call(Stack *stack, bool &err) {
   err = false;
   if (mCode == 0) {
     return EVAL_NEXT;
   }
   // here failure
-  Context fctx(ctx);
+  Context *ctx = context();
+  if (ctx == 0) {
+    err = true;
+    setError("Block has no context to run in");
+    return EVAL_FAILURE;
+  }
+  Context *fctx = new Context(ctx);
   int numArgs = int(mArgs.size());
   for (int i=numArgs-1; i>=0; --i) {
-    Object *o = stack.pop();
+    Object *o = stack->pop();
     if (!o) {
+      fctx->decRef();
       err = true;
       setError("Not enough arguments on stack");
       return EVAL_FAILURE;
     }
-    fctx.setVar(mArgs[i], o);
+    fctx->setVar(mArgs[i], o);
     o->decRef();
   }
   int rv = mCode->eval(stack, fctx);
+  fctx->decRef();
   return rv;
 }
 

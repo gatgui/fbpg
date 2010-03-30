@@ -8,18 +8,18 @@
 class Exception : public std::exception {
   public:
     
-    Exception(const CallStack &cs, const std::string &msg);
+    Exception(const std::string &msg, const CallStack *cs);
     virtual ~Exception() throw();
     
     virtual const char* what() const throw();
     
-    inline const CallStack& getCallStack() const {
+    inline const CallStack* getCallStack() const {
       return mCallStack;
     }
     
   protected:
     
-    CallStack mCallStack;
+    const CallStack *mCallStack;
     std::string mMessage;
 };
 

@@ -1,5 +1,5 @@
 
-squaredLength = function (x, y)
+function squaredLength (x, y)
   return x*x + y*y
 end
 

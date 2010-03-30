@@ -1,6 +1,6 @@
 
 CODE:
-- Better error reporting for lexer/parser (use bison locations)
+x Better error reporting for lexer/parser (use bison locations)
 - Pure parser and lexer
 - C++ parser
 - Use a better memory allocation scheme
@@ -9,7 +9,7 @@ CODE:
 - Check if function return value is coherent in all its execution paths
 - Add more assert style tests! (to check if the language behaves as expected when changed)
 - Better exceptions
-- Store instruction location (file, line, column) for exceptions
+x Store instruction location (file, line, column) for exceptions
 
 LANGUAGE:
 - Get rid of ".." syntax for concatenating strings. Simply use "+"

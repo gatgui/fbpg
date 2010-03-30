@@ -24,7 +24,7 @@ class Instruction {
     Instruction(const Location &loc);
     virtual ~Instruction();
     
-    virtual int eval(Stack &stack, Context &ctx) = 0;
+    virtual int eval(Stack *stack, Context *ctx) = 0;
     virtual Instruction* clone() const = 0;
     virtual void toStream(std::ostream &os, const std::string &heading="") const = 0;
     
@@ -49,7 +49,7 @@ class Push : public Instruction {
     virtual ~Push();
     
     virtual Instruction* clone() const;
-    virtual int eval(Stack &stack, Context &ctx);
+    virtual int eval(Stack *stack, Context *ctx);
     virtual void toStream(std::ostream &os, const std::string &heading="") const;
     
   protected:
@@ -64,7 +64,7 @@ class Get : public Instruction {
     virtual ~Get();
     
     virtual Instruction* clone() const;
-    virtual int eval(Stack &stack, Context &ctx);
+    virtual int eval(Stack *stack, Context *ctx);
     virtual void toStream(std::ostream &os, const std::string &heading="") const;
     
   protected:
@@ -79,7 +79,7 @@ class Set : public Instruction {
     virtual ~Set();
     
     virtual Instruction* clone() const;
-    virtual int eval(Stack &stack, Context &ctx);
+    virtual int eval(Stack *stack, Context *ctx);
     virtual void toStream(std::ostream &os, const std::string &heading="") const;
     
   protected:
@@ -94,7 +94,7 @@ class Call : public Instruction {
     virtual ~Call();
     
     virtual Instruction* clone() const;
-    virtual int eval(Stack &stack, Context &ctx);
+    virtual int eval(Stack *stack, Context *ctx);
     virtual void toStream(std::ostream &os, const std::string &heading="") const;
     
   protected:
@@ -109,10 +109,10 @@ class If : public Instruction {
     virtual ~If();
     
     virtual Instruction* clone() const;
-    virtual int eval(Stack &stack, Context &ctx);
+    virtual int eval(Stack *stack, Context *ctx);
     virtual void toStream(std::ostream &os, const std::string &heading="") const;
     
-    bool evalCondition(Stack &stack, Context &ctx) const;
+    bool evalCondition(Stack *stack, Context *ctx) const;
     
   protected:
     
@@ -127,10 +127,10 @@ class IfElse : public Instruction {
     virtual ~IfElse();
     
     virtual Instruction* clone() const;
-    virtual int eval(Stack &stack, Context &ctx);
+    virtual int eval(Stack *stack, Context *ctx);
     virtual void toStream(std::ostream &os, const std::string &heading="") const;
     
-    bool evalCondition(Stack &stack, Context &ctx) const;
+    bool evalCondition(Stack *stack, Context *ctx) const;
     
   protected:
     
@@ -146,10 +146,10 @@ class While : public Instruction {
     virtual ~While();
     
     virtual Instruction* clone() const;
-    virtual int eval(Stack &stack, Context &ctx);
+    virtual int eval(Stack *stack, Context *ctx);
     virtual void toStream(std::ostream &os, const std::string &heading="") const;
     
-    bool evalCondition(Stack &stack, Context &ctx) const;
+    bool evalCondition(Stack *stack, Context *ctx) const;
     
   protected:
     
@@ -164,7 +164,7 @@ class Break : public Instruction {
     virtual ~Break();
     
     virtual Instruction* clone() const;
-    virtual int eval(Stack &, Context &);
+    virtual int eval(Stack *, Context *);
     virtual void toStream(std::ostream &os, const std::string &heading="") const;
 };
 
@@ -175,7 +175,7 @@ class Continue : public Instruction {
     virtual ~Continue();
     
     virtual Instruction* clone() const;
-    virtual int eval(Stack &, Context &);
+    virtual int eval(Stack *, Context *);
     virtual void toStream(std::ostream &os, const std::string &heading="") const;
 };
 
@@ -186,8 +186,24 @@ class Return : public Instruction {
     virtual ~Return();
     
     virtual Instruction* clone() const;
-    virtual int eval(Stack &, Context &);
+    virtual int eval(Stack *, Context *);
     virtual void toStream(std::ostream &os, const std::string &heading="") const;
+};
+
+class DefFunc : public Instruction {
+  public:
+    
+    DefFunc(const Location &loc, const std::string &name, Block *body);
+    virtual ~DefFunc();
+    
+    virtual Instruction* clone() const;
+    virtual int eval(Stack *, Context *);
+    virtual void toStream(std::ostream &os, const std::string &heading="") const;
+    
+  protected:
+    
+    std::string mFnName;
+    Block *mBody;
 };
 
 class CodeSegment : public std::vector<Instruction*> {
@@ -199,7 +215,7 @@ class CodeSegment : public std::vector<Instruction*> {
     
     CodeSegment& operator=(const CodeSegment &rhs);
     
-    int eval(Stack &, Context &);
+    int eval(Stack *, Context *);
     
     void toStream(std::ostream &os, const std::string &heading="") const;
     

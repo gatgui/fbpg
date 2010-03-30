@@ -1,6 +1,6 @@
 #include "exception.h"
 
-Exception::Exception(const CallStack &cs, const std::string &msg)
+Exception::Exception(const std::string &msg, const CallStack *cs)
   : std::exception(), mCallStack(cs), mMessage(msg) {
 }
 

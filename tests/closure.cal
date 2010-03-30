@@ -1,7 +1,7 @@
 
-createCounter = function (n)
+function createCounter (n)
   i = 0
-  fn = function ()
+  function fn ()
     if i >= n then
       return false
     else
@@ -15,6 +15,10 @@ end
 
 counter = createCounter(10)
 while counter() do
+  counter2 = createCounter(5)
+  while counter2() do
+    print("  Counter 2\n")
+  end
   print("Counter\n")
 end
 

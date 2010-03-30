@@ -1,4 +1,4 @@
-test = function ()
+function test ()
   print("hello world!!!" .. "\n")
 end
 

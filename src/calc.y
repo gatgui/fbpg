@@ -287,21 +287,22 @@ stmt  : IF expr THEN body END                       {
                                                       $$ = new CodeSegment();
                                                       $$->push_back($1);
                                                     }
-      | SYMBOL '=' FUNC '(' paramlist ')' body END  {
+      // | SYMBOL '=' FUNC '(' paramlist ')' body END  {
+      | FUNC SYMBOL '(' paramlist ')' body END      {
+                                                      // DefFunc
                                                       Block *fn = new Block();
-                                                      if ($5 != NULL) {
-                                                        for (size_t i=0; i<$5->size(); ++i) {
-                                                          String *s = (*($5))[i];
+                                                      if ($4 != NULL) {
+                                                        for (size_t i=0; i<$4->size(); ++i) {
+                                                          String *s = (*($4))[i];
                                                           fn->addArgument(s->getValue());
                                                           delete s;
                                                         }
-                                                        delete $5;
+                                                        delete $4;
                                                       }
-                                                      fn->setCode($7);
+                                                      fn->setCode($6);
                                                       $$ = new CodeSegment();
-                                                      $$->append(new Push(MakeLocation(@3), fn));
-                                                      $$->append(new Set(MakeLocation(@$), $1->getValue()));
-                                                      delete $1;
+                                                      $$->append(new DefFunc(MakeLocation(@$), $2->getValue(), fn));
+                                                      delete $2;
                                                     }
       | SYMBOL '=' expr                             {
                                                       $3->append(new Set(MakeLocation(@$), $1->getValue()));
@@ -457,9 +458,8 @@ int main(int argc, char **argv) {
     
     try {
       
-      CallStack callstack;
-      Context ctx(callstack);
-      Stack stack;
+      Context *ctx = new Context();
+      Stack *stack = new Stack();
       
       RegisterBuiltins(ctx);
       
@@ -467,10 +467,19 @@ int main(int argc, char **argv) {
       
       delete gTopCode;
       
+      // cleanup
+      stack->clear();
+      ctx->clear();
+      ctx->decRef();
+      delete stack;
+      
     } catch (Exception &e) {
       std::cerr << "*** Caught exception ***" << std::endl;
       std::cerr << "  " << e.what() << std::endl;
-      std::cerr << e.getCallStack().toString("    ") << std::endl;
+      const CallStack *cs = e.getCallStack();
+      if (cs) {
+        std::cerr << cs->toString("    ") << std::endl;
+      }
     }
     
     std::cout << std::endl;
