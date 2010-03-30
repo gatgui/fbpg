@@ -52,6 +52,16 @@ class Context {
       }
     }
     
+    inline int getDepth() const {
+      int depth = 0;
+      Context *p = mParent;
+      while (p) {
+        depth += 1;
+        p = p->mParent;
+      }
+      return depth;
+    }
+    
   private:
     
     // Context();

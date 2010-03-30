@@ -1,10 +1,4 @@
 
-function squaredLength (x, y)
-  return x*x + y*y
-end
-
-print(squaredLength(3, 3) .. "\n")
-
 i = 0
 while i < 20 do
   print(i .. "\n")

@@ -10,9 +10,11 @@ Instruction::Instruction(const Location &loc) : mLocation(loc) {
 
 Instruction::~Instruction() {
   --gNumInstructions;
+#ifdef _DEBUG
   if (gNumInstructions == 0) {
     std::cout << "### All instructions deleted" << std::endl;
   }
+#endif
 }
 
 // ---
@@ -52,6 +54,15 @@ Instruction* Push::clone() const {
 int Push::eval(Stack *stack, Context *ctx) {
   // need an additonal incRef here or when decRef is called on the popped value from the stack
   // (as it should always be the case) we end up deleting the object.
+#ifdef _DEBUG
+  std::string indent = "";
+  int depth = ctx->getDepth();
+  for (int i=0; i<depth; ++i) {
+    indent += "  ";
+  }
+  std::cerr << "### " << indent << "Push (in context 0x" << std::hex << (void*)ctx << std::dec << ")" << std::endl;
+#endif
+  
   mValue->incRef();
   if (!stack->push(mValue)) {
     std::ostringstream oss;
@@ -85,6 +96,16 @@ Instruction* Get::clone() const {
 }
 
 int Get::eval(Stack *stack, Context *ctx) {
+  
+#ifdef _DEBUG
+  std::string indent = "";
+  int depth = ctx->getDepth();
+  for (int i=0; i<depth; ++i) {
+    indent += "  ";
+  }
+  std::cerr << "### " << indent << "Get \"" << mName << "\" (in context 0x" << std::hex << (void*)ctx << std::dec << ")" << std::endl;
+#endif
+  
   Object *o = ctx->getVar(mName);
   if (o == 0) {
     std::ostringstream oss;
@@ -116,6 +137,16 @@ Instruction* Set::clone() const {
 }
 
 int Set::eval(Stack *stack, Context *ctx) {
+  
+#ifdef _DEBUG
+  std::string indent = "";
+  int depth = ctx->getDepth();
+  for (int i=0; i<depth; ++i) {
+    indent += "  ";
+  }
+  std::cerr << "### " << indent << "Set \"" << mName << "\" (in context 0x" << std::hex << (void*)ctx << std::dec << ")" << std::endl;
+#endif
+  
   Object *o = stack->pop();
   ctx->setVar(mName, o);
   o->decRef();
@@ -144,6 +175,16 @@ Instruction* DefFunc::clone() const {
 }
 
 int DefFunc::eval(Stack *, Context *ctx) {
+  
+#ifdef _DEBUG
+  std::string indent = "";
+  int depth = ctx->getDepth();
+  for (int i=0; i<depth; ++i) {
+    indent += "  ";
+  }
+  std::cerr << "### " << indent << "DefFunc \"" << mFnName << "\" (in context 0x" << std::hex << (void*)ctx << std::dec << ")" << std::endl;
+#endif
+  
   mBody->setContext(ctx);
   ctx->setVar(mFnName, mBody);
   return EVAL_NEXT;
@@ -151,6 +192,10 @@ int DefFunc::eval(Stack *, Context *ctx) {
 
 void DefFunc::toStream(std::ostream &os, const std::string &heading) const {
   os << heading << "DefFunc \"" << mFnName << "\"";
+  if (mBody) {
+    os << std::endl;
+    mBody->toStream(os, heading+"  ");
+  }
 }
 
 // ---
@@ -167,6 +212,16 @@ Instruction* Call::clone() const {
 }
 
 int Call::eval(Stack *stack, Context *ctx) {
+  
+#ifdef _DEBUG
+  std::string indent = "";
+  int depth = ctx->getDepth();
+  for (int i=0; i<depth; ++i) {
+    indent += "  ";
+  }
+  std::cerr << "### " << indent << "Call \"" << mFnName << "\" (in context 0x" << std::hex << (void*)ctx << std::dec << ")" << std::endl;
+#endif
+  
   Callable *o = (Callable*) ctx->getCallable(mFnName);
   if (o == NULL) {
     std::ostringstream oss;
@@ -248,6 +303,16 @@ bool If::evalCondition(Stack *stack, Context *ctx) const {
 }
 
 int If::eval(Stack *stack, Context *ctx) {
+  
+#ifdef _DEBUG
+  std::string indent = "";
+  int depth = ctx->getDepth();
+  for (int i=0; i<depth; ++i) {
+    indent += "  ";
+  }
+  std::cerr << "### " << indent << "If (in context 0x" << std::hex << (void*)ctx << std::dec << ")" << std::endl;
+#endif
+  
   if (evalCondition(stack, ctx)) {
     if (mCode) {
       Context *ictx = new Context(ctx);
@@ -335,6 +400,16 @@ bool IfElse::evalCondition(Stack *stack, Context *ctx) const {
 }
 
 int IfElse::eval(Stack *stack, Context *ctx) {
+  
+#ifdef _DEBUG
+  std::string indent = "";
+  int depth = ctx->getDepth();
+  for (int i=0; i<depth; ++i) {
+    indent += "  ";
+  }
+  std::cerr << "### " << indent << "If/Else (in context 0x" << std::hex << (void*)ctx << std::dec << ")" << std::endl;
+#endif
+  
   if (evalCondition(stack, ctx)) {
     if (mIfCode) {
       Context *ictx = new Context(ctx);
@@ -437,6 +512,16 @@ bool While::evalCondition(Stack *stack, Context *ctx) const {
 }
 
 int While::eval(Stack *stack, Context *ctx) {
+  
+#ifdef _DEBUG
+  std::string indent = "";
+  int depth = ctx->getDepth();
+  for (int i=0; i<depth; ++i) {
+    indent += "  ";
+  }
+  std::cerr << "### " << indent << "While (in context 0x" << std::hex << (void*)ctx << std::dec << ")" << std::endl;
+#endif
+  
   int rv = EVAL_NEXT;
   Context *wctx = new Context(ctx);
   mBody->setContext(wctx);
@@ -490,7 +575,17 @@ Instruction* Break::clone() const {
   return new Break(getLocation());
 }
 
-int Break::eval(Stack *, Context *) {
+int Break::eval(Stack *, Context *ctx) {
+
+#ifdef _DEBUG
+  std::string indent = "";
+  int depth = ctx->getDepth();
+  for (int i=0; i<depth; ++i) {
+    indent += "  ";
+  }
+  std::cerr << "### " << indent << "Break (in context 0x" << std::hex << (void*)ctx << std::dec << ")" << std::endl;
+#endif
+  
   return EVAL_BREAK;
 }
 
@@ -511,7 +606,17 @@ Instruction* Return::clone() const {
   return new Return(getLocation());
 }
 
-int Return::eval(Stack *, Context *) {
+int Return::eval(Stack *, Context *ctx) {
+  
+#ifdef _DEBUG
+  std::string indent = "";
+  int depth = ctx->getDepth();
+  for (int i=0; i<depth; ++i) {
+    indent += "  ";
+  }
+  std::cerr << "### " << indent << "Return (in context 0x" << std::hex << (void*)ctx << std::dec << ")" << std::endl;
+#endif
+  
   return EVAL_RETURN;
 }
 
@@ -532,7 +637,17 @@ Instruction* Continue::clone() const {
   return new Return(getLocation());
 }
 
-int Continue::eval(Stack *, Context *) {
+int Continue::eval(Stack *, Context *ctx) {
+  
+#ifdef _DEBUG
+  std::string indent = "";
+  int depth = ctx->getDepth();
+  for (int i=0; i<depth; ++i) {
+    indent += "  ";
+  }
+  std::cerr << "### " << indent << "Continue (in context 0x" << std::hex << (void*)ctx << std::dec << ")" << std::endl;
+#endif
+  
   return EVAL_CONTINUE;
 }
 

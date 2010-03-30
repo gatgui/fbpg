@@ -14,9 +14,11 @@ Object::Object(int t)
 
 Object::~Object() {
   --gNumObjects;
+#ifdef _DEBUG
   if (gNumObjects == 0) {
     std::cout << "### All object deleted" << std::endl;
   }
+#endif
 }
 
 bool Object::equal(Object *rhs, bool &errored) const {
@@ -430,28 +432,28 @@ int Block::call(Stack *stack, bool &err) {
   if (mCode == 0) {
     return EVAL_NEXT;
   }
-  // here failure
   Context *ctx = context();
   if (ctx == 0) {
     err = true;
     setError("Block has no context to run in");
     return EVAL_FAILURE;
   }
-  Context *fctx = new Context(ctx);
+  //Context *fctx = new Context(ctx);
   int numArgs = int(mArgs.size());
   for (int i=numArgs-1; i>=0; --i) {
     Object *o = stack->pop();
     if (!o) {
-      fctx->decRef();
+      //fctx->decRef();
       err = true;
       setError("Not enough arguments on stack");
       return EVAL_FAILURE;
     }
-    fctx->setVar(mArgs[i], o);
+    //fctx->setVar(mArgs[i], o);
+    ctx->setVar(mArgs[i], o);
     o->decRef();
   }
-  int rv = mCode->eval(stack, fctx);
-  fctx->decRef();
+  int rv = mCode->eval(stack, ctx); //fctx);
+  //fctx->decRef();
   return rv;
 }
 

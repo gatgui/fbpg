@@ -2,7 +2,7 @@
 CC=g++
 
 #CCFLAGS=-MMD -O2 -W -Wall -Iinclude -DYYERROR_VERBOSE
-CCFLAGS=-MMD -O0 -g -ggdb -Iinclude -W -Wall -DYYERROR_VERBOSE
+CCFLAGS=-MMD -O0 -g -ggdb -Iinclude -W -Wall -DYYERROR_VERBOSE -D_DEBUG
 
 LINKFLAGS=-L. -lcore
 
