@@ -18,7 +18,7 @@ class Concat : public CFunction {
     Concat() : CFunction(2, true) {}
     virtual ~Concat() {}
     virtual Object* clone() const {return new Concat();}
-    virtual int call(Stack *stack, bool &failed) {
+    virtual int call(Stack *stack, Context *, bool &failed) {
       std::string v1 = stack->popString(failed);
       if (failed) {setError(stack->getError()); return EVAL_FAILURE;}
       std::string v0 = stack->popString(failed);
@@ -33,7 +33,7 @@ class Add : public CFunction {
     Add() : CFunction(2, true) {}
     virtual ~Add() {}
     virtual Object* clone() const {return new Add();}
-    virtual int call(Stack *stack, bool &failed) {
+    virtual int call(Stack *stack, Context *, bool &failed) {
       double v1 = stack->popDouble(failed);
       if (failed) {setError(stack->getError()); return EVAL_FAILURE;}
       double v0 = stack->popDouble(failed);
@@ -48,7 +48,7 @@ class Sub : public CFunction {
     Sub() : CFunction(2, true) {}
     virtual ~Sub() {}
     virtual Object* clone() const {return new Sub();}
-    virtual int call(Stack *stack, bool &failed) {
+    virtual int call(Stack *stack, Context *, bool &failed) {
       double v1 = stack->popDouble(failed);
       if (failed) {setError(stack->getError()); return EVAL_FAILURE;}
       double v0 = stack->popDouble(failed);
@@ -63,7 +63,7 @@ class Minus : public CFunction {
     Minus() : CFunction(1, true) {}
     virtual ~Minus() {}
     virtual Object* clone() const {return new Minus();}
-    virtual int call(Stack *stack, bool &failed) {
+    virtual int call(Stack *stack, Context *, bool &failed) {
       double v = stack->popDouble(failed);
       if (failed) {setError(stack->getError()); return EVAL_FAILURE;}
       stack->pushDouble(-v);
@@ -76,7 +76,7 @@ class Mult : public CFunction {
     Mult() : CFunction(2, true) {}
     virtual ~Mult() {}
     virtual Object* clone() const {return new Mult();}
-    virtual int call(Stack *stack, bool &failed) {
+    virtual int call(Stack *stack, Context *, bool &failed) {
       double v1 = stack->popDouble(failed);
       if (failed) {setError(stack->getError()); return EVAL_FAILURE;}
       double v0 = stack->popDouble(failed);
@@ -91,7 +91,7 @@ class Div : public CFunction {
     Div() : CFunction(2, true) {}
     virtual ~Div() {}
     virtual Object* clone() const {return new Div();}
-    virtual int call(Stack *stack, bool &failed) {
+    virtual int call(Stack *stack, Context *, bool &failed) {
       double v1 = stack->popDouble(failed);
       if (failed) {setError(stack->getError()); return EVAL_FAILURE;}
       double v0 = stack->popDouble(failed);
@@ -108,7 +108,7 @@ class Equal : public CFunction {
     Equal() : CFunction(2, true) {}
     virtual ~Equal() {}
     virtual Object* clone() const {return new Equal();}
-    virtual int call(Stack *stack, bool &failed) {
+    virtual int call(Stack *stack, Context *, bool &failed) {
       Object *o2 = stack->pop();
       Object *o1 = stack->pop();
       failed = (!o1 || !o2);
@@ -126,7 +126,7 @@ class NotEqual : public CFunction {
     NotEqual() : CFunction(2, true) {}
     virtual ~NotEqual() {}
     virtual Object* clone() const {return new NotEqual();}
-    virtual int call(Stack *stack, bool &failed) {
+    virtual int call(Stack *stack, Context *, bool &failed) {
       Object *o2 = stack->pop();
       Object *o1 = stack->pop();
       failed = (!o1 || !o2);
@@ -144,7 +144,7 @@ class LessThan : public CFunction {
     LessThan() : CFunction(2, true) {}
     virtual ~LessThan() {}
     virtual Object* clone() const {return new LessThan();}
-    virtual int call(Stack *stack, bool &failed) {
+    virtual int call(Stack *stack, Context *, bool &failed) {
       Object *o2 = stack->pop();
       Object *o1 = stack->pop();
       failed = (!o1 || !o2);
@@ -162,7 +162,7 @@ class GreaterThan : public CFunction {
     GreaterThan() : CFunction(2, true) {}
     virtual ~GreaterThan() {}
     virtual Object* clone() const {return new GreaterThan();}
-    virtual int call(Stack *stack, bool &failed) {
+    virtual int call(Stack *stack, Context *, bool &failed) {
       Object *o2 = stack->pop();
       Object *o1 = stack->pop();
       failed = (!o1 || !o2);
@@ -180,7 +180,7 @@ class LessThanEqual : public CFunction {
     LessThanEqual() : CFunction(2, true) {}
     virtual ~LessThanEqual() {}
     virtual Object* clone() const {return new LessThanEqual();}
-    virtual int call(Stack *stack, bool &failed) {
+    virtual int call(Stack *stack, Context *, bool &failed) {
       Object *o2 = stack->pop();
       Object *o1 = stack->pop();
       failed = (!o1 || !o2);
@@ -198,7 +198,7 @@ class GreaterThanEqual : public CFunction {
     GreaterThanEqual() : CFunction(2, true) {}
     virtual ~GreaterThanEqual() {}
     virtual Object* clone() const {return new GreaterThanEqual();}
-    virtual int call(Stack *stack, bool &failed) {
+    virtual int call(Stack *stack, Context *, bool &failed) {
       Object *o2 = stack->pop();
       Object *o1 = stack->pop();
       failed = (!o1 || !o2);
@@ -218,7 +218,7 @@ class And : public CFunction {
     And() : CFunction(2, true) {}
     virtual ~And() {}
     virtual Object* clone() const {return new And();}
-    virtual int call(Stack *stack, bool &failed) {
+    virtual int call(Stack *stack, Context *, bool &failed) {
       bool b1 = stack->popBoolean(failed);
       if (failed) {setError(stack->getError()); return EVAL_FAILURE;}
       bool b0 = stack->popBoolean(failed);
@@ -233,7 +233,7 @@ class Or : public CFunction {
     Or() : CFunction(2, true) {}
     virtual ~Or() {}
     virtual Object* clone() const {return new Or();}
-    virtual int call(Stack *stack, bool &failed) {
+    virtual int call(Stack *stack, Context *, bool &failed) {
       bool b1 = stack->popBoolean(failed);
       if (failed) {setError(stack->getError()); return EVAL_FAILURE;}
       bool b0 = stack->popBoolean(failed);
@@ -248,7 +248,7 @@ class Not : public CFunction {
     Not() : CFunction(1, true) {}
     virtual ~Not() {}
     virtual Object* clone() const {return new Not();}
-    virtual int call(Stack *stack, bool &failed) {
+    virtual int call(Stack *stack, Context *, bool &failed) {
       bool b1 = stack->popBoolean(failed);
       if (failed) {setError(stack->getError()); return EVAL_FAILURE;}
       stack->pushBoolean(!b1);
@@ -263,7 +263,7 @@ class Print : public CFunction {
     Print() : CFunction(1, false) {}
     virtual ~Print() {}
     virtual Object* clone() const {return new Print();}
-    virtual int call(Stack *stack, bool &failed) {
+    virtual int call(Stack *stack, Context *, bool &failed) {
       Object *o = stack->pop();
       failed = (o == NULL);
       if (failed) {setError(stack->getError()); return EVAL_FAILURE;}
@@ -281,7 +281,7 @@ class OneArgFunc : public CFunction {
     OneArgFunc() : CFunction(1, true) {}
     virtual ~OneArgFunc() {}
     virtual Object* clone() const {return new OneArgFunc<Func>();}
-    virtual int call(Stack *stack, bool &failed) {
+    virtual int call(Stack *stack, Context *, bool &failed) {
       double o = stack->popDouble(failed);
       if (failed) {setError(stack->getError()); return EVAL_FAILURE;}
       stack->pushDouble(Func(o));
@@ -295,7 +295,7 @@ class TwoArgFunc : public CFunction {
     TwoArgFunc() : CFunction(2, true) {}
     virtual ~TwoArgFunc() {}
     virtual Object* clone() const {return new TwoArgFunc<Func>();}
-    virtual int call(Stack *stack, bool &failed) {
+    virtual int call(Stack *stack, Context *, bool &failed) {
       double o1 = stack->popDouble(failed);
       if (failed) {setError(stack->getError()); return EVAL_FAILURE;}
       double o0 = stack->popDouble(failed);

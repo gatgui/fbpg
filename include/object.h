@@ -29,7 +29,7 @@ class Object {
     virtual Object* clone() const;
     
     virtual bool isCallable() const;
-    virtual int call(class Stack *, bool &);
+    virtual int call(class Stack *, class Context *, bool &);
     
     virtual void toStream(std::ostream &os, const std::string &heading="") const;
     
@@ -225,7 +225,7 @@ class Callable : public Object {
     virtual bool toBoolean(bool &) const;
     virtual std::string toString(bool &) const;
     
-    class Context* context();
+    // setup definition context [this is NOT the running context passed to the call method]
     class Context* getContext();
     void setContext(class Context *ctx);
     
@@ -256,7 +256,7 @@ class Block : public Callable {
     virtual ~Block();
     
     virtual Object* clone() const;
-    virtual int call(class Stack *stack, bool &errored);
+    virtual int call(class Stack *stack, class Context *ctx, bool &errored);
     virtual void toStream(std::ostream &os, const std::string &heading="") const;
     
     void addArgument(const std::string &name);

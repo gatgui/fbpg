@@ -22,7 +22,7 @@ class Context {
     void setVar(const std::string &name, Object *v, bool inherit=true);
     
     Object* getVar(const std::string &name, bool inherit=true) const;
-    Object* getCallable(const std::string &name, bool inherit=true) const;
+    Callable* getCallable(const std::string &name, bool inherit=true) const;
     
     void toStream(std::ostream &os, const std::string &indent="") const;
     

@@ -5,13 +5,14 @@ CORE_OBJ=$(CORE_SRC:.cpp=.obj)
 CALC_SRC=src/calc.parser.c src/calc.lexer.c
 CALC_OBJ=src/calc.parser.obj src/calc.lexer.obj
 
-CCFLAGS=/nologo /O2 /W4 /EHsc /Iinclude /Iwin32 /MT /c
-#CCFLAGS=/nologo /Od /Zi /W4 /EHsc /Iinclude /Iwin32 /MT /c
+#CCFLAGS=/nologo /O2 /W4 /EHsc /Iinclude /Iwin32 /MT /c
+#CPPDEFINES=/D_CRT_SECURE_NO_WARNINGS /D_CRT_SECURE_NO_DEPRECATE /DYYERROR_VERBOSE
+#LINKFLAGS=/nologo /release
 
-CPPDEFINES=/D_CRT_SECURE_NO_WARNINGS /D_CRT_SECURE_NO_DEPRECATE /DYYERROR_VERBOSE
+CCFLAGS=/nologo /Od /Zi /W4 /EHsc /Iinclude /Iwin32 /MTd /c
+CPPDEFINES=/D_CRT_SECURE_NO_WARNINGS /D_CRT_SECURE_NO_DEPRECATE /DYYERROR_VERBOSE /D_DEBUG
+LINKFLAGS=/nologo /debug
 
-#LINKFLAGS=/nologo /debug
-LINKFLAGS=/nologo /release
 
 all: core calc
 
@@ -57,5 +58,7 @@ clean:
 	del /Q src\*.parser.*
 	del /Q calc.exe
 	del /Q core.lib
+	del /Q *.pdb
+	del /Q *.ilk
 
 

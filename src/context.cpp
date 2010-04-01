@@ -20,6 +20,10 @@ Context::~Context() {
     delete mCallStack;
     mCallStack = 0;
   }
+  if (mParent) {
+    mParent->decRef();
+    mParent = 0;
+  }
 }
 
 void Context::clear() {
@@ -85,14 +89,14 @@ Object* Context::getVar(const std::string &name, bool inherit) const {
   }
 }
 
-Object* Context::getCallable(const std::string &name, bool inherit) const {
+Callable* Context::getCallable(const std::string &name, bool inherit) const {
   ObjectMap::const_iterator it = mVars.find(name);
   if (it != mVars.end() && it->second->isCallable()) {
     Object *o = it->second;
     if (o) {
       o->incRef();
     }
-    return o;
+    return (Callable*) o;
   } else {
     if (mParent && inherit) {
       return mParent->getCallable(name);

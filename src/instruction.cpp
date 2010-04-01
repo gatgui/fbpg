@@ -171,7 +171,7 @@ DefFunc::~DefFunc() {
 }
 
 Instruction* DefFunc::clone() const {
-  return new DefFunc(getLocation(), mFnName, (mBody ? 0 : (Block*) mBody->clone()));
+  return new DefFunc(getLocation(), mFnName, (mBody ? (Block*) mBody->clone() : 0));
 }
 
 int DefFunc::eval(Stack *, Context *ctx) {
@@ -185,8 +185,10 @@ int DefFunc::eval(Stack *, Context *ctx) {
   std::cerr << "### " << indent << "DefFunc \"" << mFnName << "\" (in context 0x" << std::hex << (void*)ctx << std::dec << ")" << std::endl;
 #endif
   
-  mBody->setContext(ctx);
-  ctx->setVar(mFnName, mBody);
+  Block *funcBody = (Block*) mBody->clone();
+  funcBody->setContext(ctx);
+  ctx->setVar(mFnName, funcBody);
+  funcBody->decRef(); /* leave context the only owner */
   return EVAL_NEXT;
 }
 
@@ -228,26 +230,33 @@ int Call::eval(Stack *stack, Context *ctx) {
     oss << "Undefined function \"" << mFnName << "\" in context. (In " << getLocation().toString() << ")";
     throw Exception(oss.str(), ctx->getCallStack());
   }
+  
   //return o->call(stack, ctx);
   CallStack *cs = ctx->getCallStack();
+  
   if (cs) {
     cs->push_back(CallInfo(getLocation(), mFnName));
   }
+  
+  Context *dctx = o->getContext();
+  Context *fctx = new Context(dctx);
+  
   bool failed = false;
-  Context *pctx = o->getContext();
-  Context *fctx = new Context(pctx);
-  o->setContext(fctx);
-  fctx->decRef(); // make o the owner
-  o->call(stack, failed);
-  o->setContext(pctx); // restore parent context
-  pctx->decRef(); // release our reference of pctx
+  o->call(stack, fctx, failed);
+  
+  fctx->decRef();
+  dctx->decRef();
+  
   if (failed) {
     throw Exception(o->getError(), cs);
   }
+  
   o->decRef();
+  
   if (cs) {
     cs->pop_back();
   }
+  
   return EVAL_NEXT;
 }
 
@@ -284,9 +293,7 @@ bool If::evalCondition(Stack *stack, Context *ctx) const {
   }
   int sz = stack->size();
   bool failed = false;
-  mCond->setContext(ctx);
-  mCond->call(stack, failed);
-  mCond->setContext(0);
+  mCond->call(stack, ctx, failed);
   if (failed) {
     throw Exception(mCond->getError(), ctx->getCallStack());
   }
@@ -317,10 +324,8 @@ int If::eval(Stack *stack, Context *ctx) {
     if (mCode) {
       Context *ictx = new Context(ctx);
       bool failed = false;
-      mCode->setContext(ictx);
-      ictx->decRef(); // make mCode the owner
-      int rv = mCode->call(stack, failed);
-      mCode->setContext(0);
+      int rv = mCode->call(stack, ctx, failed);
+      ictx->decRef();
       if (failed) {
         std::ostringstream oss;
         oss << mCode->getError() << " (In " << getLocation().toString() << ")";
@@ -381,9 +386,7 @@ bool IfElse::evalCondition(Stack *stack, Context *ctx) const {
   }
   int sz = stack->size();
   bool failed = false;
-  mCond->setContext(ctx);
-  mCond->call(stack, failed);
-  mCond->setContext(0);
+  mCond->call(stack, ctx, failed);
   if (failed) {
     throw Exception(mCond->getError(), ctx->getCallStack());
   }
@@ -414,10 +417,8 @@ int IfElse::eval(Stack *stack, Context *ctx) {
     if (mIfCode) {
       Context *ictx = new Context(ctx);
       bool failed = false;
-      mIfCode->setContext(ictx);
-      ictx->decRef(); // make mIfCode the owner
-      int rv = mIfCode->call(stack, failed);
-      mIfCode->setContext(0);
+      int rv = mIfCode->call(stack, ictx, failed);
+      ictx->decRef();
       if (failed) {
         std::ostringstream oss;
         oss << mIfCode->getError() << " (In " << getLocation().toString() << ")";
@@ -429,10 +430,8 @@ int IfElse::eval(Stack *stack, Context *ctx) {
     if (mElseCode) {
       Context *ictx = new Context(ctx);
       bool failed = false;
-      mElseCode->setContext(ictx);
-      ictx->decRef(); // make mElseCode the owner
-      int rv = mElseCode->call(stack, failed);
-      mElseCode->setContext(0);
+      int rv = mElseCode->call(stack, ictx, failed);
+      ictx->decRef();
       if (failed) {
         std::ostringstream oss;
         oss << mElseCode->getError() << " (In " << getLocation().toString() << ")";
@@ -493,9 +492,7 @@ bool While::evalCondition(Stack *stack, Context *ctx) const {
   }
   int sz = stack->size();
   bool failed = false;
-  mCond->setContext(ctx);
-  mCond->call(stack, failed);
-  mCond->setContext(0);
+  mCond->call(stack, ctx, failed);
   if (failed) {
     throw Exception(mCond->getError(), ctx->getCallStack());
   }
@@ -524,14 +521,12 @@ int While::eval(Stack *stack, Context *ctx) {
   
   int rv = EVAL_NEXT;
   Context *wctx = new Context(ctx);
-  mBody->setContext(wctx);
-  wctx->decRef(); // make mBody the owner
   while (evalCondition(stack, ctx)) {
     if (mBody) {
       bool failed = false;
-      rv = mBody->call(stack, failed);
+      rv = mBody->call(stack, wctx, failed);
       if (failed) {
-        mBody->setContext(0);
+        wctx->decRef();
         std::ostringstream oss;
         oss << mBody->getError() << " (In " << getLocation().toString() << ")";
         throw Exception(oss.str(), ctx->getCallStack());
@@ -542,7 +537,7 @@ int While::eval(Stack *stack, Context *ctx) {
       // if eval next of continue... proceed to next
     }
   }
-  mBody->setContext(0);
+  wctx->decRef();
   if (rv != EVAL_RETURN) {
     rv = EVAL_NEXT;
   }
