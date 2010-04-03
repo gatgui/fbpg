@@ -4,6 +4,8 @@
 *.a
 *.exe
 *.lib
+*.py
+*.rb
 calc
 calc.lexer.*
 calc.parser.*

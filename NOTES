@@ -1,7 +1,2 @@
 
-For closure:
-  Make new instruction DefFunc
-  Block must have an associated context
-  Do not pass a context to the Object::call method
-  Do not create Block from the lexer
 

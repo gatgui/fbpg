@@ -2,8 +2,8 @@
 x = 1.0
 y = -x
 
-print("x = " .. x .. "\n")
-print("y = " .. y .. "\n")
+print("x = " + x + "\n")
+print("y = " + y + "\n")
 
 if x >= y and y < 0  then
   print("x>=y and y<0\n")

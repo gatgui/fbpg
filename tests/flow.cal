@@ -1,7 +1,7 @@
 
 i = 0
 while i < 20 do
-  print(i .. "\n")
+  print(string(i) + "\n")
   i = i + 1
   if i >= 10 then
     print("early exit\n")

@@ -13,33 +13,98 @@
 # define hypot _hypot
 #endif
 
-class Concat : public CFunction {
-  public:
-    Concat() : CFunction(2, true) {}
-    virtual ~Concat() {}
-    virtual Object* clone() const {return new Concat();}
-    virtual int call(Stack *stack, Context *, bool &failed) {
-      std::string v1 = stack->popString(failed);
-      if (failed) {setError(stack->getError()); return EVAL_FAILURE;}
-      std::string v0 = stack->popString(failed);
-      if (failed) {setError(stack->getError()); return EVAL_FAILURE;}
-      stack->pushString(v0+v1);
-      return EVAL_NEXT;
-    }
-};
-
 class Add : public CFunction {
   public:
     Add() : CFunction(2, true) {}
     virtual ~Add() {}
     virtual Object* clone() const {return new Add();}
     virtual int call(Stack *stack, Context *, bool &failed) {
-      double v1 = stack->popDouble(failed);
-      if (failed) {setError(stack->getError()); return EVAL_FAILURE;}
-      double v0 = stack->popDouble(failed);
-      if (failed) {setError(stack->getError()); return EVAL_FAILURE;}
-      stack->pushDouble(v0+v1);
-      return EVAL_NEXT;
+      int rv = EVAL_NEXT;
+      
+      Object *o1 = stack->pop();
+      
+      if (!o1) {
+        setError("Not enough values on stack");
+        return EVAL_FAILURE;
+      }
+      
+      Object *o0 = stack->pop();
+      
+      if (!o0) {
+        o1->decRef();
+        setError("Not enough values on stack");
+        return EVAL_FAILURE;
+      }
+      
+      if (o0->type() == T_INTEGER) {
+        long v0 = o0->toInteger(failed);
+        
+        if (o1->type() == T_INTEGER) {
+          long v1 = o1->toInteger(failed);
+          stack->pushInteger(v0 + v1);
+        
+        } else if (o1->type() == T_DOUBLE) {
+          double v1 = o1->toDouble(failed);
+          stack->pushDouble(v0 + v1);
+          
+        } else {
+          long v1 = o1->toInteger(failed);
+          
+          if (failed) {
+            double v1 = o1->toDouble(failed);
+          
+            if (failed) {
+              setError("Invalid right operand type for operator +");
+              rv = EVAL_FAILURE;
+            
+            } else {
+              stack->pushDouble(v0 + v1);
+            }
+          } else {
+            stack->pushInteger(v0 + v1);
+          }
+        }
+        
+      } else if (o0->type() == T_DOUBLE) {
+        double v0 = o0->toDouble(failed);
+        double v1 = o1->toDouble(failed);
+        
+        if (failed) {
+          long v1 = o1->toInteger(failed);
+          
+          if (failed) {
+            setError("Invalid right operand type for operator +");
+            rv = EVAL_FAILURE;
+          
+          } else {
+            stack->pushDouble(v0 + v1);
+          }
+          
+        } else {
+          stack->pushDouble(v0 + v1);
+        }
+        
+      } else if (o0->type() == T_STRING) {
+        std::string v0 = o0->toString(failed);
+        std::string v1 = o1->toString(failed);
+        
+        if (failed) {
+          setError("Invalid right operand type for operator +");
+          rv = EVAL_FAILURE;
+          
+        } else {
+          stack->pushString(v0 + v1);
+        }
+        
+      } else {
+        setError("Invalid left operand type for operator +");
+        rv = EVAL_FAILURE;
+        
+      }
+      
+      o0->decRef();
+      o1->decRef();
+      return rv;
     }
 };
 
@@ -49,12 +114,80 @@ class Sub : public CFunction {
     virtual ~Sub() {}
     virtual Object* clone() const {return new Sub();}
     virtual int call(Stack *stack, Context *, bool &failed) {
-      double v1 = stack->popDouble(failed);
-      if (failed) {setError(stack->getError()); return EVAL_FAILURE;}
-      double v0 = stack->popDouble(failed);
-      if (failed) {setError(stack->getError()); return EVAL_FAILURE;}
-      stack->pushDouble(v0-v1);
-      return EVAL_NEXT;
+      int rv = EVAL_NEXT;
+      
+      Object *o1 = stack->pop();
+      
+      if (!o1) {
+        setError("Not enough values on stack");
+        return EVAL_FAILURE;
+      }
+      
+      Object *o0 = stack->pop();
+      
+      if (!o0) {
+        o1->decRef();
+        setError("Not enough values on stack");
+        return EVAL_FAILURE;
+      }
+      
+      if (o0->type() == T_INTEGER) {
+        long v0 = o0->toInteger(failed);
+        
+        if (o1->type() == T_INTEGER) {
+          long v1 = o1->toInteger(failed);
+          stack->pushInteger(v0 - v1);
+        
+        } else if (o1->type() == T_DOUBLE) {
+          double v1 = o1->toDouble(failed);
+          stack->pushDouble(v0 - v1);
+          
+        } else {
+          long v1 = o1->toInteger(failed);
+          
+          if (failed) {
+            double v1 = o1->toDouble(failed);
+          
+            if (failed) {
+              setError("Invalid right operand type for operator -");
+              rv = EVAL_FAILURE;
+            
+            } else {
+              stack->pushDouble(v0 - v1);
+            }
+          } else {
+            stack->pushInteger(v0 - v1);
+          }
+        }
+        
+      } else if (o0->type() == T_DOUBLE) {
+        double v0 = o0->toDouble(failed);
+        double v1 = o1->toDouble(failed);
+        
+        if (failed) {
+          long v1 = o1->toInteger(failed);
+          
+          if (failed) {
+            setError("Invalid right operand type for operator -");
+            rv = EVAL_FAILURE;
+          
+          } else {
+            stack->pushDouble(v0 - v1);
+          }
+          
+        } else {
+          stack->pushDouble(v0 - v1);
+        }
+        
+      } else {
+        setError("Invalid left operand type for operator -");
+        rv = EVAL_FAILURE;
+        
+      }
+      
+      o0->decRef();
+      o1->decRef();
+      return rv;
     }
 };
 
@@ -64,10 +197,24 @@ class Minus : public CFunction {
     virtual ~Minus() {}
     virtual Object* clone() const {return new Minus();}
     virtual int call(Stack *stack, Context *, bool &failed) {
-      double v = stack->popDouble(failed);
-      if (failed) {setError(stack->getError()); return EVAL_FAILURE;}
-      stack->pushDouble(-v);
-      return EVAL_NEXT;
+      Object *o = stack->pop();
+      if (!o) {
+        setError("Not enough values on stack");
+        return EVAL_FAILURE;
+      }
+      int rv = EVAL_NEXT;
+      if (o->type() == T_INTEGER) {
+        long v = o->toInteger(failed);
+        stack->pushInteger(-v);
+      } else if (o->type() == T_DOUBLE) {
+        double v = o->toDouble(failed);
+        stack->pushDouble(-v);
+      } else {
+        setError("Invalid operand type for unary minus");
+        rv = EVAL_FAILURE;
+      }
+      o->decRef();
+      return rv;
     }
 };
 
@@ -77,12 +224,80 @@ class Mult : public CFunction {
     virtual ~Mult() {}
     virtual Object* clone() const {return new Mult();}
     virtual int call(Stack *stack, Context *, bool &failed) {
-      double v1 = stack->popDouble(failed);
-      if (failed) {setError(stack->getError()); return EVAL_FAILURE;}
-      double v0 = stack->popDouble(failed);
-      if (failed) {setError(stack->getError()); return EVAL_FAILURE;}
-      stack->pushDouble(v0*v1);
-      return EVAL_NEXT;
+      int rv = EVAL_NEXT;
+      
+      Object *o1 = stack->pop();
+      
+      if (!o1) {
+        setError("Not enough values on stack");
+        return EVAL_FAILURE;
+      }
+      
+      Object *o0 = stack->pop();
+      
+      if (!o0) {
+        o1->decRef();
+        setError("Not enough values on stack");
+        return EVAL_FAILURE;
+      }
+      
+      if (o0->type() == T_INTEGER) {
+        long v0 = o0->toInteger(failed);
+        
+        if (o1->type() == T_INTEGER) {
+          long v1 = o1->toInteger(failed);
+          stack->pushInteger(v0 * v1);
+        
+        } else if (o1->type() == T_DOUBLE) {
+          double v1 = o1->toDouble(failed);
+          stack->pushDouble(v0 * v1);
+          
+        } else {
+          long v1 = o1->toInteger(failed);
+          
+          if (failed) {
+            double v1 = o1->toDouble(failed);
+          
+            if (failed) {
+              setError("Invalid right operand type for operator *");
+              rv = EVAL_FAILURE;
+            
+            } else {
+              stack->pushDouble(v0 * v1);
+            }
+          } else {
+            stack->pushInteger(v0 * v1);
+          }
+        }
+        
+      } else if (o0->type() == T_DOUBLE) {
+        double v0 = o0->toDouble(failed);
+        double v1 = o1->toDouble(failed);
+        
+        if (failed) {
+          long v1 = o1->toInteger(failed);
+          
+          if (failed) {
+            setError("Invalid right operand type for operator *");
+            rv = EVAL_FAILURE;
+          
+          } else {
+            stack->pushDouble(v0 * v1);
+          }
+          
+        } else {
+          stack->pushDouble(v0 * v1);
+        }
+        
+      } else {
+        setError("Invalid left operand type for operator *");
+        rv = EVAL_FAILURE;
+        
+      }
+      
+      o0->decRef();
+      o1->decRef();
+      return rv;
     }
 };
 
@@ -92,11 +307,105 @@ class Div : public CFunction {
     virtual ~Div() {}
     virtual Object* clone() const {return new Div();}
     virtual int call(Stack *stack, Context *, bool &failed) {
-      double v1 = stack->popDouble(failed);
-      if (failed) {setError(stack->getError()); return EVAL_FAILURE;}
-      double v0 = stack->popDouble(failed);
-      if (failed) {setError(stack->getError()); return EVAL_FAILURE;}
-      stack->pushDouble(v0/v1);
+      int rv = EVAL_NEXT;
+      
+      Object *o1 = stack->pop();
+      
+      if (!o1) {
+        setError("Not enough values on stack");
+        return EVAL_FAILURE;
+      }
+      
+      Object *o0 = stack->pop();
+      
+      if (!o0) {
+        o1->decRef();
+        setError("Not enough values on stack");
+        return EVAL_FAILURE;
+      }
+      
+      if (o0->type() == T_INTEGER) {
+        long v0 = o0->toInteger(failed);
+        
+        if (o1->type() == T_INTEGER) {
+          long v1 = o1->toInteger(failed);
+          stack->pushInteger(v0 / v1);
+        
+        } else if (o1->type() == T_DOUBLE) {
+          double v1 = o1->toDouble(failed);
+          stack->pushDouble(v0 / v1);
+          
+        } else {
+          long v1 = o1->toInteger(failed);
+          
+          if (failed) {
+            double v1 = o1->toDouble(failed);
+          
+            if (failed) {
+              setError("Invalid right operand type for operator /");
+              rv = EVAL_FAILURE;
+            
+            } else {
+              stack->pushDouble(v0 / v1);
+            }
+          } else {
+            stack->pushInteger(v0 / v1);
+          }
+        }
+        
+      } else if (o0->type() == T_DOUBLE) {
+        double v0 = o0->toDouble(failed);
+        double v1 = o1->toDouble(failed);
+        
+        if (failed) {
+          long v1 = o1->toInteger(failed);
+          
+          if (failed) {
+            setError("Invalid right operand type for operator /");
+            rv = EVAL_FAILURE;
+          
+          } else {
+            stack->pushDouble(v0 / v1);
+          }
+          
+        } else {
+          stack->pushDouble(v0 / v1);
+        }
+        
+      } else {
+        setError("Invalid left operand type for operator /");
+        rv = EVAL_FAILURE;
+        
+      }
+      
+      o0->decRef();
+      o1->decRef();
+      return rv;
+    }
+};
+
+class Mod : public CFunction {
+  public:
+    Mod() : CFunction(2, true) {}
+    virtual ~Mod() {}
+    virtual Object* clone() const {return new Mod();}
+    virtual int call(Stack *stack, Context *, bool &failed) {
+      long v1 = stack->popInteger(failed);
+      
+      if (failed) {
+        setError(stack->getError());
+        return EVAL_FAILURE;
+      }
+      
+      long v0 = stack->popInteger(failed);
+      
+      if (failed) {
+        setError(stack->getError());
+        return EVAL_FAILURE;
+      }
+      
+      stack->pushInteger(v0 % v1);
+      
       return EVAL_NEXT;
     }
 };
@@ -256,6 +565,120 @@ class Not : public CFunction {
     }
 };
 
+// --- conversions
+
+class ToDouble : public CFunction {
+public:
+  ToDouble() : CFunction(1, true) {}
+  virtual ~ToDouble() {}
+  virtual Object* clone() const {return new ToDouble();}
+  virtual int call(Stack *stack, Context *, bool &failed) {
+    Object *o = stack->pop();
+    
+    if (!o) {
+      setError("Not enough values on stack");
+      return EVAL_FAILURE;
+    }
+    
+    double v = o->toDouble(failed);
+    
+    if (failed) {
+      setError(stack->getError());
+      o->decRef();
+      return EVAL_FAILURE;
+      
+    } else {
+      stack->pushDouble(v);
+      o->decRef();
+      return EVAL_NEXT;
+    }
+  }
+};
+
+class ToInteger : public CFunction {
+public:
+  ToInteger() : CFunction(1, true) {}
+  virtual ~ToInteger() {}
+  virtual Object* clone() const {return new ToInteger();}
+  virtual int call(Stack *stack, Context *, bool &failed) {
+    Object *o = stack->pop();
+    
+    if (!o) {
+      setError("Not enough values on stack");
+      return EVAL_FAILURE;
+    }
+    
+    long v = o->toInteger(failed);
+    
+    if (failed) {
+      setError(stack->getError());
+      o->decRef();
+      return EVAL_FAILURE;
+      
+    } else {
+      stack->pushInteger(v);
+      o->decRef();
+      return EVAL_NEXT;
+    }
+  }
+};
+
+class ToBoolean : public CFunction {
+public:
+  ToBoolean() : CFunction(1, true) {}
+  virtual ~ToBoolean() {}
+  virtual Object* clone() const {return new ToBoolean();}
+  virtual int call(Stack *stack, Context *, bool &failed) {
+    Object *o = stack->pop();
+    
+    if (!o) {
+      setError("Not enough values on stack");
+      return EVAL_FAILURE;
+    }
+    
+    bool v = o->toBoolean(failed);
+    
+    if (failed) {
+      setError(stack->getError());
+      o->decRef();
+      return EVAL_FAILURE;
+      
+    } else {
+      stack->pushBoolean(v);
+      o->decRef();
+      return EVAL_NEXT;
+    }
+  }
+};
+
+class ToString : public CFunction {
+public:
+  ToString() : CFunction(1, true) {}
+  virtual ~ToString() {}
+  virtual Object* clone() const {return new ToString();}
+  virtual int call(Stack *stack, Context *, bool &failed) {
+    Object *o = stack->pop();
+    
+    if (!o) {
+      setError("Not enough values on stack");
+      return EVAL_FAILURE;
+    }
+    
+    std::string v = o->toString(failed);
+    
+    if (failed) {
+      setError(stack->getError());
+      o->decRef();
+      return EVAL_FAILURE;
+      
+    } else {
+      stack->pushString(v);
+      o->decRef();
+      return EVAL_NEXT;
+    }
+  }
+};
+
 // --- print
 
 class Print : public CFunction {
@@ -323,11 +746,11 @@ void RegisterBuiltins(Context *ctx) {
   }
   // operators
   ctx->registerCFunction<Minus>("__uminus__");
-  ctx->registerCFunction<Concat>("..");
   ctx->registerCFunction<Add>("+");
   ctx->registerCFunction<Sub>("-");
   ctx->registerCFunction<Mult>("*");
   ctx->registerCFunction<Div>("/");
+  ctx->registerCFunction<Mod>("%");
   ctx->registerCFunction<Equal>("==");
   ctx->registerCFunction<NotEqual>("!=");
   ctx->registerCFunction<LessThan>("<");
@@ -338,6 +761,11 @@ void RegisterBuiltins(Context *ctx) {
   ctx->registerCFunction<Not>("not");
   ctx->registerCFunction<And>("and");
   ctx->registerCFunction<Or>("or");
+  // explicit convertion
+  ctx->registerCFunction<ToDouble>("double");
+  ctx->registerCFunction<ToInteger>("integer");
+  ctx->registerCFunction<ToString>("string");
+  ctx->registerCFunction<ToBoolean>("boolean");
   // math function
   ctx->registerCFunction<OneArgFunc<degrees> >("degrees");
   ctx->registerCFunction<OneArgFunc<radians> >("radians");

@@ -134,12 +134,12 @@ expr  : expr '+' expr   {
                           $1->push_back(new Call(MakeLocation(@$), "/"));
                           $$ = $1;
                         }
-      | expr CONCAT expr  {
-                            $1->merge($3);
-                            delete $3;
-                            $1->push_back(new Call(MakeLocation(@$), ".."));
-                            $$ = $1;
-                          }
+      | expr '%' expr   {
+                          $1->merge($3);
+                          delete $3;
+                          $1->push_back(new Call(MakeLocation(@$), "%"));
+                          $$ = $1;
+                        }
       | expr EQ expr    {
                           $1->merge($3);
                           delete $3;

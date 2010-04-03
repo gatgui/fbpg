@@ -21,7 +21,7 @@ LANGUAGE:
 - Add % operator for integer division
 - Add exception handling
 - Add explicit conversion operator: float(v), int(v), string(v), boolean(v)
-- Add closure support
+x Add closure support
 - Add structure support (one step towards classes)
 - Add array support
 - Add hash support

@@ -60,6 +60,7 @@ WORD      ([a-zA-Z0-9_])
 "-" |
 "*" |
 "/" |
+"%" |
 "."                             { echoToken(); return yytext[0]; }
 
   /* Comparison */
@@ -69,7 +70,6 @@ WORD      ([a-zA-Z0-9_])
 ">"                             { echoToken(); return GT; }
 "<="                            { echoToken(); return LTE; }
 ">="                            { echoToken(); return GTE; }
-".."                            { echoToken(); return CONCAT; }
 
   /* Keywords */
 "if"                            { echoToken(); return IF; }
