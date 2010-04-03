@@ -54,7 +54,7 @@ double Object::toDouble(bool &err) const {
   return 0.0;
 }
 
-long Object::toInteger(bool &err) const {
+LongInteger Object::toInteger(bool &err) const {
   err = false;
   return 0;
 }
@@ -109,9 +109,9 @@ double Double::toDouble(bool &err) const {
   return mValue;
 }
 
-long Double::toInteger(bool &err) const {
+LongInteger Double::toInteger(bool &err) const {
   err = false;
-  return long(mValue);
+  return LongInteger(mValue);
 }
 
 bool Double::toBoolean(bool &err) const {
@@ -128,7 +128,7 @@ std::string Double::toString(bool &err) const {
 
 // ---
 
-Integer::Integer(long v)
+Integer::Integer(LongInteger v)
   : Object(T_INTEGER), mValue(v) {
 }
 
@@ -144,7 +144,7 @@ void Integer::toStream(std::ostream &os, const std::string &heading) const {
 }
 
 bool Integer::equal(Object *rhs, bool &err) const {
-  long irhs = rhs->toInteger(err);
+  LongInteger irhs = rhs->toInteger(err);
   if (err) {
     setError(rhs->getError());
     return false;
@@ -153,7 +153,7 @@ bool Integer::equal(Object *rhs, bool &err) const {
 }
 
 bool Integer::lessThan(Object *rhs, bool &err) const {
-  long irhs = rhs->toInteger(err);
+  LongInteger irhs = rhs->toInteger(err);
   if (err) {
     setError(rhs->getError());
     return false;
@@ -166,7 +166,7 @@ double Integer::toDouble(bool &err) const {
   return double(mValue);
 }
 
-long Integer::toInteger(bool &err) const {
+LongInteger Integer::toInteger(bool &err) const {
   err = false;
   return mValue;
 }
@@ -229,9 +229,9 @@ double String::toDouble(bool &err) const {
   return v;
 }
 
-long String::toInteger(bool &err) const {
-  long v = 0;
-  if (sscanf(mValue.c_str(), "%ld", &v) != 1) {
+LongInteger String::toInteger(bool &err) const {
+  LongInteger v = 0;
+  if (sscanf(mValue.c_str(), "%lld", &v) != 1) {
     err = true;
     setError("String not convertible to integer");
   } else {
@@ -288,7 +288,7 @@ double Boolean::toDouble(bool &err) const {
   return (mValue ? 1.0 : 0.0);
 }
 
-long Boolean::toInteger(bool &err) const {
+LongInteger Boolean::toInteger(bool &err) const {
   err = false;
   return (mValue ? 1 : 0);
 }
@@ -350,7 +350,7 @@ double Callable::toDouble(bool &err) const {
   return 0.0;
 }
 
-long Callable::toInteger(bool &err) const {
+LongInteger Callable::toInteger(bool &err) const {
   err = true;
   setError("Callable cannot be converted to an integer");
   return 0;

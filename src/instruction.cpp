@@ -27,7 +27,7 @@ Push::Push(const Location &loc, bool v)
   : Instruction(loc), mValue(new Boolean(v)) {
 }
 
-Push::Push(const Location &loc, long v)
+Push::Push(const Location &loc, LongInteger v)
   : Instruction(loc), mValue(new Integer(v)) {
 }
 

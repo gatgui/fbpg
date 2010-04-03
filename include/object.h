@@ -20,6 +20,12 @@ enum {
   T_OBJECT
 };
 
+#ifdef _MSC_VER
+typedef __int64 LongInteger;
+#else
+typedef long long LongInteger;
+#endif
+
 class Object {
   public:
     
@@ -34,7 +40,7 @@ class Object {
     virtual void toStream(std::ostream &os, const std::string &heading="") const;
     
     virtual double toDouble(bool &) const;
-    virtual long toInteger(bool &) const;
+    virtual LongInteger toInteger(bool &) const;
     virtual bool toBoolean(bool &) const;
     virtual std::string toString(bool &) const;
     
@@ -111,7 +117,7 @@ class Double : public Object {
     virtual bool equal(Object *rhs, bool &) const;
     virtual bool lessThan(Object *rhs, bool &) const;
     virtual double toDouble(bool &) const;
-    virtual long toInteger(bool &) const;
+    virtual LongInteger toInteger(bool &) const;
     virtual bool toBoolean(bool &) const;
     virtual std::string toString(bool &) const;
     
@@ -131,7 +137,7 @@ class Double : public Object {
 class Integer : public Object {
   public:
     
-    Integer(long v = 0);
+    Integer(LongInteger v = 0);
     virtual ~Integer();
     
     virtual Object* clone() const;
@@ -139,21 +145,21 @@ class Integer : public Object {
     virtual bool equal(Object *rhs, bool &) const;
     virtual bool lessThan(Object *rhs, bool &) const;
     virtual double toDouble(bool &) const;
-    virtual long toInteger(bool &) const;
+    virtual LongInteger toInteger(bool &) const;
     virtual bool toBoolean(bool &) const;
     virtual std::string toString(bool &) const;
     
-    inline long getValue() const {
+    inline LongInteger getValue() const {
       return mValue;
     }
     
-    inline void setValue(long v) {
+    inline void setValue(LongInteger v) {
       mValue = v;
     }
     
   protected:
     
-    long mValue;
+    LongInteger mValue;
 };
 
 class String : public Object {
@@ -167,7 +173,7 @@ class String : public Object {
     virtual bool equal(Object *rhs, bool &) const;
     virtual bool lessThan(Object *rhs, bool &) const;
     virtual double toDouble(bool &) const;
-    virtual long toInteger(bool &) const;
+    virtual LongInteger toInteger(bool &) const;
     virtual bool toBoolean(bool &) const;
     virtual std::string toString(bool &) const;
     
@@ -195,7 +201,7 @@ class Boolean : public Object {
     virtual bool equal(Object *rhs, bool &) const;
     virtual bool lessThan(Object *rhs, bool &) const;
     virtual double toDouble(bool &) const;
-    virtual long toInteger(bool &) const;
+    virtual LongInteger toInteger(bool &) const;
     virtual bool toBoolean(bool &) const;
     virtual std::string toString(bool &) const;
     
@@ -221,7 +227,7 @@ class Callable : public Object {
     virtual bool isCallable() const;
     virtual bool lessThan(Object *rhs, bool &) const;
     virtual double toDouble(bool &) const;
-    virtual long toInteger(bool &) const;
+    virtual LongInteger toInteger(bool &) const;
     virtual bool toBoolean(bool &) const;
     virtual std::string toString(bool &) const;
     

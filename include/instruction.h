@@ -42,7 +42,7 @@ class Push : public Instruction {
     
     Push(const Location &loc, Object *o);
     Push(const Location &loc, bool v);
-    Push(const Location &loc, long v);
+    Push(const Location &loc, LongInteger v);
     Push(const Location &loc, double v);
     Push(const Location &loc, const char *v);
     Push(const Location &loc, const std::string &v);

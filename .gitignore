@@ -6,6 +6,6 @@
 *.lib
 *.py
 *.rb
-calc
-calc.lexer.*
-calc.parser.*
+slang
+slang.lexer.*
+slang.parser.*

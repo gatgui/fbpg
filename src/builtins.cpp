@@ -37,10 +37,10 @@ class Add : public CFunction {
       }
       
       if (o0->type() == T_INTEGER) {
-        long v0 = o0->toInteger(failed);
+        LongInteger v0 = o0->toInteger(failed);
         
         if (o1->type() == T_INTEGER) {
-          long v1 = o1->toInteger(failed);
+          LongInteger v1 = o1->toInteger(failed);
           stack->pushInteger(v0 + v1);
         
         } else if (o1->type() == T_DOUBLE) {
@@ -48,7 +48,7 @@ class Add : public CFunction {
           stack->pushDouble(v0 + v1);
           
         } else {
-          long v1 = o1->toInteger(failed);
+          LongInteger v1 = o1->toInteger(failed);
           
           if (failed) {
             double v1 = o1->toDouble(failed);
@@ -70,7 +70,7 @@ class Add : public CFunction {
         double v1 = o1->toDouble(failed);
         
         if (failed) {
-          long v1 = o1->toInteger(failed);
+          LongInteger v1 = o1->toInteger(failed);
           
           if (failed) {
             setError("Invalid right operand type for operator +");
@@ -132,10 +132,10 @@ class Sub : public CFunction {
       }
       
       if (o0->type() == T_INTEGER) {
-        long v0 = o0->toInteger(failed);
+        LongInteger v0 = o0->toInteger(failed);
         
         if (o1->type() == T_INTEGER) {
-          long v1 = o1->toInteger(failed);
+          LongInteger v1 = o1->toInteger(failed);
           stack->pushInteger(v0 - v1);
         
         } else if (o1->type() == T_DOUBLE) {
@@ -143,7 +143,7 @@ class Sub : public CFunction {
           stack->pushDouble(v0 - v1);
           
         } else {
-          long v1 = o1->toInteger(failed);
+          LongInteger v1 = o1->toInteger(failed);
           
           if (failed) {
             double v1 = o1->toDouble(failed);
@@ -165,7 +165,7 @@ class Sub : public CFunction {
         double v1 = o1->toDouble(failed);
         
         if (failed) {
-          long v1 = o1->toInteger(failed);
+          LongInteger v1 = o1->toInteger(failed);
           
           if (failed) {
             setError("Invalid right operand type for operator -");
@@ -204,7 +204,7 @@ class Minus : public CFunction {
       }
       int rv = EVAL_NEXT;
       if (o->type() == T_INTEGER) {
-        long v = o->toInteger(failed);
+        LongInteger v = o->toInteger(failed);
         stack->pushInteger(-v);
       } else if (o->type() == T_DOUBLE) {
         double v = o->toDouble(failed);
@@ -242,10 +242,10 @@ class Mult : public CFunction {
       }
       
       if (o0->type() == T_INTEGER) {
-        long v0 = o0->toInteger(failed);
+        LongInteger v0 = o0->toInteger(failed);
         
         if (o1->type() == T_INTEGER) {
-          long v1 = o1->toInteger(failed);
+          LongInteger v1 = o1->toInteger(failed);
           stack->pushInteger(v0 * v1);
         
         } else if (o1->type() == T_DOUBLE) {
@@ -253,7 +253,7 @@ class Mult : public CFunction {
           stack->pushDouble(v0 * v1);
           
         } else {
-          long v1 = o1->toInteger(failed);
+          LongInteger v1 = o1->toInteger(failed);
           
           if (failed) {
             double v1 = o1->toDouble(failed);
@@ -275,7 +275,7 @@ class Mult : public CFunction {
         double v1 = o1->toDouble(failed);
         
         if (failed) {
-          long v1 = o1->toInteger(failed);
+          LongInteger v1 = o1->toInteger(failed);
           
           if (failed) {
             setError("Invalid right operand type for operator *");
@@ -325,10 +325,10 @@ class Div : public CFunction {
       }
       
       if (o0->type() == T_INTEGER) {
-        long v0 = o0->toInteger(failed);
+        LongInteger v0 = o0->toInteger(failed);
         
         if (o1->type() == T_INTEGER) {
-          long v1 = o1->toInteger(failed);
+          LongInteger v1 = o1->toInteger(failed);
           stack->pushInteger(v0 / v1);
         
         } else if (o1->type() == T_DOUBLE) {
@@ -336,7 +336,7 @@ class Div : public CFunction {
           stack->pushDouble(v0 / v1);
           
         } else {
-          long v1 = o1->toInteger(failed);
+          LongInteger v1 = o1->toInteger(failed);
           
           if (failed) {
             double v1 = o1->toDouble(failed);
@@ -358,7 +358,7 @@ class Div : public CFunction {
         double v1 = o1->toDouble(failed);
         
         if (failed) {
-          long v1 = o1->toInteger(failed);
+          LongInteger v1 = o1->toInteger(failed);
           
           if (failed) {
             setError("Invalid right operand type for operator /");
@@ -390,14 +390,14 @@ class Mod : public CFunction {
     virtual ~Mod() {}
     virtual Object* clone() const {return new Mod();}
     virtual int call(Stack *stack, Context *, bool &failed) {
-      long v1 = stack->popInteger(failed);
+      LongInteger v1 = stack->popInteger(failed);
       
       if (failed) {
         setError(stack->getError());
         return EVAL_FAILURE;
       }
       
-      long v0 = stack->popInteger(failed);
+      LongInteger v0 = stack->popInteger(failed);
       
       if (failed) {
         setError(stack->getError());
@@ -608,7 +608,7 @@ public:
       return EVAL_FAILURE;
     }
     
-    long v = o->toInteger(failed);
+    LongInteger v = o->toInteger(failed);
     
     if (failed) {
       setError(stack->getError());

@@ -110,9 +110,9 @@ WORD      ([a-zA-Z0-9_])
 
   /* Literals */
 {DIGIT}+                        {
-                                  long v;
+                                  LongInteger v;
                                   echoToken();
-                                  sscanf(yytext, "%ld", &v);
+                                  sscanf(yytext, "%lld", &v);
                                   yylval.i = new Integer(v);
                                   return INTEGER;
                                 }

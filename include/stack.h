@@ -14,7 +14,7 @@ class Stack {
     
     bool push(Object *o);
     void pushBoolean(bool v);
-    void pushInteger(long v);
+    void pushInteger(LongInteger v);
     void pushDouble(double v);
     void pushString(const std::string &v);
     
@@ -24,13 +24,13 @@ class Stack {
     
     Object* pop(int n = 1); // if n > 1, returns first popped object
     bool popBoolean(bool &err);
-    long popInteger(bool &err);
+    LongInteger popInteger(bool &err);
     double popDouble(bool &err);
     std::string popString(bool &err);
     
     Object* get(int idx) const;
     bool getBoolean(int idx, bool &err) const;
-    long getInteger(int idx, bool &err) const;
+    LongInteger getInteger(int idx, bool &err) const;
     double getDouble(int idx, bool &err) const;
     std::string getString(int idx, bool &err) const;
     

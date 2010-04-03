@@ -38,7 +38,7 @@ void Stack::pushBoolean(bool v) {
   push(new Boolean(v));
 }
 
-void Stack::pushInteger(long v) {
+void Stack::pushInteger(LongInteger v) {
   push(new Integer(v));
 }
 
@@ -85,14 +85,14 @@ bool Stack::popBoolean(bool &err) {
   return rv;
 }
 
-long Stack::popInteger(bool &err) {
+LongInteger Stack::popInteger(bool &err) {
   Object *o = pop();
   if (o == 0) {
     err = true;
     setError("Null object on stack");
     return false;
   }
-  long rv = o->toInteger(err);
+  LongInteger rv = o->toInteger(err);
   o->decRef();
   return rv;
 }
@@ -149,7 +149,7 @@ bool Stack::getBoolean(int idx, bool &err) const {
   return (o->toBoolean(err));
 }
 
-long Stack::getInteger(int idx, bool &err) const {
+LongInteger Stack::getInteger(int idx, bool &err) const {
   Object *o = get(idx);
   if (o == 0) {
     err = true;
