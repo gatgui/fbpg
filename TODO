@@ -12,13 +12,13 @@ x Better error reporting for lexer/parser (use bison locations)
 x Store instruction location (file, line, column) for exceptions
 
 LANGUAGE:
-- Get rid of ".." syntax for concatenating strings. Simply use "+"
-- Review number operators behavior:
+x Get rid of ".." syntax for concatenating strings. Simply use "+"
+x Review number operators behavior:
   double +-*/ double -> double
   integer +-*/ double -> double
   double +-*/ integer -> double
   integer +-*/ integer -> integer
-- Add % operator for integer division
+x Add % operator for integer division
 - Add exception handling
 - Add explicit conversion operator: float(v), int(v), string(v), boolean(v)
 x Add closure support
