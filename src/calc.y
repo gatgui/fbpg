@@ -469,7 +469,7 @@ int main(int argc, char **argv) {
       
       // cleanup
       stack->clear();
-      ctx->clear();
+      ctx->cleanup();
       ctx->decRef();
       delete stack;
       

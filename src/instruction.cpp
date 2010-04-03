@@ -54,7 +54,7 @@ Instruction* Push::clone() const {
 int Push::eval(Stack *stack, Context *ctx) {
   // need an additonal incRef here or when decRef is called on the popped value from the stack
   // (as it should always be the case) we end up deleting the object.
-#ifdef _DEBUG
+#if defined(_DEBUG) and defined(_DEBUG_VERBOSE)
   std::string indent = "";
   int depth = ctx->getDepth();
   for (int i=0; i<depth; ++i) {
@@ -97,7 +97,7 @@ Instruction* Get::clone() const {
 
 int Get::eval(Stack *stack, Context *ctx) {
   
-#ifdef _DEBUG
+#if defined(_DEBUG) and defined(_DEBUG_VERBOSE)
   std::string indent = "";
   int depth = ctx->getDepth();
   for (int i=0; i<depth; ++i) {
@@ -138,7 +138,7 @@ Instruction* Set::clone() const {
 
 int Set::eval(Stack *stack, Context *ctx) {
   
-#ifdef _DEBUG
+#if defined(_DEBUG) and defined(_DEBUG_VERBOSE)
   std::string indent = "";
   int depth = ctx->getDepth();
   for (int i=0; i<depth; ++i) {
@@ -176,7 +176,7 @@ Instruction* DefFunc::clone() const {
 
 int DefFunc::eval(Stack *, Context *ctx) {
   
-#ifdef _DEBUG
+#if defined(_DEBUG) and defined(_DEBUG_VERBOSE)
   std::string indent = "";
   int depth = ctx->getDepth();
   for (int i=0; i<depth; ++i) {
@@ -215,7 +215,7 @@ Instruction* Call::clone() const {
 
 int Call::eval(Stack *stack, Context *ctx) {
   
-#ifdef _DEBUG
+#if defined(_DEBUG) and defined(_DEBUG_VERBOSE)
   std::string indent = "";
   int depth = ctx->getDepth();
   for (int i=0; i<depth; ++i) {
@@ -311,7 +311,7 @@ bool If::evalCondition(Stack *stack, Context *ctx) const {
 
 int If::eval(Stack *stack, Context *ctx) {
   
-#ifdef _DEBUG
+#if defined(_DEBUG) and defined(_DEBUG_VERBOSE)
   std::string indent = "";
   int depth = ctx->getDepth();
   for (int i=0; i<depth; ++i) {
@@ -404,7 +404,7 @@ bool IfElse::evalCondition(Stack *stack, Context *ctx) const {
 
 int IfElse::eval(Stack *stack, Context *ctx) {
   
-#ifdef _DEBUG
+#if defined(_DEBUG) and defined(_DEBUG_VERBOSE)
   std::string indent = "";
   int depth = ctx->getDepth();
   for (int i=0; i<depth; ++i) {
@@ -510,7 +510,7 @@ bool While::evalCondition(Stack *stack, Context *ctx) const {
 
 int While::eval(Stack *stack, Context *ctx) {
   
-#ifdef _DEBUG
+#if defined(_DEBUG) and defined(_DEBUG_VERBOSE)
   std::string indent = "";
   int depth = ctx->getDepth();
   for (int i=0; i<depth; ++i) {
@@ -572,7 +572,7 @@ Instruction* Break::clone() const {
 
 int Break::eval(Stack *, Context *ctx) {
 
-#ifdef _DEBUG
+#if defined(_DEBUG) and defined(_DEBUG_VERBOSE)
   std::string indent = "";
   int depth = ctx->getDepth();
   for (int i=0; i<depth; ++i) {
@@ -603,7 +603,7 @@ Instruction* Return::clone() const {
 
 int Return::eval(Stack *, Context *ctx) {
   
-#ifdef _DEBUG
+#if defined(_DEBUG) and defined(_DEBUG_VERBOSE)
   std::string indent = "";
   int depth = ctx->getDepth();
   for (int i=0; i<depth; ++i) {
@@ -634,7 +634,7 @@ Instruction* Continue::clone() const {
 
 int Continue::eval(Stack *, Context *ctx) {
   
-#ifdef _DEBUG
+#if defined(_DEBUG) and defined(_DEBUG_VERBOSE)
   std::string indent = "";
   int depth = ctx->getDepth();
   for (int i=0; i<depth; ++i) {

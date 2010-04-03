@@ -1,5 +1,6 @@
 #include "context.h"
 #include <sstream>
+#include <algorithm>
 
 Context::Context()
   : mParent(0), mCallStack(new CallStack()), mRef(1), mCallStackOwned(true) {
@@ -12,18 +13,48 @@ Context::Context(CallStack *cs)
 Context::Context(Context *p)
   : mParent(p), mCallStack(p->getCallStack()), mRef(1), mCallStackOwned(false) {
   mParent->incRef();
+  mParent->appendSub(this);
 }
 
 Context::~Context() {
+  // if we come here, it means there's no more sub context
+  // as each sub context has a strong reference on its parent
   clear();
   if (mCallStackOwned && mCallStack) {
     delete mCallStack;
     mCallStack = 0;
   }
   if (mParent) {
+    mParent->removeSub(this);
     mParent->decRef();
     mParent = 0;
   }
+}
+
+void Context::appendSub(Context *ctx) {
+  if (ctx != 0) {
+    if (std::find(mSubs.begin(), mSubs.end(), ctx) == mSubs.end()) {
+      mSubs.push_back(ctx);
+    }
+  }
+}
+
+void Context::removeSub(Context *ctx) {
+  std::vector<Context*>::iterator it = std::find(mSubs.begin(), mSubs.end(), ctx);
+  if (it != mSubs.end()) {
+    mSubs.erase(it);
+  }
+}
+
+void Context::cleanup() {
+  incRef();
+  clear();
+  std::vector<Context*> subs;
+  std::swap(mSubs, subs);
+  for (size_t i=0; i<subs.size(); ++i) {
+    subs[i]->cleanup();
+  }
+  decRef();
 }
 
 void Context::clear() {

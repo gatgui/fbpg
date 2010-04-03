@@ -4,6 +4,7 @@
 #include "object.h"
 #include "callstack.h"
 #include <map>
+#include <vector>
 
 class Context {
   public:
@@ -16,6 +17,7 @@ class Context {
     ~Context();
     
     void clear();
+    void cleanup();
     
     bool hasVar(const std::string &name, bool inherit=true) const;
     
@@ -61,6 +63,11 @@ class Context {
       }
       return depth;
     }
+  
+  protected:
+    
+    void appendSub(Context *ctx);
+    void removeSub(Context *ctx);
     
   private:
     
@@ -74,6 +81,7 @@ class Context {
     CallStack *mCallStack;
     long mRef;
     bool mCallStackOwned;
+    std::vector<Context*> mSubs;
 };
 
 
