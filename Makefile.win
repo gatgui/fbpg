@@ -2,8 +2,8 @@
 CORE_SRC=src/builtins.cpp src/context.cpp src/instruction.cpp src/object.cpp src/stack.cpp src/callstack.cpp src/exception.cpp
 CORE_OBJ=$(CORE_SRC:.cpp=.obj)
 
-CALC_SRC=src/calc.parser.c src/calc.lexer.c
-CALC_OBJ=src/calc.parser.obj src/calc.lexer.obj
+CALC_SRC=src/slang.parser.c src/slang.lexer.c
+CALC_OBJ=src/slang.parser.obj src/slang.lexer.obj
 
 #CCFLAGS=/nologo /O2 /W4 /EHsc /Iinclude /Iwin32 /MT /c
 #CPPDEFINES=/D_CRT_SECURE_NO_WARNINGS /D_CRT_SECURE_NO_DEPRECATE /DYYERROR_VERBOSE
@@ -14,17 +14,17 @@ CPPDEFINES=/D_CRT_SECURE_NO_WARNINGS /D_CRT_SECURE_NO_DEPRECATE /DYYERROR_VERBOS
 LINKFLAGS=/nologo /debug
 
 
-all: core calc
+all: core slang
 
 core: core.lib
 
-calc: calc.exe
+slang: slang.exe
 
 core.lib: $(CORE_OBJ)
 	lib /nologo /out:core.lib $(CORE_OBJ)
 
-calc.exe: $(CALC_OBJ) core.lib
-	link $(LINKFLAGS) /out:calc.exe $(CALC_OBJ) core.lib
+slang.exe: $(CALC_OBJ) core.lib
+	link $(LINKFLAGS) /out:slang.exe $(CALC_OBJ) core.lib
 
 .c.obj:
 	cl $(CCFLAGS) $(CPPDEFINES) /Fo$@ /Tp$<
@@ -32,11 +32,11 @@ calc.exe: $(CALC_OBJ) core.lib
 .cpp.obj:
 	cl $(CCFLAGS) $(CPPDEFINES) /c /Fo$@ /Tp$<
 
-src/calc.lexer.c src/calc.lexer.h: src/calc.l
-	flex -osrc/calc.lexer.c src/calc.l
+src/slang.lexer.c src/slang.lexer.h: src/slang.l
+	flex -osrc/slang.lexer.c src/slang.l
 
-src/calc.parser.h src/calc.parser.c src/calc.parser.output: src/calc.y
-	bison -v -d -o src/calc.parser.c src/calc.y
+src/slang.parser.h src/slang.parser.c src/slang.parser.output: src/slang.y
+	bison -v -d -o src/slang.parser.c src/slang.y
 
 src/builtins.obj: src/builtins.cpp include/builtins.h include/object.h include/stack.h include/context.h
 
@@ -56,7 +56,7 @@ clean:
 	del /Q src\*.obj
 	del /Q src\*.lexer.*
 	del /Q src\*.parser.*
-	del /Q calc.exe
+	del /Q slang.exe
 	del /Q core.lib
 	del /Q *.pdb
 	del /Q *.ilk

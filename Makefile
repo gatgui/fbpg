@@ -10,11 +10,11 @@ CORE_SRC=src/builtins.cpp src/context.cpp src/instruction.cpp src/object.cpp src
 CORE_OBJ=$(CORE_SRC:.cpp=.o)
 CORE_DEP=($CORE_SRC:.cpp=.d)
 
-CALC_SRC=src/calc.parser.c src/calc.lexer.c
+CALC_SRC=src/slang.parser.c src/slang.lexer.c
 CALC_OBJ=$(CALC_SRC:.c=.o)
 CALC_DEP=$(CALC_SRC:.c=.d)
 
-all: core calc
+all: core slang
 
 core: libcore.a
 
@@ -22,7 +22,7 @@ libcore.a: $(CORE_OBJ)
 	ar -cr $@ $^
 	ranlib $@
 
-calc: core $(CALC_OBJ)
+slang: core $(CALC_OBJ)
 	$(CC) -o $@ $(CALC_OBJ) $(LINKFLAGS)
 
 .cpp.o:
@@ -45,7 +45,7 @@ clean:
 	rm -f src/*.d
 	rm -f src/*.lexer.*
 	rm -f src/*.parser.*
-	rm -f calc
+	rm -f slang
 	rm -f libcore.a
 
 

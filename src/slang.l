@@ -12,7 +12,7 @@
 #include "instruction.h"
 #include "builtins.h"
 #include "callstack.h"
-#include "calc.parser.h"
+#include "slang.parser.h"
 
 // from parser
 extern char *gFilename;
