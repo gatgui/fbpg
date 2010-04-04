@@ -14,6 +14,10 @@ CALC_SRC=src/slang.parser.c src/slang.lexer.c
 CALC_OBJ=$(CALC_SRC:.c=.o)
 CALC_DEP=$(CALC_SRC:.c=.d)
 
+TESTHEAP_SRC=src/tests/heap.cpp
+TESTHEAP_OBJ=$(TESTHEAP_SRC:.cpp=.o)
+TESTHEAP_DEP=$(TESTHEAP_SRC:.cpp=.d)
+
 all: core slang testheap
 
 core: libcore.a
@@ -25,8 +29,8 @@ libcore.a: $(CORE_OBJ)
 slang: core $(CALC_OBJ)
 	$(CC) -o $@ $(CALC_OBJ) $(LINKFLAGS)
 
-testheap: core src/tests/heap.cpp
-	$(CC) -o $@ $(CCFLAGS) src/tests/heap.cpp $(LINKFLAGS)
+testheap: core $(TESTHEAP_OBJ)
+	$(CC) -o $@ $(TESTHEAP_OBJ) $(LINKFLAGS)
 
 .cpp.o:
 	$(CC) -o $@ $(CCFLAGS) -c $<

@@ -13,6 +13,12 @@ inline bool operator<(const Heap::Chunk &c0, const Heap::Chunk &c1) {
   return (c0.start < c1.start);
 }
 
+#ifdef _DEBUG
+# define PrintDebug(txt) std::cerr << "### " << txt << std::endl
+#else
+# define PrintDebug(txt)
+#endif
+
 // ---
 
 Heap::Heap(size_t initialSize)
@@ -40,9 +46,7 @@ void* Heap::allocate(size_t sz) {
       it->start = offset(ptr, sz);
       it->size -= sz;
       if (it->size == 0) {
-#ifdef _DEBUG
-        std::cerr << "### Remove empty chunk after allocation" << std::endl;
-#endif
+        PrintDebug("Remove empty chunk after allocation");
         mChunks.erase(it);
       }
       mUsedSize += sz;
@@ -54,15 +58,105 @@ void* Heap::allocate(size_t sz) {
 }
 
 bool Heap::deallocate(void *ptr, size_t sz) {
-  if (ptr < mHeap) {
+  if (ptr < mHeap || ptr >= end()) {
     return false;
   }
-  if (ptr >= end()) {
-    return false;
-  }
+  
   mUsedSize -= sz;
+  
   Chunk chunk = {ptr, sz};
+  
   ChunkList::iterator it = std::lower_bound(mChunks.begin(), mChunks.end(), chunk);
+  
+  if (it != mChunks.begin()) {
+    // have a previous chunk
+    ChunkList::iterator pit = it;
+    --pit;
+    
+    if (it == mChunks.end()) {
+      // no next chunk
+      if (pit->end() == ptr) {
+        PrintDebug("Merge with prev free chunk");
+        pit->size += sz;
+        
+      } else {
+        PrintDebug("Add new free chunk");
+        mChunks.insert(it, chunk);
+      }
+      
+    } else {
+      // also have next chunk
+      if (pit->end() == ptr) {
+        PrintDebug("Merge with prev free chunk");
+        pit->size += sz;
+        
+        if (pit->end() == it->start) {
+          PrintDebug("Merge with next free chunk");
+          pit->size += it->size;
+          mChunks.erase(it);
+          
+        }
+        
+      } else {
+        if (offset(ptr, sz) == it->start) {
+          PrintDebug("Merge with next free chunk");
+          it->start = ptr;
+          it->size += sz;
+        
+        } else {
+          PrintDebug("Add new free chunk");
+          mChunks.insert(it, chunk);
+        }
+      }
+    }
+    
+  } else {
+    // no previous chunk
+    if (it == mChunks.end()) {
+      // no next chunk
+      PrintDebug("Add new free chunk");
+      mChunks.insert(it, chunk);
+      
+    } else {
+      // have next chunk
+      if (offset(ptr, sz) == it->start) {
+        PrintDebug("Merge with next free chunk");
+        it->start = ptr;
+        it->size += sz;
+        
+      } else {
+        PrintDebug("Add new free chunk");
+        mChunks.insert(it, chunk);
+        
+      }
+    }
+  }
+  
+  /*
+  ChunkList::iterator it = std::lower_bound(mChunks.begin(), mChunks.end(), chunk);
+  
+  if (it != mChunks.begin()) {
+    // have a previous chunk
+    ChunkList::iterator pit = it;
+    --pit;
+    
+    if (it == mChunks.end()) {
+      // no next chunk
+      
+    } else {
+      // also have next chunk
+    }
+    
+  } else {
+    // no previous chunk
+    if (it == mChunks.end()) {
+      // no next chunk
+      
+    } else {
+      // have next chunk
+    }
+  }
+  
   if (it != mChunks.end()) {
     // it points to next available chunk
     if (offset(ptr, sz) < it->start) {
@@ -93,7 +187,7 @@ bool Heap::deallocate(void *ptr, size_t sz) {
       it->start = ptr;
       it->size += sz;
     }
-    
+  
   } else {
     ChunkList::iterator pit = it;
     --pit;
@@ -110,6 +204,8 @@ bool Heap::deallocate(void *ptr, size_t sz) {
       pit->size += sz;
     }
   }
+  */
+  
   return true;
 }
 
