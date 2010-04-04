@@ -8,7 +8,12 @@
 unsigned long gNumObjects = 0;
 
 Object::Object(int t)
-  : mType(t), mRef(1) {
+#ifdef _MEMMGR
+  : HeapObject(), mType(t), mRef(1)
+#else
+  : mType(t), mRef(1)
+#endif
+{
   ++gNumObjects;
 }
 

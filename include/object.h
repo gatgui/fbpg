@@ -6,6 +6,9 @@
 #include <iostream>
 #include <exception>
 #include <stdexcept>
+#ifdef _MEMMGR
+# include "heap.h"
+#endif
 
 #ifdef _MSC_VER
 # pragma warning(disable:4290)
@@ -26,7 +29,12 @@ typedef __int64 LongInteger;
 typedef long long LongInteger;
 #endif
 
-class Object {
+#ifdef _MEMMGR
+class Object : public HeapObject
+#else
+class Object
+#endif
+{
   public:
     
     Object(int t);

@@ -4,7 +4,13 @@
 
 unsigned long gNumInstructions = 0;
 
-Instruction::Instruction(const Location &loc) : mLocation(loc) {
+Instruction::Instruction(const Location &loc)
+#ifdef _MEMMGR
+  : HeapObject(), mLocation(loc)
+#else
+  : mLocation(loc)
+#endif
+{
   ++gNumInstructions;
 }
 

@@ -403,6 +403,10 @@ void yyerror(char *fmt, ...) {
 }
 
 int main(int argc, char **argv) {
+#ifdef _MEMMGR
+  HeapManager hm;
+#endif
+
   if (argc < 2) {
     fprintf(stderr, "Usage: calc <filename>\n");
     return 1;
@@ -457,7 +461,6 @@ int main(int argc, char **argv) {
     std::cout << std::endl << "Evaluate code..." << std::endl;
     
     try {
-      
       Context *ctx = new Context();
       Stack *stack = new Stack();
       
@@ -487,6 +490,10 @@ int main(int argc, char **argv) {
   }
 
   fclose(f);
+  
+#ifdef _MEMMGR
+  hm.status();
+#endif
   
   return rv;
 }

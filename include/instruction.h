@@ -8,7 +8,9 @@
 #include "stack.h"
 #include "context.h"
 #include "callstack.h"
-
+#ifdef _MEMMGR
+# include "heap.h"
+#endif
 
 enum {
   EVAL_FAILURE = -1,
@@ -18,7 +20,12 @@ enum {
   EVAL_RETURN
 };
 
-class Instruction {
+#ifdef _MEMMGR
+class Instruction : public HeapObject
+#else
+class Instruction
+#endif
+{
   public:
     
     Instruction(const Location &loc);
