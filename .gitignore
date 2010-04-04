@@ -7,5 +7,6 @@
 *.py
 *.rb
 slang
+testheap
 slang.lexer.*
 slang.parser.*

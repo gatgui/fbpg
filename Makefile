@@ -6,7 +6,7 @@ CCFLAGS=-MMD -O0 -g -ggdb -Iinclude -W -Wall -DYYERROR_VERBOSE -D_DEBUG
 
 LINKFLAGS=-L. -lcore
 
-CORE_SRC=src/builtins.cpp src/context.cpp src/instruction.cpp src/object.cpp src/stack.cpp src/callstack.cpp src/exception.cpp
+CORE_SRC=src/builtins.cpp src/context.cpp src/instruction.cpp src/object.cpp src/stack.cpp src/callstack.cpp src/exception.cpp src/heap.cpp
 CORE_OBJ=$(CORE_SRC:.cpp=.o)
 CORE_DEP=($CORE_SRC:.cpp=.d)
 
@@ -14,7 +14,7 @@ CALC_SRC=src/slang.parser.c src/slang.lexer.c
 CALC_OBJ=$(CALC_SRC:.c=.o)
 CALC_DEP=$(CALC_SRC:.c=.d)
 
-all: core slang
+all: core slang testheap
 
 core: libcore.a
 
@@ -24,6 +24,9 @@ libcore.a: $(CORE_OBJ)
 
 slang: core $(CALC_OBJ)
 	$(CC) -o $@ $(CALC_OBJ) $(LINKFLAGS)
+
+testheap: core src/tests/heap.cpp
+	$(CC) -o $@ $(CCFLAGS) src/tests/heap.cpp $(LINKFLAGS)
 
 .cpp.o:
 	$(CC) -o $@ $(CCFLAGS) -c $<
@@ -46,6 +49,7 @@ clean:
 	rm -f src/*.lexer.*
 	rm -f src/*.parser.*
 	rm -f slang
+	rm -f testheap
 	rm -f libcore.a
 
 
