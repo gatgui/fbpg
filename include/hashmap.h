@@ -1,5 +1,5 @@
-#ifndef __symbol_h_
-#define __symbol_h_
+#ifndef __hashmap_h_
+#define __hashmap_h_
 
 #include <string>
 #include <vector>
@@ -87,19 +87,12 @@ class HashMap {
       return *this;
     }
     
-    size_t size() const {
-      return mNumEntries;
-    }
-    
     double loadFactor() const {
       return (double(mNumEntries) / double(mNumBuckets));
     }
     
-    void clear() {
-      mNumEntries = 0;
-      for (size_t i=0; i<mBuckets.size(); ++i) {
-        mBuckets[i].clear();
-      }
+    size_t size() const {
+      return mNumEntries;
     }
     
     void insert(const KeyType &key, const ValueType &val) {
@@ -122,36 +115,6 @@ class HashMap {
       }
     }
     
-    const ValueType& find(const KeyType &k) const {
-      Entry e;
-      e.h = HashValue<KeyType, H>::Compute(k);
-      e.key = k;
-      unsigned int idx = (e.h % mNumBuckets);
-      EntryList &el = mBuckets[idx];
-      typename EntryList::const_iterator it = std::find(el.begin(), el.end(), e);
-      if (it == el.end()) {
-        std::ostringstream oss;
-        oss << "Invalid key: " << k;
-        throw std::runtime_error(oss.str());
-      }
-      return it->value;
-    }
-    
-    ValueType& find(const KeyType &k) {
-      Entry e;
-      e.h = HashValue<KeyType, H>::Compute(k);
-      e.key = k;
-      unsigned int idx = (e.h % mNumBuckets);
-      EntryList &el = mBuckets[idx];
-      typename EntryList::iterator it = std::find(el.begin(), el.end(), e);
-      if (it == el.end()) {
-        std::ostringstream oss;
-        oss << "Invalid key: " << k;
-        throw std::runtime_error(oss.str());
-      }
-      return it->value;
-    }
-    
     void erase(const KeyType &k) {
       Entry e;
       e.h = HashValue<KeyType, H>::Compute(k);
@@ -165,7 +128,54 @@ class HashMap {
       }
     }
     
-    size_t keys(KeyVector &kl) const {
+    void clear() {
+      mNumEntries = 0;
+      for (size_t i=0; i<mBuckets.size(); ++i) {
+        mBuckets[i].clear();
+      }
+    }
+    
+    bool hasKey(const KeyType &key) const {
+      Entry e;
+      e.h = HashValue<KeyType, H>::Compute(key);
+      e.key = key;
+      unsigned int idx = (e.h % mNumBuckets);
+      const EntryList &el = mBuckets[idx];
+      typename EntryList::const_iterator it = std::find(el.begin(), el.end(), e);
+      return (it != el.end());
+    }
+    
+    const ValueType& getValue(const KeyType &k) const {
+      Entry e;
+      e.h = HashValue<KeyType, H>::Compute(k);
+      e.key = k;
+      unsigned int idx = (e.h % mNumBuckets);
+      const EntryList &el = mBuckets[idx];
+      typename EntryList::const_iterator it = std::find(el.begin(), el.end(), e);
+      if (it == el.end()) {
+        std::ostringstream oss;
+        oss << "Invalid key: " << k;
+        throw std::runtime_error(oss.str());
+      }
+      return it->value;
+    }
+    
+    ValueType& getValue(const KeyType &k) {
+      Entry e;
+      e.h = HashValue<KeyType, H>::Compute(k);
+      e.key = k;
+      unsigned int idx = (e.h % mNumBuckets);
+      EntryList &el = mBuckets[idx];
+      typename EntryList::iterator it = std::find(el.begin(), el.end(), e);
+      if (it == el.end()) {
+        std::ostringstream oss;
+        oss << "Invalid key: " << k;
+        throw std::runtime_error(oss.str());
+      }
+      return it->value;
+    }
+    
+    size_t getKeys(KeyVector &kl) const {
       kl.resize(mNumEntries);
       for (size_t i=0, j=0; i<mNumBuckets; ++i) {
         const EntryList &el = mBuckets[i];
@@ -179,7 +189,7 @@ class HashMap {
       return kl.size();
     }
     
-    size_t values(ValueVector &vl) const {
+    size_t getValues(ValueVector &vl) const {
       vl.resize(mNumEntries);
       for (size_t i=0, j=0; i<mNumBuckets; ++i) {
         const EntryList &el = mBuckets[i];

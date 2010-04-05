@@ -1,16 +1,16 @@
 
-CORE_SRC=src/builtins.cpp src/context.cpp src/instruction.cpp src/object.cpp src/stack.cpp src/callstack.cpp src/exception.cpp src/heap.cpp src/hashmap.cpp
+CORE_SRC=src/builtins.cpp src/context.cpp src/instruction.cpp src/object.cpp src/stack.cpp src/callstack.cpp src/exception.cpp src/heap.cpp src/hashmap.cpp src/symbol.cpp
 CORE_OBJ=$(CORE_SRC:.cpp=.obj)
 
 CALC_SRC=src/slang.parser.c src/slang.lexer.c
 CALC_OBJ=src/slang.parser.obj src/slang.lexer.obj
 
 #CCFLAGS=/nologo /O2 /W4 /EHsc /Iinclude /Iwin32 /MT /c
-#CPPDEFINES=/D_CRT_SECURE_NO_WARNINGS /D_CRT_SECURE_NO_DEPRECATE /DYYERROR_VERBOSE
+#CPPDEFINES=/D_CRT_SECURE_NO_WARNINGS /D_CRT_SECURE_NO_DEPRECATE /DYYERROR_VERBOSE /D_MEMMGR
 #LINKFLAGS=/nologo /release
 
 CCFLAGS=/nologo /Od /Zi /W4 /EHsc /Iinclude /Iwin32 /MTd /c
-CPPDEFINES=/D_CRT_SECURE_NO_WARNINGS /D_CRT_SECURE_NO_DEPRECATE /DYYERROR_VERBOSE /D_DEBUG
+CPPDEFINES=/D_CRT_SECURE_NO_WARNINGS /D_CRT_SECURE_NO_DEPRECATE /DYYERROR_VERBOSE /D_DEBUG /D_MEMMGR
 LINKFLAGS=/nologo /debug
 
 
@@ -76,6 +76,8 @@ src/slang.parser.obj: src/slang.parser.c include/context.h include/object.h \
 
 src/stack.obj: src/stack.cpp include/stack.h include/object.h \
 	include/heap.h
+
+src/symbol.obj: src/symbol.cpp include/symbol.h include/hashmap.h
 
 clean:
 	del /Q src\*.obj
