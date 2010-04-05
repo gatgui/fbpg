@@ -1,5 +1,5 @@
 
-CORE_SRC=src/builtins.cpp src/context.cpp src/instruction.cpp src/object.cpp src/stack.cpp src/callstack.cpp src/exception.cpp src/heap.cpp
+CORE_SRC=src/builtins.cpp src/context.cpp src/instruction.cpp src/object.cpp src/stack.cpp src/callstack.cpp src/exception.cpp src/heap.cpp src/hashmap.cpp
 CORE_OBJ=$(CORE_SRC:.cpp=.obj)
 
 CALC_SRC=src/slang.parser.c src/slang.lexer.c
@@ -41,37 +41,41 @@ src/slang.parser.h src/slang.parser.c src/slang.parser.output: src/slang.y
 # dependencies
 
 src/builtins.obj: src/builtins.cpp include/builtins.h include/context.h \
-	include/object.h include/callstack.h include/object.h include/stack.h \
-	include/context.h include/instruction.h include/stack.h
+	include/object.h include/heap.h include/callstack.h include/object.h \
+	include/stack.h include/context.h include/instruction.h include/stack.h
 
 src/callstack.obj: src/callstack.cpp include/callstack.h
 
 src/context.obj: src/context.cpp include/context.h include/object.h \
-	include/callstack.h
+	include/heap.h include/callstack.h
 
 src/exception.obj: src/exception.cpp include/exception.h \
 	include/callstack.h
 
+src/hashmap.obj: src/hashmap.cpp include/hashmap.h
+
 src/heap.obj: src/heap.cpp include/heap.h
 
 src/instruction.obj: src/instruction.cpp include/instruction.h \
-	include/stack.h include/object.h include/context.h include/callstack.h \
-	include/exception.h
+	include/stack.h include/object.h include/heap.h include/context.h \
+	include/callstack.h include/exception.h
 
-src/object.obj: src/object.cpp include/object.h include/instruction.h \
-	include/stack.h include/object.h include/context.h include/callstack.h
+src/object.obj: src/object.cpp include/object.h include/heap.h \
+	include/instruction.h include/stack.h include/object.h \
+	include/context.h include/callstack.h
 
 src/slang.lexer.obj: src/slang.lexer.c include/context.h include/object.h \
-	include/callstack.h include/stack.h include/object.h \
+	include/heap.h include/callstack.h include/stack.h include/object.h \
 	include/instruction.h include/stack.h include/context.h \
 	include/builtins.h include/callstack.h src/slang.parser.h
 
 src/slang.parser.obj: src/slang.parser.c include/context.h include/object.h \
-	include/callstack.h include/stack.h include/object.h \
+	include/heap.h include/callstack.h include/stack.h include/object.h \
 	include/instruction.h include/stack.h include/context.h \
 	include/builtins.h include/callstack.h include/exception.h
 
-src/stack.obj: src/stack.cpp include/stack.h include/object.h
+src/stack.obj: src/stack.cpp include/stack.h include/object.h \
+	include/heap.h
 
 clean:
 	del /Q src\*.obj
