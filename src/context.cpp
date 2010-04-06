@@ -73,7 +73,7 @@ void Context::clear() {
   mVars.clear();
 }
 
-bool Context::hasVar(const std::string &name, bool inherit) const {
+bool Context::hasVar(const ContextKey &name, bool inherit) const {
   if (mVars.find(name) != mVars.end()) {
     return true;
   } else if (mParent && inherit) {
@@ -83,7 +83,7 @@ bool Context::hasVar(const std::string &name, bool inherit) const {
   }
 }
 
-void Context::setVar(const std::string &name, Object *v, bool inherit) {
+void Context::setVar(const ContextKey &name, Object *v, bool inherit) {
   if (mParent && inherit && mParent->hasVar(name, true)) {
     mParent->setVar(name, v, true);
   }
@@ -103,7 +103,7 @@ void Context::setVar(const std::string &name, Object *v, bool inherit) {
   }
 }
 
-Object* Context::getVar(const std::string &name, bool inherit) const {
+Object* Context::getVar(const ContextKey &name, bool inherit) const {
   ObjectMap::const_iterator it = mVars.find(name);
   if (it != mVars.end()) {
     Object *o = it->second;
@@ -120,7 +120,7 @@ Object* Context::getVar(const std::string &name, bool inherit) const {
   }
 }
 
-Callable* Context::getCallable(const std::string &name, bool inherit) const {
+Callable* Context::getCallable(const ContextKey &name, bool inherit) const {
   ObjectMap::const_iterator it = mVars.find(name);
   if (it != mVars.end() && it->second->isCallable()) {
     Object *o = it->second;

@@ -5,11 +5,17 @@
 #include "callstack.h"
 #include <map>
 #include <vector>
+#ifdef _SYMTBL
+# include "symbol.h"
+typedef Symbol ContextKey;
+#else
+typedef std::string ContextKey;
+#endif
 
 class Context {
   public:
     
-    typedef std::map<std::string, Object*> ObjectMap;
+    typedef std::map<ContextKey, Object*> ObjectMap;
     
     Context();
     Context(CallStack *cs);
@@ -19,17 +25,17 @@ class Context {
     void clear();
     void cleanup();
     
-    bool hasVar(const std::string &name, bool inherit=true) const;
+    bool hasVar(const ContextKey &name, bool inherit=true) const;
     
-    void setVar(const std::string &name, Object *v, bool inherit=true);
+    void setVar(const ContextKey &name, Object *v, bool inherit=true);
     
-    Object* getVar(const std::string &name, bool inherit=true) const;
-    Callable* getCallable(const std::string &name, bool inherit=true) const;
+    Object* getVar(const ContextKey &name, bool inherit=true) const;
+    Callable* getCallable(const ContextKey &name, bool inherit=true) const;
     
     void toStream(std::ostream &os, const std::string &indent="") const;
     
     template <class FuncClass>
-    void registerCFunction(const std::string &name) {
+    void registerCFunction(const ContextKey &name) {
       CFunction *f = new FuncClass();
       f->setContext(this);
       setVar(name, f);
