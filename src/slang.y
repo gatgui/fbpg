@@ -84,7 +84,7 @@ Location MakeLocation(YYLTYPE &);
 %token NEQ EQ LT GT LTE GTE AND OR NOT END EOL FUNC IF THEN ELSE DO WHILE
 
 %type <cs> expr exprlist stmt stmtlist block body
-%type <sl> paramlist
+%type <syml> paramlist
 
 %right '='
 %left CONCAT
@@ -119,83 +119,83 @@ paramlist : /* empty */           {
 expr  : expr '+' expr   {
                           $1->merge($3);
                           delete $3;
-                          $1->push_back(new Call(MakeLocation(@$), "+"));
+                          $1->push_back(new Call(MakeLocation(@$), Symbol("+")));
                           $$ = $1;
                         }
       | expr '-' expr   {
                           $1->merge($3);
                           delete $3;
-                          $1->push_back(new Call(MakeLocation(@$), "-"));
+                          $1->push_back(new Call(MakeLocation(@$), Symbol("-")));
                           $$ = $1;
                         }
       | expr '*' expr   {
                           $1->merge($3);
                           delete $3;
-                          $1->push_back(new Call(MakeLocation(@$), "*"));
+                          $1->push_back(new Call(MakeLocation(@$), Symbol("*")));
                           $$ = $1;
                         }
       | expr '/' expr   {
                           $1->merge($3);
                           delete $3;
-                          $1->push_back(new Call(MakeLocation(@$), "/"));
+                          $1->push_back(new Call(MakeLocation(@$), Symbol("/")));
                           $$ = $1;
                         }
       | expr '%' expr   {
                           $1->merge($3);
                           delete $3;
-                          $1->push_back(new Call(MakeLocation(@$), "%"));
+                          $1->push_back(new Call(MakeLocation(@$), Symbol("%")));
                           $$ = $1;
                         }
       | expr EQ expr    {
                           $1->merge($3);
                           delete $3;
-                          $1->push_back(new Call(MakeLocation(@$), "=="));
+                          $1->push_back(new Call(MakeLocation(@$), Symbol("==")));
                           $$ = $1;
                         }
       | expr NEQ expr   {
                           $1->merge($3);
                           delete $3;
-                          $1->push_back(new Call(MakeLocation(@$), "!="));
+                          $1->push_back(new Call(MakeLocation(@$), Symbol("!=")));
                           $$ = $1;
                         }
       | expr LT expr    {
                           $1->merge($3);
                           delete $3;
-                          $1->push_back(new Call(MakeLocation(@$), "<"));
+                          $1->push_back(new Call(MakeLocation(@$), Symbol("<")));
                           $$ = $1;
                         }
       | expr GT expr    {
                           $1->merge($3);
                           delete $3;
-                          $1->push_back(new Call(MakeLocation(@$), ">"));
+                          $1->push_back(new Call(MakeLocation(@$), Symbol(">")));
                           $$ = $1;
                         }
       | expr LTE expr   {
                           $1->merge($3);
                           delete $3;
-                          $1->push_back(new Call(MakeLocation(@$), "<="));
+                          $1->push_back(new Call(MakeLocation(@$), Symbol("<=")));
                           $$ = $1;
                         }
       | expr GTE expr   {
                           $1->merge($3);
                           delete $3;
-                          $1->push_back(new Call(MakeLocation(@$), ">="));
+                          $1->push_back(new Call(MakeLocation(@$), Symbol(">=")));
                           $$ = $1;
                         }
       | expr AND expr   {
                           $1->merge($3);
                           delete $3;
-                          $1->push_back(new Call(MakeLocation(@$), "and"));
+                          $1->push_back(new Call(MakeLocation(@$), Symbol("and")));
                           $$ = $1;
                         }
       | expr OR expr    {
                           $1->merge($3);
                           delete $3;
-                          $1->push_back(new Call(MakeLocation(@$), "or"));
+                          $1->push_back(new Call(MakeLocation(@$), Symbol("or")));
                           $$ = $1;
                         }
       | NOT expr        {
-                          $2->append(new Call(MakeLocation(@$), "not"));
+                          $2->append(new Call(MakeLocation(@$), Symbol("not")));
                           $$ = $2;
                         }
       | INTEGER         {
@@ -231,7 +231,7 @@ expr  : expr '+' expr   {
                           $$ = $2;
                         }
       | '-' expr %prec UMINUS   {
-                                  $2->append(new Call(MakeLocation(@$), "__uminus__"));
+                                  $2->append(new Call(MakeLocation(@$), Symbol("__uminus__")));
                                   $$ = $2;
                                 }
       | SYMBOL '(' exprlist ')' {
