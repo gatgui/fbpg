@@ -90,7 +90,7 @@ void Push::toStream(std::ostream &os, const std::string &heading) const {
 
 // ---
 
-Get::Get(const Location &loc, const std::string &name)
+Get::Get(const Location &loc, const Symbol &name)
   : Instruction(loc), mName(name) {
 }
 
@@ -131,7 +131,7 @@ void Get::toStream(std::ostream &os, const std::string &heading) const {
 
 // ---
 
-Set::Set(const Location &loc, const std::string &name)
+Set::Set(const Location &loc, const Symbol &name)
   : Instruction(loc), mName(name) {
 }
 
@@ -165,7 +165,7 @@ void Set::toStream(std::ostream &os, const std::string &heading) const {
 
 // ---
 
-DefFunc::DefFunc(const Location &loc, const std::string &name, Block *body)
+DefFunc::DefFunc(const Location &loc, const Symbol &name, Block *body)
   : Instruction(loc), mFnName(name), mBody(body) {
 }
   
@@ -208,7 +208,7 @@ void DefFunc::toStream(std::ostream &os, const std::string &heading) const {
 
 // ---
 
-Call::Call(const Location &loc, const std::string &name)
+Call::Call(const Location &loc, const Symbol &name)
   : Instruction(loc), mFnName(name) {
 }
 

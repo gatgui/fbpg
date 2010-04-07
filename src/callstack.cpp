@@ -36,7 +36,7 @@ CallInfo::CallInfo()
   : mFuncname("") {
 }
 
-CallInfo::CallInfo(const Location &loc, const std::string &func)
+CallInfo::CallInfo(const Location &loc, const Symbol &func)
   : mLocation(loc), mFuncname(func) {
 }
 
@@ -58,7 +58,12 @@ CallInfo& CallInfo::operator=(const CallInfo &rhs) {
 std::string CallInfo::toString() const {
   std::ostringstream oss;
   oss << "From " << mLocation.toString();
-  if (mFuncname.length() > 0) {
+#ifdef _SYMTBL
+  if (mFuncname.valid())
+#else
+  if (mFuncname.length() > 0)
+#endif
+  {
     oss << ": function \"" << mFuncname << "\"";
   }
   return oss.str();

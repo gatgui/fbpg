@@ -399,9 +399,19 @@ Block::~Block() {
   }
 }
 
+#ifdef _SYMTBL
+
+void Block::addArgument(const Symbol &name) {
+  mArgs.push_back(name);
+}
+
+#else
+
 void Block::addArgument(const std::string &name) {
   mArgs.push_back(name);
 }
+
+#endif
 
 void Block::addInstruction(Instruction *i) {
   if (mCode == 0) {

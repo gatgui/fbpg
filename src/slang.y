@@ -68,16 +68,18 @@ Location MakeLocation(YYLTYPE &);
   Boolean *b;
   Object  *o;
   Block   *blk;
+  size_t   sym;
   Instruction *inst;
   std::vector<String*> *sl;
+  std::vector<size_t> *syml;
   CodeSegment *cs;
 }
 
 %token <i> INTEGER
 %token <d> REAL
-%token <s> STRING SYMBOL
+%token <s> STRING
+%token <sym> SYMBOL
 %token <b> TRUE FALSE
- // %token <blk> 
 %token <inst> RETURN BREAK CONTINUE
 %token NEQ EQ LT GT LTE GTE AND OR NOT END EOL FUNC IF THEN ELSE DO WHILE
 
@@ -101,7 +103,11 @@ paramlist : /* empty */           {
                                     $$ = NULL;
                                   }
           | SYMBOL                {
-                                    $$ = new std::vector<String*>();
+                                    #ifdef _SYMTBL
+                                     $$ = new std::vector<size_t>();
+                                    #else
+                                     $$ = new std::vector<String*>();
+                                    #endif
                                     $$->push_back($1);
                                   }
           | paramlist ',' SYMBOL  {
@@ -214,8 +220,12 @@ expr  : expr '+' expr   {
                         }
       | SYMBOL          {
                           $$ = new CodeSegment();
-                          $$->push_back(new Get(MakeLocation(@$), $1->getValue()));
-                          delete $1;
+                          #ifdef _SYMTBL
+                           $$->push_back(new Get(MakeLocation(@$), Symbol($1)));
+                          #else
+                           $$->push_back(new Get(MakeLocation(@$), $1->getValue()));
+                           delete $1;
+                          #endif
                         }
       | '(' expr ')'    {
                           $$ = $2;
@@ -226,13 +236,23 @@ expr  : expr '+' expr   {
                                 }
       | SYMBOL '(' exprlist ')' {
                                   if ($3 != NULL) {
-                                    $3->append(new Call(MakeLocation(@$), $1->getValue()));
+                                    #ifdef _SYMTBL
+                                     $3->append(new Call(MakeLocation(@$), Symbol($1)));
+                                    #else
+                                     $3->append(new Call(MakeLocation(@$), $1->getValue()));
+                                    #endif
                                     $$ = $3;
                                   } else {
                                     $$ = new CodeSegment();
-                                    $$->append(new Call(MakeLocation(@$), $1->getValue()));
+                                    #ifdef _SYMTBL
+                                     $$->append(new Call(MakeLocation(@$), Symbol($1)));
+                                    #else
+                                     $$->append(new Call(MakeLocation(@$), $1->getValue()));
+                                    #endif
                                   }
-                                  delete $1;
+                                  #ifndef _SYMTBL
+                                   delete $1;
+                                  #endif
                                 }
       ;
 
@@ -293,31 +313,54 @@ stmt  : IF expr THEN body END                       {
                                                       Block *fn = new Block();
                                                       if ($4 != NULL) {
                                                         for (size_t i=0; i<$4->size(); ++i) {
-                                                          String *s = (*($4))[i];
-                                                          fn->addArgument(s->getValue());
-                                                          delete s;
+                                                          #ifdef _SYMTBL
+                                                           Symbol s((*($4))[i]);
+                                                           fn->addArgument(s);
+                                                          #else
+                                                           String *s = (*($4))[i];
+                                                           fn->addArgument(s->getValue());
+                                                           delete s;
+                                                          #endif
                                                         }
                                                         delete $4;
                                                       }
                                                       fn->setCode($6);
                                                       $$ = new CodeSegment();
-                                                      $$->append(new DefFunc(MakeLocation(@$), $2->getValue(), fn));
-                                                      delete $2;
+                                                      #ifdef _SYMTBL
+                                                       $$->append(new DefFunc(MakeLocation(@$), Symbol($2), fn));
+                                                      #else
+                                                       $$->append(new DefFunc(MakeLocation(@$), $2->getValue(), fn));
+                                                       delete $2;
+                                                      #endif
                                                     }
       | SYMBOL '=' expr                             {
-                                                      $3->append(new Set(MakeLocation(@$), $1->getValue()));
-                                                      delete $1;
+                                                      #ifdef _SYMTBL
+                                                       $3->append(new Set(MakeLocation(@$), Symbol($1)));
+                                                      #else
+                                                       $3->append(new Set(MakeLocation(@$), $1->getValue()));
+                                                       delete $1;
+                                                      #endif
                                                       $$ = $3;
                                                     }
       | SYMBOL '(' exprlist ')'                     {
                                                       if ($3 != NULL) {
-                                                        $3->append(new Call(MakeLocation(@$), $1->getValue()));
+                                                        #ifdef _SYMTBL
+                                                         $3->append(new Call(MakeLocation(@$), Symbol($1)));
+                                                        #else
+                                                         $3->append(new Call(MakeLocation(@$), $1->getValue()));
+                                                        #endif
                                                         $$ = $3;
                                                       } else {
                                                         $$ = new CodeSegment();
-                                                        $$->append(new Call(MakeLocation(@$), $1->getValue()));
+                                                        #ifdef _SYMTBL
+                                                         $$->append(new Call(MakeLocation(@$), Symbol($1)));
+                                                        #else
+                                                         $$->append(new Call(MakeLocation(@$), $1->getValue()));
+                                                        #endif
                                                       }
-                                                      delete $1;
+                                                      #ifndef _SYMTBL
+                                                       delete $1;
+                                                      #endif
                                                     }
       ;
 

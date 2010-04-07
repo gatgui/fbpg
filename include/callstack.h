@@ -4,6 +4,12 @@
 #include <string>
 #include <vector>
 
+#ifdef _SYMTBL
+# include "symbol.h"
+#else
+typedef std::string Symbol;
+#endif
+
 class Location {
   public:
     
@@ -26,7 +32,7 @@ class CallInfo {
   public:
     
     CallInfo();
-    CallInfo(const Location &loc, const std::string &func);
+    CallInfo(const Location &loc, const Symbol &func);
     CallInfo(const CallInfo &rhs);
     ~CallInfo();
     
@@ -37,7 +43,7 @@ class CallInfo {
   protected:
     
     Location mLocation;
-    std::string mFuncname;
+    Symbol mFuncname;
 };
 
 class CallStack : public std::vector<CallInfo> {

@@ -67,7 +67,7 @@ class Push : public Instruction {
 class Get : public Instruction {
   public:
     
-    Get(const Location &loc, const std::string &name);
+    Get(const Location &loc, const Symbol &name);
     virtual ~Get();
     
     virtual Instruction* clone() const;
@@ -76,13 +76,13 @@ class Get : public Instruction {
     
   protected:
     
-    std::string mName;
+    Symbol mName;
 };
 
 class Set : public Instruction {
   public:
     
-    Set(const Location &loc, const std::string &name);
+    Set(const Location &loc, const Symbol &name);
     virtual ~Set();
     
     virtual Instruction* clone() const;
@@ -91,13 +91,13 @@ class Set : public Instruction {
     
   protected:
     
-    std::string mName;
+    Symbol mName;
 };
 
 class Call : public Instruction {
   public:
     
-    Call(const Location &loc, const std::string &name);
+    Call(const Location &loc, const Symbol &name);
     virtual ~Call();
     
     virtual Instruction* clone() const;
@@ -106,7 +106,7 @@ class Call : public Instruction {
     
   protected:
     
-    std::string mFnName;
+    Symbol mFnName;
 };
 
 class If : public Instruction {
@@ -200,7 +200,7 @@ class Return : public Instruction {
 class DefFunc : public Instruction {
   public:
     
-    DefFunc(const Location &loc, const std::string &name, Block *body);
+    DefFunc(const Location &loc, const Symbol &name, Block *body);
     virtual ~DefFunc();
     
     virtual Instruction* clone() const;
@@ -209,7 +209,7 @@ class DefFunc : public Instruction {
     
   protected:
     
-    std::string mFnName;
+    Symbol mFnName;
     Block *mBody;
 };
 

@@ -3,16 +3,18 @@
 
 #include "hashmap.h"
 #include <iostream>
+#include <string>
 
 class Symbol {
   public:
-    inline Symbol() : mID(size_t(-1)) {}
-    inline Symbol(size_t v) : mID(v) {}
-    inline Symbol(const Symbol &rhs) : mID(rhs.mID) {}
-    inline ~Symbol() {}
-    inline Symbol& operator=(const Symbol &rhs) {mID = rhs.mID; return *this;}
-    inline bool valid() const {return (mID != size_t(-1));}
-    inline size_t id() const {return mID;}
+    Symbol();
+    Symbol(size_t v);
+    Symbol(const std::string &s);
+    Symbol(const Symbol &rhs);
+    ~Symbol();
+    Symbol& operator=(const Symbol &rhs);
+    bool valid() const;
+    size_t id() const;
     friend bool operator<(const Symbol &s0, const Symbol &s1);
     friend std::ostream& operator<<(std::ostream &os, const Symbol &s);
   protected:
@@ -44,6 +46,42 @@ class SymbolTable {
     HashType mSyms;
     std::vector<std::string> mStrs;
 };
+
+// ---
+
+inline Symbol::Symbol()
+  : mID(size_t(-1)) {
+}
+
+inline Symbol::Symbol(size_t v)
+  : mID(v) {
+}
+
+inline Symbol::Symbol(const std::string &s)
+  : mID(size_t(-1)) {
+  Symbol sym = SymbolTable::GetSymbol(s);
+  mID = sym.mID;
+}
+
+inline Symbol::Symbol(const Symbol &rhs)
+  : mID(rhs.mID) {
+}
+
+inline Symbol::~Symbol() {
+}
+
+inline Symbol& Symbol::operator=(const Symbol &rhs) {
+  mID = rhs.mID;
+  return *this;
+}
+
+inline bool Symbol::valid() const {
+  return (mID != size_t(-1));
+}
+
+inline size_t Symbol::id() const {
+  return mID;
+}
 
 inline bool operator<(const Symbol &s0, const Symbol &s1) {
   return (s0.mID < s1.mID);

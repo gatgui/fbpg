@@ -125,7 +125,11 @@ WORD      ([a-zA-Z0-9_])
                                 }
 {ALPHA}{WORD}*                  {
                                   echoToken();
-                                  yylval.s = new String(yytext);
+                                  #ifdef _SYMTBL
+                                   yylval.sym = SymbolTable::GetSymbol(yytext).id();
+                                  #else
+                                   yylval.s = new String(yytext);
+                                  #endif
                                   return SYMBOL;
                                 }
 \"(\\.|[^"])*\"                 {

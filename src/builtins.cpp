@@ -745,50 +745,50 @@ void RegisterBuiltins(Context *ctx) {
     return;
   }
   // operators
-  ctx->registerCFunction<Minus>("__uminus__");
-  ctx->registerCFunction<Add>("+");
-  ctx->registerCFunction<Sub>("-");
-  ctx->registerCFunction<Mult>("*");
-  ctx->registerCFunction<Div>("/");
-  ctx->registerCFunction<Mod>("%");
-  ctx->registerCFunction<Equal>("==");
-  ctx->registerCFunction<NotEqual>("!=");
-  ctx->registerCFunction<LessThan>("<");
-  ctx->registerCFunction<GreaterThan>(">");
-  ctx->registerCFunction<LessThanEqual>("<=");
-  ctx->registerCFunction<GreaterThanEqual>(">=");
+  ctx->registerCFunction<Minus>(Symbol("__uminus__"));
+  ctx->registerCFunction<Add>(Symbol("+"));
+  ctx->registerCFunction<Sub>(Symbol("-"));
+  ctx->registerCFunction<Mult>(Symbol("*"));
+  ctx->registerCFunction<Div>(Symbol("/"));
+  ctx->registerCFunction<Mod>(Symbol("%"));
+  ctx->registerCFunction<Equal>(Symbol("=="));
+  ctx->registerCFunction<NotEqual>(Symbol("!="));
+  ctx->registerCFunction<LessThan>(Symbol("<"));
+  ctx->registerCFunction<GreaterThan>(Symbol(">"));
+  ctx->registerCFunction<LessThanEqual>(Symbol("<="));
+  ctx->registerCFunction<GreaterThanEqual>(Symbol(">="));
   // logical operator
-  ctx->registerCFunction<Not>("not");
-  ctx->registerCFunction<And>("and");
-  ctx->registerCFunction<Or>("or");
+  ctx->registerCFunction<Not>(Symbol("not"));
+  ctx->registerCFunction<And>(Symbol("and"));
+  ctx->registerCFunction<Or>(Symbol("or"));
   // explicit convertion
-  ctx->registerCFunction<ToDouble>("double");
-  ctx->registerCFunction<ToInteger>("integer");
-  ctx->registerCFunction<ToString>("string");
-  ctx->registerCFunction<ToBoolean>("boolean");
+  ctx->registerCFunction<ToDouble>(Symbol("double"));
+  ctx->registerCFunction<ToInteger>(Symbol("integer"));
+  ctx->registerCFunction<ToString>(Symbol("string"));
+  ctx->registerCFunction<ToBoolean>(Symbol("boolean"));
   // math function
-  ctx->registerCFunction<OneArgFunc<degrees> >("degrees");
-  ctx->registerCFunction<OneArgFunc<radians> >("radians");
-  ctx->registerCFunction<OneArgFunc<ceil> >("ceil");
-  ctx->registerCFunction<OneArgFunc<floor> >("floor");
-  ctx->registerCFunction<OneArgFunc<fabs> >("abs");
-  ctx->registerCFunction<OneArgFunc<sqrt> >("sqrt");
-  ctx->registerCFunction<OneArgFunc<exp> >("exp");
-  ctx->registerCFunction<OneArgFunc<log> >("log");
-  ctx->registerCFunction<OneArgFunc<log10> >("log10");
-  ctx->registerCFunction<OneArgFunc<cos> >("cos");
-  ctx->registerCFunction<OneArgFunc<sin> >("sin");
-  ctx->registerCFunction<OneArgFunc<tan> >("tan");
-  ctx->registerCFunction<OneArgFunc<cosh> >("cosh");
-  ctx->registerCFunction<OneArgFunc<sinh> >("sinh");
-  ctx->registerCFunction<OneArgFunc<tanh> >("tanh");
-  ctx->registerCFunction<OneArgFunc<acos> >("acos");
-  ctx->registerCFunction<OneArgFunc<asin> >("asin");
-  ctx->registerCFunction<OneArgFunc<atan> >("atan");
-  ctx->registerCFunction<TwoArgFunc<atan2> >("atan2");
-  ctx->registerCFunction<TwoArgFunc<fmod> >("mod");
-  ctx->registerCFunction<TwoArgFunc<hypot> >("hypot");
-  ctx->registerCFunction<TwoArgFunc<pow> >("pow");
+  ctx->registerCFunction<OneArgFunc<degrees> >(Symbol("degrees"));
+  ctx->registerCFunction<OneArgFunc<radians> >(Symbol("radians"));
+  ctx->registerCFunction<OneArgFunc<ceil> >(Symbol("ceil"));
+  ctx->registerCFunction<OneArgFunc<floor> >(Symbol("floor"));
+  ctx->registerCFunction<OneArgFunc<fabs> >(Symbol("abs"));
+  ctx->registerCFunction<OneArgFunc<sqrt> >(Symbol("sqrt"));
+  ctx->registerCFunction<OneArgFunc<exp> >(Symbol("exp"));
+  ctx->registerCFunction<OneArgFunc<log> >(Symbol("log"));
+  ctx->registerCFunction<OneArgFunc<log10> >(Symbol("log10"));
+  ctx->registerCFunction<OneArgFunc<cos> >(Symbol("cos"));
+  ctx->registerCFunction<OneArgFunc<sin> >(Symbol("sin"));
+  ctx->registerCFunction<OneArgFunc<tan> >(Symbol("tan"));
+  ctx->registerCFunction<OneArgFunc<cosh> >(Symbol("cosh"));
+  ctx->registerCFunction<OneArgFunc<sinh> >(Symbol("sinh"));
+  ctx->registerCFunction<OneArgFunc<tanh> >(Symbol("tanh"));
+  ctx->registerCFunction<OneArgFunc<acos> >(Symbol("acos"));
+  ctx->registerCFunction<OneArgFunc<asin> >(Symbol("asin"));
+  ctx->registerCFunction<OneArgFunc<atan> >(Symbol("atan"));
+  ctx->registerCFunction<TwoArgFunc<atan2> >(Symbol("atan2"));
+  ctx->registerCFunction<TwoArgFunc<fmod> >(Symbol("mod"));
+  ctx->registerCFunction<TwoArgFunc<hypot> >(Symbol("hypot"));
+  ctx->registerCFunction<TwoArgFunc<pow> >(Symbol("pow"));
   //ctx->registerCFunction<OneArgFunc<round> >("round"); // NOT SUPPORTED ON WINDOWS
   //ctx->registerCFunction<OneArgFunc<trunc> >("trunc"); // NOT SUPPORTED ON WINDOWS
   //ctx->registerCFunction<OneArgFunc<cbrt> >("cbrt"); // NOT SUPPORTED ON WINDOWS
@@ -802,8 +802,10 @@ void RegisterBuiltins(Context *ctx) {
   //ctx->registerCFunction<TwoArgFunc<fmax> >("max"); // NOT SUPPORTED ON WINDOWS
   // math constants
   Object *o = NULL;
-  o = new Double(M_PI); ctx->setVar("PI", o); o->decRef();
+  o = new Double(M_PI);
+  ctx->setVar(Symbol("PI"), o);
+  o->decRef();
   // don't care the others
   // utilities
-  ctx->registerCFunction<Print>("print");
+  ctx->registerCFunction<Print>(Symbol("print"));
 }
