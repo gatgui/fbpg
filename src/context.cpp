@@ -2,6 +2,20 @@
 #include <sstream>
 #include <algorithm>
 
+ObjectMap();
+ObjectMap(const ObjectMap &rhs);
+virtual ~ObjectMap() {}
+ObjectMap& operator=(const ObjectMap &rhs);
+void insert(const KeyType &key, const ValueType &val);
+void erase(const KeyType &k);
+bool hasKey(const KeyType &key) const;
+const ValueType& getValue(const KeyType &k) const;
+ValueType& getValue(const KeyType &k);
+size_t getKeys(KeyVector &kl) const;
+size_t getValues(ValueVector &vl) const;
+
+// ---
+
 Context::Context()
   : mParent(0), mCallStack(new CallStack()), mRef(1), mCallStackOwned(true) {
 }

@@ -14,7 +14,31 @@ typedef std::string Symbol;
 class Context {
   public:
     
-    typedef std::map<Symbol, Object*> ObjectMap;
+    #ifdef _SYMTBL
+    typedef HashMap<Symbol, Object*> ObjectMap;
+    #else
+    //typedef std::map<Symbol, Object*> ObjectMap;
+    class ObjectMap : public std::map<Symbol, Object*> {
+    public:
+      typedef std::map<Symbol, Object*> MapType;
+      typedef Symbol KeyType;
+      typedef Object* ValueType;
+      typedef typename std::vector<KeyType> KeyVector;
+      typedef typename std::vector<ValueType> ValueVector;
+    public:
+      ObjectMap();
+      ObjectMap(const ObjectMap &rhs);
+      virtual ~ObjectMap() {}
+      ObjectMap& operator=(const ObjectMap &rhs);
+      void insert(const KeyType &key, const ValueType &val);
+      void erase(const KeyType &k);
+      bool hasKey(const KeyType &key) const;
+      const ValueType& getValue(const KeyType &k) const;
+      ValueType& getValue(const KeyType &k);
+      size_t getKeys(KeyVector &kl) const;
+      size_t getValues(ValueVector &vl) const;
+    };
+    #endif
     
     Context();
     Context(CallStack *cs);
