@@ -70,6 +70,7 @@ void Context::clear() {
     }
     ++it;
   }
+  mVars.clear();
 }
 
 bool Context::hasVar(const Symbol &name, bool inherit) const {
@@ -83,6 +84,10 @@ bool Context::hasVar(const Symbol &name, bool inherit) const {
 }
 
 void Context::setVar(const Symbol &name, Object *v, bool inherit) {
+  if (mParent && inherit && mParent->hasVar(name, true)) {
+    mParent->setVar(name, v, true);
+    // return?
+  }
   ObjectMap::iterator it = mVars.find(name);
   if (it != mVars.end()) {
     if (it->second != v) {
