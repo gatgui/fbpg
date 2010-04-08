@@ -78,12 +78,15 @@ Location MakeLocation(YYLTYPE &);
 %token <i> INTEGER
 %token <d> REAL
 %token <s> STRING
-%token <sym> SYMBOL
 %token <b> TRUE FALSE
 %token <inst> RETURN BREAK CONTINUE
 %token NEQ EQ LT GT LTE GTE AND OR NOT END EOL FUNC IF THEN ELSE DO WHILE
 
 %type <cs> expr exprlist stmt stmtlist block body
+
+  //%token <s> SYMBOL
+  //%type <sl> paramlist
+%token <sym> SYMBOL
 %type <syml> paramlist
 
 %right '='

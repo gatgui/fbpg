@@ -6,6 +6,7 @@
 #include <list>
 #include <sstream>
 #include <stdexcept>
+#include <algorithm>
 
 // --- Hash function prototype
 
@@ -57,11 +58,15 @@ class HashMap {
       }
     };
     
+    typedef typename std::pair<KeyType, ValueType> KeyValuePair;
     typedef typename std::list<Entry> EntryList;
     typedef typename std::vector<KeyType> KeyVector;
     typedef typename std::vector<ValueType> ValueVector;
+    typedef typename std::vector<KeyValuePair> KeyValueVector;
     typedef typename std::vector<EntryList> EntryListVector;
-  
+    
+    // implement iterators
+    
   public:
     
     HashMap(size_t numBuckets=16)
@@ -175,6 +180,21 @@ class HashMap {
       return it->value;
     }
     
+    bool getValue(const KeyType &k, ValueType &v) const {
+      Entry e;
+      e.h = HashValue<KeyType, H>::Compute(k);
+      e.key = k;
+      unsigned int idx = (e.h % mNumBuckets);
+      const EntryList &el = mBuckets[idx];
+      typename EntryList::const_iterator it = std::find(el.begin(), el.end(), e);
+      if (it == el.end()) {
+        return false;
+      } else {
+        v = it->value;
+        return true;
+      }
+    }
+    
     size_t getKeys(KeyVector &kl) const {
       kl.resize(mNumEntries);
       for (size_t i=0, j=0; i<mNumBuckets; ++i) {
@@ -201,6 +221,20 @@ class HashMap {
         }
       }
       return vl.size();
+    }
+    
+    size_t getPairs(KeyValueVector &kvl) const {
+      kvl.resize(mNumEntries);
+      for (size_t i=0, j=0; i<mNumBuckets; ++i) {
+        const EntryList &el = mBuckets[i];
+        typename EntryList::const_iterator it = el.begin();
+        while (it != el.end()) {
+          kvl[j] = KeyValuePair(it->key, it->value);
+          ++j;
+          ++it;
+        }
+      }
+      return kvl.size();
     }
     
   protected:

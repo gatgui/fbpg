@@ -13,6 +13,7 @@ class Symbol {
     Symbol(const Symbol &rhs);
     ~Symbol();
     Symbol& operator=(const Symbol &rhs);
+    bool operator==(const Symbol &rhs) const;
     bool valid() const;
     size_t id() const;
     friend bool operator<(const Symbol &s0, const Symbol &s1);
@@ -73,6 +74,10 @@ inline Symbol::~Symbol() {
 inline Symbol& Symbol::operator=(const Symbol &rhs) {
   mID = rhs.mID;
   return *this;
+}
+
+inline bool Symbol::operator==(const Symbol &rhs) const {
+  return (mID == rhs.mID);
 }
 
 inline bool Symbol::valid() const {

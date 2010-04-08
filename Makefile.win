@@ -1,17 +1,28 @@
 
-CORE_SRC=src/builtins.cpp src/context.cpp src/instruction.cpp src/object.cpp src/stack.cpp src/callstack.cpp src/exception.cpp src/heap.cpp src/hashmap.cpp src/symbol.cpp
+CORE_SRC=\
+	src/builtins.cpp \
+	src/context.cpp \
+	src/instruction.cpp \
+	src/object.cpp \
+	src/stack.cpp \
+	src/callstack.cpp \
+	src/exception.cpp \
+	src/heap.cpp \
+	src/hashmap.cpp \
+	src/symbol.cpp
 CORE_OBJ=$(CORE_SRC:.cpp=.obj)
 
 CALC_SRC=src/slang.parser.c src/slang.lexer.c
 CALC_OBJ=src/slang.parser.obj src/slang.lexer.obj
 
-#CCFLAGS=/nologo /O2 /W4 /EHsc /Iinclude /Iwin32 /MT /c
-#CPPDEFINES=/D_CRT_SECURE_NO_WARNINGS /D_CRT_SECURE_NO_DEPRECATE /DYYERROR_VERBOSE /D_MEMMGR /D_SYMTBL
-#LINKFLAGS=/nologo /release
+CCFLAGS=/nologo /O2 /W4 /EHsc /Iinclude /Iwin32 /MT /c
+CPPDEFINES=/D_CRT_SECURE_NO_WARNINGS /D_CRT_SECURE_NO_DEPRECATE /DYYERROR_VERBOSE /D_MEMMGR /D_SYMTBL
+#CPPDEFINES=/D_CRT_SECURE_NO_WARNINGS /D_CRT_SECURE_NO_DEPRECATE /DYYERROR_VERBOSE /D_MEMMGR
+LINKFLAGS=/nologo /release
 
-CCFLAGS=/nologo /Od /Zi /W4 /EHsc /Iinclude /Iwin32 /MTd /c
-CPPDEFINES=/D_CRT_SECURE_NO_WARNINGS /D_CRT_SECURE_NO_DEPRECATE /DYYERROR_VERBOSE /D_DEBUG /D_MEMMGR /D_SYMTBL
-LINKFLAGS=/nologo /debug
+#CCFLAGS=/nologo /Od /Zi /W4 /EHsc /Iinclude /Iwin32 /MTd /c
+#CPPDEFINES=/D_CRT_SECURE_NO_WARNINGS /D_CRT_SECURE_NO_DEPRECATE /DYYERROR_VERBOSE /D_DEBUG /D_MEMMGR /D_SYMTBL
+#LINKFLAGS=/nologo /debug
 
 
 all: core slang
@@ -42,12 +53,13 @@ src/slang.parser.h src/slang.parser.c src/slang.parser.output: src/slang.y
 
 src/builtins.obj: src/builtins.cpp include/builtins.h include/context.h \
 	include/object.h include/heap.h include/callstack.h include/object.h \
-	include/stack.h include/context.h include/instruction.h include/stack.h
+	include/stack.h include/context.h include/instruction.h include/stack.h \
+	include/symbol.h
 
-src/callstack.obj: src/callstack.cpp include/callstack.h
+src/callstack.obj: src/callstack.cpp include/callstack.h  include/symbol.h
 
 src/context.obj: src/context.cpp include/context.h include/object.h \
-	include/heap.h include/callstack.h
+	include/heap.h include/callstack.h include/symbol.h
 
 src/exception.obj: src/exception.cpp include/exception.h \
 	include/callstack.h
@@ -58,24 +70,24 @@ src/heap.obj: src/heap.cpp include/heap.h
 
 src/instruction.obj: src/instruction.cpp include/instruction.h \
 	include/stack.h include/object.h include/heap.h include/context.h \
-	include/callstack.h include/exception.h
+	include/callstack.h include/exception.h include/symbol.h
 
 src/object.obj: src/object.cpp include/object.h include/heap.h \
 	include/instruction.h include/stack.h include/object.h \
-	include/context.h include/callstack.h
+	include/context.h include/callstack.h include/symbol.h
 
 src/slang.lexer.obj: src/slang.lexer.c include/context.h include/object.h \
 	include/heap.h include/callstack.h include/stack.h include/object.h \
 	include/instruction.h include/stack.h include/context.h \
-	include/builtins.h include/callstack.h src/slang.parser.h
+	include/builtins.h include/callstack.h src/slang.parser.h include/symbol.h
 
 src/slang.parser.obj: src/slang.parser.c include/context.h include/object.h \
 	include/heap.h include/callstack.h include/stack.h include/object.h \
 	include/instruction.h include/stack.h include/context.h \
-	include/builtins.h include/callstack.h include/exception.h
+	include/builtins.h include/callstack.h include/exception.h include/symbol.h
 
 src/stack.obj: src/stack.cpp include/stack.h include/object.h \
-	include/heap.h
+	include/heap.h  include/symbol.h
 
 src/symbol.obj: src/symbol.cpp include/symbol.h include/hashmap.h
 

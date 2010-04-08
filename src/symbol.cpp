@@ -33,7 +33,7 @@ Symbol SymbolTable::getSymbol(const std::string &name) {
 }
 
 const char* SymbolTable::getString(const Symbol &s) {
-  if (s.valid() and s.id() < mStrs.size()) {
+  if (s.valid() && s.id() < mStrs.size()) {
     return mStrs[s.id()].c_str();
   } else {
     return 0;

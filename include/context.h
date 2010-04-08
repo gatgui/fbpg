@@ -18,25 +18,30 @@ class Context {
     typedef HashMap<Symbol, Object*> ObjectMap;
     #else
     //typedef std::map<Symbol, Object*> ObjectMap;
+    // make a std::map subclass which provides the same API as HashMap
     class ObjectMap : public std::map<Symbol, Object*> {
-    public:
-      typedef std::map<Symbol, Object*> MapType;
-      typedef Symbol KeyType;
-      typedef Object* ValueType;
-      typedef typename std::vector<KeyType> KeyVector;
-      typedef typename std::vector<ValueType> ValueVector;
-    public:
-      ObjectMap();
-      ObjectMap(const ObjectMap &rhs);
-      virtual ~ObjectMap() {}
-      ObjectMap& operator=(const ObjectMap &rhs);
-      void insert(const KeyType &key, const ValueType &val);
-      void erase(const KeyType &k);
-      bool hasKey(const KeyType &key) const;
-      const ValueType& getValue(const KeyType &k) const;
-      ValueType& getValue(const KeyType &k);
-      size_t getKeys(KeyVector &kl) const;
-      size_t getValues(ValueVector &vl) const;
+      public:
+        typedef std::map<Symbol, Object*> MapType;
+        typedef Symbol KeyType;
+        typedef Object* ValueType;
+        typedef std::pair<KeyType, ValueType> KeyValuePair;
+        typedef std::vector<Symbol> KeyVector;
+        typedef std::vector<Object*> ValueVector;
+        typedef std::vector<KeyValuePair> KeyValueVector;
+      public:
+        ObjectMap();
+        ObjectMap(const ObjectMap &rhs);
+        virtual ~ObjectMap();
+        ObjectMap& operator=(const ObjectMap &rhs);
+        void insert(const KeyType &key, const ValueType &val);
+        void erase(const KeyType &k);
+        bool hasKey(const KeyType &key) const;
+        const ValueType& getValue(const KeyType &k) const;
+        bool getValue(const KeyType &k, ValueType &v) const;
+        ValueType& getValue(const KeyType &k);
+        size_t getKeys(KeyVector &kl) const;
+        size_t getValues(ValueVector &vl) const;
+        size_t getPairs(KeyValueVector &kvl) const;
     };
     #endif
     

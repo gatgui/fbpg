@@ -2,17 +2,96 @@
 #include <sstream>
 #include <algorithm>
 
-ObjectMap();
-ObjectMap(const ObjectMap &rhs);
-virtual ~ObjectMap() {}
-ObjectMap& operator=(const ObjectMap &rhs);
-void insert(const KeyType &key, const ValueType &val);
-void erase(const KeyType &k);
-bool hasKey(const KeyType &key) const;
-const ValueType& getValue(const KeyType &k) const;
-ValueType& getValue(const KeyType &k);
-size_t getKeys(KeyVector &kl) const;
-size_t getValues(ValueVector &vl) const;
+#ifndef _SYMTBL
+
+Context::ObjectMap::ObjectMap() {
+}
+
+Context::ObjectMap::ObjectMap(const Context::ObjectMap &rhs)
+  : Context::ObjectMap::MapType(rhs) {
+}
+
+Context::ObjectMap::~ObjectMap() {
+}
+
+Context::ObjectMap& Context::ObjectMap::operator=(const Context::ObjectMap &rhs) {
+  Context::ObjectMap::MapType::operator=(rhs);
+  return *this;
+}
+
+void Context::ObjectMap::insert(const Context::ObjectMap::KeyType &key, const Context::ObjectMap::ValueType &val) {
+  (*this)[key] = val;
+}
+
+void Context::ObjectMap::erase(const Context::ObjectMap::KeyType &k) {
+  MapType::iterator it = find(k);
+  if (it != end()) {
+    MapType::erase(it);
+  }
+}
+
+bool Context::ObjectMap::hasKey(const Context::ObjectMap::KeyType &key) const {
+  return (find(key) != end());
+}
+
+const Context::ObjectMap::ValueType& Context::ObjectMap::getValue(const Context::ObjectMap::KeyType &k) const {
+  MapType::const_iterator it = find(k);
+  if (it == end()) {
+    std::ostringstream oss;
+    oss << "Invalid key: \"" << k << "\"";
+    throw std::runtime_error(oss.str());
+  }
+  return it->second;
+}
+
+Context::ObjectMap::ValueType& Context::ObjectMap::getValue(const Context::ObjectMap::KeyType &k) {
+  MapType::iterator it = find(k);
+  if (it == end()) {
+    std::ostringstream oss;
+    oss << "Invalid key: \"" << k << "\"";
+    throw std::runtime_error(oss.str());
+  }
+  return it->second;
+}
+
+bool Context::ObjectMap::getValue(const Context::ObjectMap::KeyType &k, Context::ObjectMap::ValueType &v) const {
+  MapType::const_iterator it = find(k);
+  if (it == end()) {
+    return false;
+  } else {
+    v = it->second;
+    return true;
+  }
+}
+
+size_t Context::ObjectMap::getKeys(Context::ObjectMap::KeyVector &kl) const {
+  kl.resize(size());
+  MapType::const_iterator it = begin();
+  for (size_t i=0; i<size(); ++i, ++it) {
+    kl[i] = it->first;
+  }
+  return size();
+}
+
+size_t Context::ObjectMap::getValues(Context::ObjectMap::ValueVector &vl) const {
+  vl.resize(size());
+  MapType::const_iterator it = begin();
+  for (size_t i=0; i<size(); ++i, ++it) {
+    vl[i] = it->second;
+  }
+  return size();
+}
+
+size_t Context::ObjectMap::getPairs(Context::ObjectMap::KeyValueVector &kvl) const {
+  kvl.resize(size());
+  MapType::const_iterator it = begin();
+  for (size_t i=0; i<size(); ++i, ++it) {
+    kvl[i] = KeyValuePair(it->first, it->second);
+  }
+  return size();
+}
+
+#endif
 
 // ---
 
@@ -72,6 +151,7 @@ void Context::cleanup() {
 }
 
 void Context::clear() {
+  /*
   ObjectMap::iterator it = mVars.begin();
   while (it != mVars.end()) {
     if (it->second) {
@@ -84,11 +164,27 @@ void Context::clear() {
     }
     ++it;
   }
+  */
+  std::vector<Symbol> keys;
+  std::vector<Object*> values;
+  size_t n = mVars.getKeys(keys);
+  mVars.getValues(values);
+  for (size_t i=0; i<n; ++i) {
+    if (values[i]) {
+      if (values[i]->refCount() <= 0) {
+        std::ostringstream oss;
+        oss << "*** Object \"" << keys[i] << "\" in context has already been deleted";
+        throw std::runtime_error(oss.str());
+      }
+      values[i]->decRef();
+    }
+  }
   mVars.clear();
 }
 
 bool Context::hasVar(const Symbol &name, bool inherit) const {
-  if (mVars.find(name) != mVars.end()) {
+  //if (mVars.find(name) != mVars.end()) {
+  if (mVars.hasKey(name)) {
     return true;
   } else if (mParent && inherit) {
     return mParent->hasVar(name, true);
@@ -101,6 +197,14 @@ void Context::setVar(const Symbol &name, Object *v, bool inherit) {
   if (mParent && inherit && mParent->hasVar(name, true)) {
     mParent->setVar(name, v, true);
   }
+  Object *oldVal = 0;
+  if (mVars.getValue(name, oldVal)) {
+    if (oldVal) {
+      oldVal->decRef();
+    }
+  }
+  mVars.insert(name, v);
+  /*
   ObjectMap::iterator it = mVars.find(name);
   if (it != mVars.end()) {
     if (it->second != v) {
@@ -112,12 +216,14 @@ void Context::setVar(const Symbol &name, Object *v, bool inherit) {
   } else {
     mVars[name] = v;
   }
+  */
   if (v) {
     v->incRef();
   }
 }
 
 Object* Context::getVar(const Symbol &name, bool inherit) const {
+  /*
   ObjectMap::const_iterator it = mVars.find(name);
   if (it != mVars.end()) {
     Object *o = it->second;
@@ -125,6 +231,14 @@ Object* Context::getVar(const Symbol &name, bool inherit) const {
       o->incRef();
     }
     return o;
+  */
+  Object *o = 0;
+  if (mVars.getValue(name, o)) {
+    if (o) {
+      o->incRef();
+    }
+    return o;
+      
   } else {
     if (mParent && inherit) {
       return mParent->getVar(name);
@@ -135,6 +249,7 @@ Object* Context::getVar(const Symbol &name, bool inherit) const {
 }
 
 Callable* Context::getCallable(const Symbol &name, bool inherit) const {
+  /*
   ObjectMap::const_iterator it = mVars.find(name);
   if (it != mVars.end() && it->second->isCallable()) {
     Object *o = it->second;
@@ -142,6 +257,12 @@ Callable* Context::getCallable(const Symbol &name, bool inherit) const {
       o->incRef();
     }
     return (Callable*) o;
+  */
+  Object *o = 0;
+  if (mVars.getValue(name, o) && o && o->isCallable()) {
+    o->incRef();
+    return (Callable*) o;
+    
   } else {
     if (mParent && inherit) {
       return mParent->getCallable(name);
@@ -152,12 +273,25 @@ Callable* Context::getCallable(const Symbol &name, bool inherit) const {
 }
 
 void Context::toStream(std::ostream &os, const std::string &indent) const {
+  /*
   ObjectMap::const_iterator it = mVars.begin();
   while (it != mVars.end()) {
     os << indent << "\"" << it->first << "\" = ";
     it->second->toStream(os);
     os << std::endl;
     ++it;
+  }
+  */
+  ObjectMap::KeyValueVector kvl;
+  size_t n = mVars.getPairs(kvl);
+  for (size_t i=0; i<n; ++i) {
+    os << indent << "\"" << kvl[i].first << "\" = ";
+    if (kvl[i].second) {
+      kvl[i].second->toStream(os);
+    } else {
+      os << "<Null>";
+    }
+    os << std::endl;
   }
   if (mParent != 0) {
     os << indent << "From parent context:" << std::endl;
