@@ -504,7 +504,7 @@ int main(int argc, char **argv) {
       std::cout << std::endl;
     }
     
-    std::cout << std::endl << "Evaluate code..." << std::endl;
+    //std::cout << std::endl << "Evaluate code..." << std::endl;
     
     try {
       Context *ctx = new Context();
