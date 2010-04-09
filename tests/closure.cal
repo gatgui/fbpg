@@ -17,8 +17,8 @@ counter = createCounter(10)
 while counter() do
   counter2 = createCounter(5)
   while counter2() do
-    print("  Counter 2\n")
+    println("  Counter 2")
   end
-  print("Counter\n")
+  println("Counter")
 end
 

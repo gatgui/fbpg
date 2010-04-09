@@ -2,35 +2,35 @@
 x = 1.0
 y = -x
 
-print("x = " + x + "\n")
-print("y = " + y + "\n")
+println("x = " + x)
+println("y = " + y)
 
 if x >= y and y < 0  then
-  print("x>=y and y<0\n")
+  println("x>=y and y<0")
 else
-  print("flawed logic\n")
+  println("flawed logic")
 end
 
 if x >= y and not y >= 0 then
-  print("x>=y and y<0\n")
+  println("x>=y and y<0")
 else
-  print("flawed logic\n")
+  println("flawed logic")
 end
 
 if x < 0 or y < 0 then
-  print("x<0 or y<0\n")
+  println("x<0 or y<0")
 else
-  print("flawed logic\n")
+  println("flawed logic")
 end
 
 if not x < 0 or y > 0 then
-  print("not x<0 or y>0\n")
+  println("not x<0 or y>0")
 else
-  print("flawed logic\n")
+  println("flawed logic")
 end
 
 if not (x>0 or y<0) then
-  print("flawed logic\n")
+  println("flawed logic")
 else
-  print("x>0 and y<0\n")
+  println("x>0 and y<0")
 end

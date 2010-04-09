@@ -696,6 +696,25 @@ class Print : public CFunction {
     }
 };
 
+// --- print
+
+class PrintLn : public CFunction {
+  public:
+    PrintLn() : CFunction(1, false) {}
+    virtual ~PrintLn() {}
+    virtual Object* clone() const {return new PrintLn();}
+    virtual int call(Stack *stack, Context *, bool &failed) {
+      Object *o = stack->pop();
+      failed = (o == NULL);
+      if (failed) {setError(stack->getError()); return EVAL_FAILURE;}
+      o->toStream(std::cout);
+      o->decRef();
+      std::cout << std::endl;
+      return EVAL_NEXT;
+    }
+};
+
+
 // ---
 
 template <double (*Func)(double)>
@@ -808,4 +827,5 @@ void RegisterBuiltins(Context *ctx) {
   // don't care the others
   // utilities
   ctx->registerCFunction<Print>(Symbol("print"));
+  ctx->registerCFunction<PrintLn>(Symbol("println"));
 }

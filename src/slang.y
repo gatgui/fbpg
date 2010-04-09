@@ -537,7 +537,7 @@ int main(int argc, char **argv) {
 
   fclose(f);
   
-#ifdef _MEMMGR
+#if defined(_MEMMGR) && defined(_DEBUG)
   hm.status();
 #endif
   

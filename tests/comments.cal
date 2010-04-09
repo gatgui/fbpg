@@ -11,4 +11,4 @@ y = /* embedded
 
 z /* again */ = 30
 
-print(string(x + y + z) + "\n")
+println(x + y + z))

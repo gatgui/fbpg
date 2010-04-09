@@ -328,6 +328,9 @@ int If::eval(Stack *stack, Context *ctx) {
   
   if (evalCondition(stack, ctx)) {
     if (mCode) {
+      // only create once?
+      // as in closure code segment gets duplicated, this should be alright no?
+      // or for each ctx pointer that comes in has an associated child context
       Context *ictx = new Context(ctx);
       bool failed = false;
       int rv = mCode->call(stack, ctx, failed);

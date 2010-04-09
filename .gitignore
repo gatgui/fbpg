@@ -4,8 +4,6 @@
 *.a
 *.exe
 *.lib
-*.py
-*.rb
 slang
 testheap
 slang.lexer.*
