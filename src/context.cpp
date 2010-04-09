@@ -87,6 +87,7 @@ void Context::setVar(const Symbol &name, Object *v, bool inherit) {
   if (mParent && inherit && mParent->hasVar(name, true)) {
     mParent->setVar(name, v, true);
     // return?
+    return;
   }
   ObjectMap::iterator it = mVars.find(name);
   if (it != mVars.end()) {
