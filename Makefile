@@ -27,7 +27,17 @@ endif
 
 LINKFLAGS=-L. -lcore
 
-CORE_SRC=src/builtins.cpp src/context.cpp src/instruction.cpp src/object.cpp src/stack.cpp src/callstack.cpp src/exception.cpp src/heap.cpp src/hashmap.cpp src/symbol.cpp
+CORE_SRC=\
+	src/builtins.cpp \
+	src/context.cpp \
+	src/instruction.cpp \
+	src/object.cpp \
+	src/stack.cpp \
+	src/callstack.cpp \
+	src/exception.cpp \
+	src/heap.cpp \
+	src/hashmap.cpp \
+	src/symbol.cpp
 CORE_OBJ=$(CORE_SRC:.cpp=.o)
 CORE_DEP=($CORE_SRC:.cpp=.d)
 
@@ -39,7 +49,7 @@ TESTHEAP_SRC=src/tests/heap.cpp
 TESTHEAP_OBJ=$(TESTHEAP_SRC:.cpp=.o)
 TESTHEAP_DEP=$(TESTHEAP_SRC:.cpp=.d)
 
-all: core slang testheap
+all: core slang
 
 core: libcore.a
 

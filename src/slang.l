@@ -1,33 +1,14 @@
 %option noyywrap
 %option nodefault
 %option yylineno
+%option reentrant
+%option extra-type="struct ParserData*"
   // %option header-file="src/calc.lexer.h"
 
 %x MULTILINE_COMMENT
 
 %{
-#include "context.h"
-#include "stack.h"
-#include "object.h"
-#include "instruction.h"
-#include "builtins.h"
-#include "callstack.h"
 #include "slang.parser.h"
-
-// from parser
-extern char *gFilename;
-extern void yyerror(char *fmt, ...);
-extern Location MakeLocation(YYLTYPE &);
-
-// lexer globals
-int yycolumn = 1;
-bool gEchoTokens = false;
-
-static void echoToken(const char *s = 0) {
-  if (gEchoTokens) {
-    fprintf(stdout, "<Token: \"%s\">\n", (s != 0 ? s : yytext));
-  }
-}
 
 #define YY_USER_ACTION \
   yylloc.first_line = yylloc.last_line = yylineno; \
@@ -45,6 +26,10 @@ ALPHANUM  ([a-zA-Z0-9])
 WORD      ([a-zA-Z0-9_])
 
 %%
+
+%{
+struct ParserData *pd = (struct ParserData*) yyextra;
+%}
 
   /* Punctuation */
 "(" |
@@ -171,14 +156,14 @@ WORD      ([a-zA-Z0-9_])
 "//".*$                         { /* do nothing */ }
 "/*"                            { BEGIN MULTILINE_COMMENT; }
 <MULTILINE_COMMENT>"*/"         { BEGIN INITIAL; }
-<MULTILINE_COMMENT>\n           { yycolumn = 1; }
+<MULTILINE_COMMENT>\n           { pd->yycolumn = 1; }
 <MULTILINE_COMMENT>.            { /* do nothing */ }
 <MULTILINE_COMMENT><<EOF>>      { yyerror("unclosed comment"); }
 
   /* Whitespaces */
 "\n"                            {
                                   echoToken("eol");
-                                  yycolumn = 1;
+                                  pd->yycolumn = 1;
                                   return EOL;
                                 }
 [ \t]                           { /* ignore whitespace */ }
