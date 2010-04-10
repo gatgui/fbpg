@@ -3,7 +3,7 @@ CODE:
 x Better error reporting for lexer/parser (use bison locations)
 - Pure parser and lexer
 - C++ parser
-- Use a better memory allocation scheme
+x Use a better memory allocation scheme
 - Use garbage collection instead of reference counting
 - Take care of unused return values (polluting the stack)
 - Check if function return value is coherent in all its execution paths
@@ -20,7 +20,7 @@ x Review number operators behavior:
   integer +-*/ integer -> integer
 x Add % operator for integer division
 - Add exception handling
-- Add explicit conversion operator: float(v), int(v), string(v), boolean(v)
+x Add explicit conversion operator: float(v), int(v), string(v), boolean(v)
 x Add closure support
 - Add structure support (one step towards classes)
 - Add array support

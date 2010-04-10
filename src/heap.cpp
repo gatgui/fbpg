@@ -13,7 +13,7 @@ inline bool operator<(const Heap::Chunk &c0, const Heap::Chunk &c1) {
   return (c0.start < c1.start);
 }
 
-#ifdef _DEBUG
+#if defined(_DEBUG) && defined(_DEBUG_VERBOSE)
 # define PrintDebug(txt) std::cerr << "### " << txt << std::endl
 #else
 # define PrintDebug(txt)

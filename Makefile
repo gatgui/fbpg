@@ -1,8 +1,29 @@
 
 CC=g++
 
-CCFLAGS=-MMD -O2 -W -Wall -Iinclude -DYYERROR_VERBOSE -D_MEMMGR -D_SYMTBL
-#CCFLAGS=-MMD -O0 -g -ggdb -Iinclude -W -Wall -DYYERROR_VERBOSE -D_DEBUG -D_MEMMGR -D_SYMTBL
+debug = 0
+debug_verbose = 0
+memmgr = 1
+symtbl = 1
+# Should change the .y depending on symtbl
+
+ifeq ($(debug),0)
+CCFLAGS=-MMD -O2 -W -Wall -Iinclude -DYYERROR_VERBOSE
+else
+CCFLAGS=-MMD -O0 -g -ggdb -Iinclude -W -Wall -DYYERROR_VERBOSE -D_DEBUG
+ifeq ($(debug_verbose),1)
+CCFLAGS:=$(CCFLAGS) -D_DEBUG_VERBOSE
+endif
+endif
+
+ifeq ($(memmgr),1)
+CCFLAGS:=$(CCFLAGS) -D_MEMMGR
+endif
+
+ifeq ($(symtbl),1)
+CCFLAGS:=$(CCFLAGS) -D_SYMTBL
+endif
+
 
 LINKFLAGS=-L. -lcore
 
