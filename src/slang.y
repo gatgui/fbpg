@@ -95,7 +95,7 @@ Location MakeLocation(YYLTYPE &);
 %nonassoc NOT
 %nonassoc NEQ EQ LT GT LTE GTE
 %left '+' '-'
-%left '*' '/'
+%left '*' '/' '%'
 %nonassoc UMINUS
 
 %start block
