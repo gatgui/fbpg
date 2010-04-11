@@ -413,9 +413,9 @@ int main(int argc, char **argv) {
     return 1;
   }
   
-  ParserData *pd = new ParserData();
+  ParserData pd;
   
-  pd->filename = argv[1];
+  pd.filename = argv[1];
   
   FILE *f = fopen(argv[1], "r");
 
@@ -424,7 +424,8 @@ int main(int argc, char **argv) {
     return 1;
   }
   
-  yyset_in(f, pd->scanner);
+  yylex_init_extra(&pd, &(pd.scanner));
+  yyset_in(f, pd.scanner);
   
   bool printCode = false;
   
@@ -437,15 +438,15 @@ int main(int argc, char **argv) {
   
   int rv = 0;
   
-  pd->code = new CodeSegment();
+  pd.code = new CodeSegment();
   
   while (rv == 0) {
-    rv = yyparse(pd);
+    rv = yyparse(&pd);
   }
   
   if (printCode) {
     std::cout << std::endl << "Returned code segment:" << std::endl;
-    pd->code->toStream(std::cout, "  ");
+    pd.code->toStream(std::cout, "  ");
     std::cout << std::endl;
   }
   
@@ -457,9 +458,9 @@ int main(int argc, char **argv) {
     
     RegisterBuiltins(ctx);
     
-    pd->code->eval(stack, ctx);
+    pd.code->eval(stack, ctx);
     
-    delete pd->code;
+    delete pd.code;
     
     // cleanup
     stack->clear();
