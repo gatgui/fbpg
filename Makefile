@@ -8,9 +8,9 @@ symtbl = 1
 # Should change the .y depending on symtbl
 
 ifeq ($(debug),0)
-CCFLAGS=-MMD -O2 -W -Wall -Iinclude -DYYERROR_VERBOSE
+CCFLAGS=-MMD -O2 -W -Wall -Wno-unused -Iinclude -DYYERROR_VERBOSE
 else
-CCFLAGS=-MMD -O0 -g -ggdb -Iinclude -W -Wall -DYYERROR_VERBOSE -D_DEBUG
+CCFLAGS=-MMD -O0 -g -ggdb -Wno-unused -Iinclude -W -Wall -DYYERROR_VERBOSE -D_DEBUG
 ifeq ($(debug_verbose),1)
 CCFLAGS:=$(CCFLAGS) -D_DEBUG_VERBOSE
 endif
@@ -69,10 +69,13 @@ testheap: core $(TESTHEAP_OBJ)
 .c.o:
 	$(CC) -o $@ $(CCFLAGS) -c $<
 
-src/%.lexer.c src/%.lexer.h: src/%.l
-	flex -o $@ $^
+src/%.lexer.h: src/%.lexer.c
+src/%.lexer.c: src/%.l
+	flex --header-file=`dirname $@`/`basename $@ .c`.h -o $@ $^
 
-src/%.parser.h src/%.parser.c src/%.parser.output: src/%.y
+src/%.parser.h: src/%.parser.c
+src/%.parser.output: src/%.parser.c
+src/%.parser.c: src/%.y
 	bison -v -d -o $@ $^
 
 -include $(CORE_DEP)

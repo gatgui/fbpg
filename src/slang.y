@@ -1,47 +1,56 @@
 %locations
 %define api.pure
-%parser-param { struct ParserData *pd; }
+%parse-param { struct ParserData *pd }
 
 %code requires {
-  // overrides location informations
+// this code goes in the generated header
+// overrides location informations
 
-  typedef struct YYLTYPE {
-    int first_line;
-    int first_column;
-    int last_line;
-    int last_column;
-    char *filename;
-  } YYLTYPE;
+typedef struct YYLTYPE {
+  int first_line;
+  int first_column;
+  int last_line;
+  int last_column;
+  char *filename;
+} YYLTYPE;
 
-  #define YYLTYPE_IS_DECLARED 1
+#define YYLTYPE_IS_DECLARED 1
 
-  #define YYLLOC_DEFAULT(Current, Rhs, N) \
-    do { \
-      if (YYID (N)) { \
-        (Current).first_line   = YYRHSLOC (Rhs, 1).first_line; \
-        (Current).first_column = YYRHSLOC (Rhs, 1).first_column; \
-        (Current).last_line    = YYRHSLOC (Rhs, N).last_line; \
-        (Current).last_column  = YYRHSLOC (Rhs, N).last_column; \
-        (Current).filename     = YYRHSLOC (Rhs, 1).filename; \
-      } else { \
-        (Current).first_line   = (Current).last_line = YYRHSLOC (Rhs, 0).last_line; \
-        (Current).first_column = (Current).last_column = YYRHSLOC (Rhs, 0).last_column; \
-        (Current).filename     = NULL; \
-      } \
-    } while (YYID (0))
+#define YYLLOC_DEFAULT(Current, Rhs, N) \
+  do { \
+    if (YYID (N)) { \
+      (Current).first_line   = YYRHSLOC (Rhs, 1).first_line; \
+      (Current).first_column = YYRHSLOC (Rhs, 1).first_column; \
+      (Current).last_line    = YYRHSLOC (Rhs, N).last_line; \
+      (Current).last_column  = YYRHSLOC (Rhs, N).last_column; \
+      (Current).filename     = YYRHSLOC (Rhs, 1).filename; \
+    } else { \
+      (Current).first_line   = (Current).last_line = YYRHSLOC (Rhs, 0).last_line; \
+      (Current).first_column = (Current).last_column = YYRHSLOC (Rhs, 0).last_column; \
+      (Current).filename     = NULL; \
+    } \
+  } while (YYID (0))
 
-  #define YY_LOCATION_PRINT(File, Loc) \
-    fprintf(File, "%s: %d.%d-%d.%d", \
-                  ((Loc).filename ? (Loc).filename : ""), \
-                  (Loc).first_line, (Loc).first_column, \
-                  (Loc).last_line,  (Loc).last_column)
+#define YY_LOCATION_PRINT(File, Loc) \
+  fprintf(File, "%s: %d.%d-%d.%d", \
+                ((Loc).filename ? (Loc).filename : ""), \
+                (Loc).first_line, (Loc).first_column, \
+                (Loc).last_line,  (Loc).last_column)
 
-  // Location MakeLocation(YYLTYPE &);
+#include "parser.h"
 }
 
 %code {
-  #include "parser.h"
-  #define YYLEX_PARAM pd->scanner
+
+#ifdef _WIN32
+// flex on windows doesn't have the option to generate the lexer header
+extern int yylex(YYSTYPE *yylval_param, YYLTYPE *yylloc_param, yyscan_t yyscanner);
+#else
+#include "slang.lexer.h"
+#endif
+
+#define YYLEX_PARAM pd->scanner
+
 }
 
 %union {

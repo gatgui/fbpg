@@ -1,7 +1,5 @@
-%option noyywrap
-%option nodefault
-%option yylineno
-%option reentrant
+%option noyywrap nodefault yylineno
+%option reentrant bison-bridge bison-locations
 %option extra-type="struct ParserData*"
   // %option header-file="src/calc.lexer.h"
 
@@ -11,10 +9,10 @@
 #include "slang.parser.h"
 
 #define YY_USER_ACTION \
-  yylloc.first_line = yylloc.last_line = yylineno; \
-  yylloc.first_column = yycolumn; \
-  yylloc.last_column = yycolumn + yyleng - 1; \
-  yylloc.filename = gFilename; \
+  yylloc->first_line = yylloc->last_line = yylineno; \
+  yylloc->first_column = yycolumn; \
+  yylloc->last_column = yycolumn + yyleng - 1; \
+  yylloc->filename = pd->filename; \
   yycolumn += yyleng;
 
 %}
@@ -28,7 +26,7 @@ WORD      ([a-zA-Z0-9_])
 %%
 
 %{
-struct ParserData *pd = (struct ParserData*) yyextra;
+struct ParserData *pd = yyextra;
 %}
 
   /* Punctuation */
@@ -46,82 +44,72 @@ struct ParserData *pd = (struct ParserData*) yyextra;
 "*" |
 "/" |
 "%" |
-"."                             { echoToken(); return yytext[0]; }
+"."                             { return yytext[0]; }
 
   /* Comparison */
-"=="                            { echoToken(); return EQ; }
-"!="                            { echoToken(); return NEQ; }
-"<"                             { echoToken(); return LT; }
-">"                             { echoToken(); return GT; }
-"<="                            { echoToken(); return LTE; }
-">="                            { echoToken(); return GTE; }
+"=="                            { return EQ; }
+"!="                            { return NEQ; }
+"<"                             { return LT; }
+">"                             { return GT; }
+"<="                            { return LTE; }
+">="                            { return GTE; }
 
   /* Keywords */
-"if"                            { echoToken(); return IF; }
-"then"                          { echoToken(); return THEN; }
-"else"                          { echoToken(); return ELSE; }
-"while"                         { echoToken(); return WHILE; }
-"do"                            { echoToken(); return DO; }
-"function"                      { echoToken(); return FUNC; }
-"end"                           { echoToken(); return END; }
+"if"                            { return IF; }
+"then"                          { return THEN; }
+"else"                          { return ELSE; }
+"while"                         { return WHILE; }
+"do"                            { return DO; }
+"function"                      { return FUNC; }
+"end"                           { return END; }
 "true"                          {
-                                  echoToken();
-                                  yylval.b = new Boolean(true);
+                                  yylval->b = new Boolean(true);
                                   return TRUE;
                                 }
 "false"                         {
-                                  echoToken();
-                                  yylval.b = new Boolean(false);
+                                  yylval->b = new Boolean(false);
                                   return FALSE;
                                 }
 "return"                        {
-                                  echoToken();
-                                  yylval.inst = new Return(MakeLocation(yylloc));
+                                  yylval->inst = new Return(MakeLocation(yylloc));
                                   return RETURN;
                                 }
 "break"                         {
-                                  echoToken();
-                                  yylval.inst = new Break(MakeLocation(yylloc));
+                                  yylval->inst = new Break(MakeLocation(yylloc));
                                   return BREAK;
                                 }
 "continue"                      {
-                                  echoToken();
-                                  yylval.inst = new Continue(MakeLocation(yylloc));
+                                  yylval->inst = new Continue(MakeLocation(yylloc));
                                   return CONTINUE;
                                 }
-"or"                            { echoToken(); return OR; }
-"and"                           { echoToken(); return AND; }
-"not"                           { echoToken(); return NOT; }
+"or"                            { return OR; }
+"and"                           { return AND; }
+"not"                           { return NOT; }
 
   /* Literals */
 {DIGIT}+                        {
                                   LongInteger v;
-                                  echoToken();
                                   sscanf(yytext, "%lld", &v);
-                                  yylval.i = new Integer(v);
+                                  yylval->i = new Integer(v);
                                   return INTEGER;
                                 }
 {DIGIT}+\.{DIGIT}+{EXP}?        {
                                   double v;
-                                  echoToken();
                                   sscanf(yytext, "%lf", &v);
-                                  yylval.d = new Double(v);
+                                  yylval->d = new Double(v);
                                   return REAL;
                                 }
 {ALPHA}{WORD}*                  {
-                                  echoToken();
                                   #ifdef _SYMTBL
-                                   yylval.sym = SymbolTable::GetSymbol(yytext).id();
+                                   yylval->sym = SymbolTable::GetSymbol(yytext).id();
                                   #else
-                                   yylval.s = new String(yytext);
+                                   yylval->s = new String(yytext);
                                   #endif
                                   return SYMBOL;
                                 }
 \"(\\.|[^"])*\"                 {
                                   static std::string escChars = "\\\"nrtv";
                                   static std::string repChars = "\\\"\n\r\t\v";
-                                  
-                                  echoToken();
                                   
                                   std::string s = yytext;
                                   
@@ -147,7 +135,7 @@ struct ParserData *pd = (struct ParserData*) yyextra;
                                   }
                                   es += s.substr(p0);
                                   
-                                  yylval.s = new String(es);
+                                  yylval->s = new String(es);
                                   
                                   return STRING;
                                 }
@@ -156,14 +144,13 @@ struct ParserData *pd = (struct ParserData*) yyextra;
 "//".*$                         { /* do nothing */ }
 "/*"                            { BEGIN MULTILINE_COMMENT; }
 <MULTILINE_COMMENT>"*/"         { BEGIN INITIAL; }
-<MULTILINE_COMMENT>\n           { pd->yycolumn = 1; }
+<MULTILINE_COMMENT>\n           { /* yycolumn = 1; */ }
 <MULTILINE_COMMENT>.            { /* do nothing */ }
 <MULTILINE_COMMENT><<EOF>>      { yyerror("unclosed comment"); }
 
   /* Whitespaces */
 "\n"                            {
-                                  echoToken("eol");
-                                  pd->yycolumn = 1;
+                                  // yycolumn = 1;
                                   return EOL;
                                 }
 [ \t]                           { /* ignore whitespace */ }
