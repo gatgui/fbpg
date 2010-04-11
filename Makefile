@@ -10,7 +10,7 @@ symtbl = 1
 ifeq ($(debug),0)
 CCFLAGS=-MMD -O2 -W -Wall -Wno-unused -Iinclude -DYYERROR_VERBOSE
 else
-CCFLAGS=-MMD -O0 -g -ggdb -Wno-unused -Iinclude -W -Wall -DYYERROR_VERBOSE -D_DEBUG
+CCFLAGS=-MMD -O0 -g -ggdb -Iinclude -W -Wall -Wno-unused -DYYERROR_VERBOSE -D_DEBUG
 ifeq ($(debug_verbose),1)
 CCFLAGS:=$(CCFLAGS) -D_DEBUG_VERBOSE
 endif
@@ -41,7 +41,7 @@ CORE_SRC=\
 CORE_OBJ=$(CORE_SRC:.cpp=.o)
 CORE_DEP=($CORE_SRC:.cpp=.d)
 
-CALC_SRC=src/slang.parser.c src/slang.lexer.c
+CALC_SRC=src/slang.parser.c src/slang.lexer.c src/parser.c
 CALC_OBJ=$(CALC_SRC:.c=.o)
 CALC_DEP=$(CALC_SRC:.c=.d)
 
@@ -69,12 +69,15 @@ testheap: core $(TESTHEAP_OBJ)
 .c.o:
 	$(CC) -o $@ $(CCFLAGS) -c $<
 
-src/%.lexer.h: src/%.lexer.c
+src/%.lexer.h: src/%.l
+	flex --header-file=$@ -o `dirname $@`/`basename $@ .h`.c $^
+
 src/%.lexer.c: src/%.l
 	flex --header-file=`dirname $@`/`basename $@ .c`.h -o $@ $^
 
-src/%.parser.h: src/%.parser.c
-src/%.parser.output: src/%.parser.c
+src/%.parser.h: src/%.y
+	bison -v -d -o `dirname $@`/`basename $@ .h`.c $^
+
 src/%.parser.c: src/%.y
 	bison -v -d -o $@ $^
 

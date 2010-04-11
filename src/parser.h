@@ -16,8 +16,8 @@ struct ParserData {
   CodeSegment *code;
 };
 
-Location MakeLocation(YYLTYPE *);
-Location MakeLocation(YYLTYPE &);
-void yyerror(const char *fmt, ...);
+extern Location MakeLocation(YYLTYPE *);
+extern Location MakeLocation(YYLTYPE &);
+extern void yyerror(YYLTYPE *loc, struct ParserData *pd, const char *fmt, ...);
 
 #endif

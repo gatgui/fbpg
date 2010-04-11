@@ -146,7 +146,7 @@ struct ParserData *pd = yyextra;
 <MULTILINE_COMMENT>"*/"         { BEGIN INITIAL; }
 <MULTILINE_COMMENT>\n           { /* yycolumn = 1; */ }
 <MULTILINE_COMMENT>.            { /* do nothing */ }
-<MULTILINE_COMMENT><<EOF>>      { yyerror("unclosed comment"); }
+<MULTILINE_COMMENT><<EOF>>      { yyerror(yylloc, pd, "unclosed comment"); }
 
   /* Whitespaces */
 "\n"                            {

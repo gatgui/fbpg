@@ -387,15 +387,15 @@ body  : /* empty */   {
       ;
 
 block : /* empty */   {
-                        $$ = gTopCode;
+                        $$ = pd->code;
                         YYABORT;
                       }
       | EOL           {
-                        $$ = gTopCode;
+                        $$ = pd->code;
                         YYACCEPT;
                       }
       | stmtlist EOL  {
-                        gTopCode->merge($1);
+                        pd->code->merge($1);
                         delete $1;
                         YYACCEPT;
                       }
@@ -413,7 +413,9 @@ int main(int argc, char **argv) {
     return 1;
   }
   
-  gFilename = argv[1];
+  ParserData *pd = new ParserData();
+  
+  pd->filename = argv[1];
   
   FILE *f = fopen(argv[1], "r");
 
@@ -421,17 +423,13 @@ int main(int argc, char **argv) {
     fprintf(stderr, "Could not read file \"%s\"\n", argv[1]);
     return 1;
   }
-
-  yyin = f;
   
-  bool lexonly = false;
+  yyset_in(f, pd->scanner);
+  
   bool printCode = false;
   
   for (int i=2; i<argc; ++i) {
-    if (!strcmp(argv[i], "-lo") || !strcmp(argv[i], "--lex-only")) {
-      lexonly = true;
-    
-    } else if (!strcmp(argv[i], "-pc") || !strcmp(argv[i], "--print-code")) {
+    if (!strcmp(argv[i], "-pc") || !strcmp(argv[i], "--print-code")) {
       printCode = true;
     }
     
@@ -439,57 +437,47 @@ int main(int argc, char **argv) {
   
   int rv = 0;
   
-  if (lexonly) {
-    gEchoTokens = true;
-    int token = YYLEX;
-    while (token != 0) {
-      token = YYLEX;
-    }
-  } else {
-    
-    gTopCode = new CodeSegment();
-    
-    while (rv == 0) {
-      rv = yyparse();
-    }
-    
-    if (printCode) {
-      std::cout << std::endl << "Returned code segment:" << std::endl;
-      gTopCode->toStream(std::cout, "  ");
-      std::cout << std::endl;
-    }
-    
-    //std::cout << std::endl << "Evaluate code..." << std::endl;
-    
-    try {
-      Context *ctx = new Context();
-      Stack *stack = new Stack();
-      
-      RegisterBuiltins(ctx);
-      
-      gTopCode->eval(stack, ctx);
-      
-      delete gTopCode;
-      
-      // cleanup
-      stack->clear();
-      ctx->cleanup();
-      ctx->decRef();
-      delete stack;
-      
-    } catch (Exception &e) {
-      std::cerr << "*** Caught exception ***" << std::endl;
-      std::cerr << "  " << e.what() << std::endl;
-      const CallStack *cs = e.getCallStack();
-      if (cs) {
-        std::cerr << cs->toString("    ") << std::endl;
-      }
-    }
-    
-    std::cout << std::endl;
-    
+  pd->code = new CodeSegment();
+  
+  while (rv == 0) {
+    rv = yyparse(pd);
   }
-
+  
+  if (printCode) {
+    std::cout << std::endl << "Returned code segment:" << std::endl;
+    pd->code->toStream(std::cout, "  ");
+    std::cout << std::endl;
+  }
+  
+  //std::cout << std::endl << "Evaluate code..." << std::endl;
+  
+  try {
+    Context *ctx = new Context();
+    Stack *stack = new Stack();
+    
+    RegisterBuiltins(ctx);
+    
+    pd->code->eval(stack, ctx);
+    
+    delete pd->code;
+    
+    // cleanup
+    stack->clear();
+    ctx->cleanup();
+    ctx->decRef();
+    delete stack;
+    
+  } catch (Exception &e) {
+    std::cerr << "*** Caught exception ***" << std::endl;
+    std::cerr << "  " << e.what() << std::endl;
+    const CallStack *cs = e.getCallStack();
+    if (cs) {
+      std::cerr << cs->toString("    ") << std::endl;
+    }
+  }
+  
+  std::cout << std::endl;
+  
   fclose(f);
   
 #if defined(_MEMMGR) && defined(_DEBUG)
