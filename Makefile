@@ -69,17 +69,33 @@ testheap: core $(TESTHEAP_OBJ)
 .c.o:
 	$(CC) -o $@ $(CCFLAGS) -c $<
 
-src/%.lexer.h: src/%.l
-	flex --header-file=$@ -o `dirname $@`/`basename $@ .h`.c $^
+#src/%.lexer.c: src/%.l
+#	flex --header-file=`dirname $@`/`basename $@ .c`.h -o $@ $^
+#
+#src/%.parser.c: src/%.y
+#	bison -v -d -o $@ $^
 
-src/%.lexer.c: src/%.l
-	flex --header-file=`dirname $@`/`basename $@ .c`.h -o $@ $^
+# Need to be a bit more explicit here because lexer and parser
+# headers are automatically generated, -MMD won't help here
 
-src/%.parser.h: src/%.y
-	bison -v -d -o `dirname $@`/`basename $@ .h`.c $^
+src/slang.lexer.o: src/slang.lexer.c src/slang.parser.h src/parser.h \
+	include/context.h include/object.h include/heap.h include/symbol.h \
+	include/hashmap.h include/callstack.h include/stack.h include/object.h \
+	include/instruction.h include/stack.h include/context.h \
+	include/builtins.h include/callstack.h include/exception.h
 
-src/%.parser.c: src/%.y
-	bison -v -d -o $@ $^
+src/slang.parser.o: src/slang.parser.c src/parser.h include/context.h \
+	include/object.h include/heap.h include/symbol.h include/hashmap.h \
+	include/callstack.h include/stack.h include/object.h \
+	include/instruction.h include/stack.h include/context.h \
+	include/builtins.h include/callstack.h include/exception.h \
+	src/slang.lexer.h
+
+src/slang.lexer.c src/slang.lexer.h: src/slang.l
+	flex --header-file=src/slang.lexer.h -osrc/slang.lexer.c src/slang.l
+
+src/slang.parser.c src/slang.parser.h: src/slang.y
+	bison -v -d -o src/slang.parser.c src/slang.y
 
 -include $(CORE_DEP)
 -include $(CALC_DEP)
