@@ -1,7 +1,7 @@
 
 CODE:
 x Better error reporting for lexer/parser (use bison locations)
-- Pure parser and lexer
+x Pure parser and lexer
 - C++ parser
 x Use a better memory allocation scheme
 - Use garbage collection instead of reference counting
