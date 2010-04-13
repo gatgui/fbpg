@@ -22,6 +22,13 @@ class Symbol {
     size_t mID;
 };
 
+template <HashFunc H>
+struct HashValue<Symbol, H> {
+  static unsigned int Compute(const Symbol &val) {
+    return (unsigned int)val.id();
+  }
+};
+
 class SymbolTable {
   public:
     

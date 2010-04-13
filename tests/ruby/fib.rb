@@ -7,4 +7,4 @@ def fibonacci(n)
   return a
 end
 
-puts fibonacci(10000)
+fibonacci(10000)

@@ -2,16 +2,17 @@
 CC=g++
 
 debug = 0
-debug_verbose = 0
+verbose = 0
 memmgr = 1
 symtbl = 1
+ctxh = 0
 # Should change the .y depending on symtbl
 
 ifeq ($(debug),0)
 CCFLAGS=-MMD -O2 -W -Wall -Wno-unused -Iinclude -DYYERROR_VERBOSE
 else
 CCFLAGS=-MMD -O0 -g -ggdb -Iinclude -W -Wall -Wno-unused -DYYERROR_VERBOSE -D_DEBUG
-ifeq ($(debug_verbose),1)
+ifeq ($(verbose),1)
 CCFLAGS:=$(CCFLAGS) -D_DEBUG_VERBOSE
 endif
 endif
@@ -22,6 +23,9 @@ endif
 
 ifeq ($(symtbl),1)
 CCFLAGS:=$(CCFLAGS) -D_SYMTBL
+ifeq ($(ctxh),1)
+CCFLAGS:=$(CCFLAGS) -D_CTXH
+endif
 endif
 
 
@@ -49,6 +53,10 @@ TESTHEAP_SRC=src/tests/heap.cpp
 TESTHEAP_OBJ=$(TESTHEAP_SRC:.cpp=.o)
 TESTHEAP_DEP=$(TESTHEAP_SRC:.cpp=.d)
 
+TESTHASH_SRC=src/tests/hash.cpp
+TESTHASH_OBJ=$(TESTHASH_SRC:.cpp=.o)
+TESTHASH_DEP=$(TESTHASH_SRC:.cpp=.d)
+
 all: core slang
 
 core: libcore.a
@@ -62,6 +70,9 @@ slang: core $(CALC_OBJ)
 
 testheap: core $(TESTHEAP_OBJ)
 	$(CC) -o $@ $(TESTHEAP_OBJ) $(LINKFLAGS)
+
+testhash: core $(TESTHASH_OBJ)
+	$(CC) -o $@ $(TESTHASH_OBJ) $(LINKFLAGS)
 
 .cpp.o:
 	$(CC) -o $@ $(CCFLAGS) -c $<
@@ -95,7 +106,7 @@ src/slang.lexer.c src/slang.lexer.h: src/slang.l
 	flex --header-file=src/slang.lexer.h -osrc/slang.lexer.c src/slang.l
 
 src/slang.parser.c src/slang.parser.h: src/slang.y
-	bison -v -d -o src/slang.parser.c src/slang.y
+	bison -d -o src/slang.parser.c src/slang.y
 
 -include $(CORE_DEP)
 -include $(CALC_DEP)
@@ -103,10 +114,13 @@ src/slang.parser.c src/slang.parser.h: src/slang.y
 clean:
 	rm -f src/*.o
 	rm -f src/*.d
-	rm -f src/*.lexer.*
-	rm -f src/*.parser.*
+	rm -f src/tests/*.o
+	rm -f src/tests/*.d
+#	rm -f src/*.lexer.*
+#	rm -f src/*.parser.*
 	rm -f slang
 	rm -f testheap
+	rm -f testhash
 	rm -f libcore.a
 
 

@@ -58,6 +58,20 @@ void Context::cleanup() {
 }
 
 void Context::clear() {
+#if defined(_SYMTBL) && defined(_CTXH)
+  ObjectMap::ValueVector values;
+  size_t n = mVars.getValues(values);
+  for (size_t i=0; i<n; ++i) {
+    if (values[i]) {
+      if (values[i]->refCount() <= 0) {
+        std::ostringstream oss;
+        oss << "*** Object in context has already been deleted";
+        throw std::runtime_error(oss.str());
+      }
+      values[i]->decRef();
+    }
+  }
+#else
   ObjectMap::iterator it = mVars.begin();
   while (it != mVars.end()) {
     if (it->second) {
@@ -70,11 +84,16 @@ void Context::clear() {
     }
     ++it;
   }
+#endif
   mVars.clear();
 }
 
 bool Context::hasVar(const Symbol &name, bool inherit) const {
+#if defined(_SYMTBL) && defined(_CTXH)
+  if (mVars.hasKey(name)) {
+#else
   if (mVars.find(name) != mVars.end()) {
+#endif
     return true;
   } else if (mParent && inherit) {
     return mParent->hasVar(name, true);
@@ -84,15 +103,35 @@ bool Context::hasVar(const Symbol &name, bool inherit) const {
 }
 
 void Context::setVar(const Symbol &name, Object *v, bool inherit) {
+#if defined(_SYMTBL) && defined(_CTXH)
   if (mParent && inherit && mParent->hasVar(name, true)) {
     mParent->setVar(name, v, true);
-    // return?
+    return;
+  }
+  Object *oldVal = 0;
+  if (mVars.getValue(name, oldVal)) {
+    if (!oldVal) {
+      mVars.insert(name, v);
+    } else if (oldVal != v) {
+      oldVal->decRef();
+      mVars.insert(name, v);
+    } else {
+      return;
+    }
+  } else {
+    mVars.insert(name, v);
+  }
+#else
+  if (mParent && inherit && mParent->hasVar(name, true)) {
+    mParent->setVar(name, v, true);
     return;
   }
   ObjectMap::iterator it = mVars.find(name);
   if (it != mVars.end()) {
     if (it->second != v) {
-      it->second->decRef();
+      if (it->second) {
+        it->second->decRef();
+      }
       it->second = v;
     } else {
       return;
@@ -100,12 +139,21 @@ void Context::setVar(const Symbol &name, Object *v, bool inherit) {
   } else {
     mVars[name] = v;
   }
+#endif
   if (v) {
     v->incRef();
   }
 }
 
 Object* Context::getVar(const Symbol &name, bool inherit) const {
+#if defined(_SYMTBL) && defined(_CTXH)
+  Object *o = 0;
+  if (mVars.getValue(name, o)) {
+    if (o) {
+      o->incRef();
+    }
+    return o;
+#else
   ObjectMap::const_iterator it = mVars.find(name);
   if (it != mVars.end()) {
     Object *o = it->second;
@@ -113,7 +161,7 @@ Object* Context::getVar(const Symbol &name, bool inherit) const {
       o->incRef();
     }
     return o;
-      
+#endif
   } else {
     if (mParent && inherit) {
       return mParent->getVar(name);
@@ -124,14 +172,18 @@ Object* Context::getVar(const Symbol &name, bool inherit) const {
 }
 
 Callable* Context::getCallable(const Symbol &name, bool inherit) const {
+#if defined(_SYMTBL) && defined(_CTXH)
+  Object *o = 0;
+  if (mVars.getValue(name, o) && o && o->isCallable()) {
+    o->incRef();
+    return (Callable*) o;
+#else
   ObjectMap::const_iterator it = mVars.find(name);
   if (it != mVars.end() && it->second && it->second->isCallable()) {
     Object *o = it->second;
-    if (o) {
-      o->incRef();
-    }
+    o->incRef();
     return (Callable*) o;
-    
+#endif
   } else {
     if (mParent && inherit) {
       return mParent->getCallable(name);
@@ -142,6 +194,15 @@ Callable* Context::getCallable(const Symbol &name, bool inherit) const {
 }
 
 void Context::toStream(std::ostream &os, const std::string &indent) const {
+#if defined(_SYMTBL) && defined(_CTXH)
+  ObjectMap::KeyValueVector kv;
+  size_t n = mVars.getPairs(kv);
+  for (size_t i=0; i<n; ++i) {
+    os << indent << "\"" << kv[i].first << "\" = ";
+    kv[i].second->toStream(os);
+    os << std::endl;
+  }
+#else
   ObjectMap::const_iterator it = mVars.begin();
   while (it != mVars.end()) {
     os << indent << "\"" << it->first << "\" = ";
@@ -149,6 +210,7 @@ void Context::toStream(std::ostream &os, const std::string &indent) const {
     os << std::endl;
     ++it;
   }
+#endif
   if (mParent != 0) {
     os << indent << "From parent context:" << std::endl;
     mParent->toStream(os, indent+"  ");

@@ -44,7 +44,13 @@ typedef struct YYLTYPE {
 
 #ifdef _WIN32
 // flex on windows doesn't have the option to generate the lexer header
-extern int yylex(YYSTYPE *yylval_param, YYLTYPE *yylloc_param, yyscan_t yyscanner);
+// version is TOO fucking old, doesn't recognize reentrant
+// => Sorry you will have to generate lexer and parser file on a decent platform
+//typedef void* yyscan_t;
+//extern int yylex(YYSTYPE *yylval_param, YYLTYPE *yylloc_param, yyscan_t yyscanner);
+//extern int yylex_init_extra(struct ParserData*, yyscan_t*);
+//extern int yyset_in(FILE*, yyscan_t);
+#include "slang.lexer.h"
 #else
 #include "slang.lexer.h"
 #endif

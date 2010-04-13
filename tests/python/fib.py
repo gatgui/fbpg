@@ -5,4 +5,4 @@ def fibonacci(n):
     a, b = b, a + b
   return a
 
-print(fibonacci(10000))
+fibonacci(10000)
