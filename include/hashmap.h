@@ -244,18 +244,18 @@ struct HashValue<double, H> {
 // ---
 
 template <typename KeyType, typename ValueType, HashFunc H>
-HashMap<KeyType, ValueType, H>::iterator::iterator() {
+inline HashMap<KeyType, ValueType, H>::iterator::iterator() {
 }
 
 template <typename KeyType, typename ValueType, HashFunc H>
-HashMap<KeyType, ValueType, H>::iterator::iterator(
+inline HashMap<KeyType, ValueType, H>::iterator::iterator(
   typename HashMap<KeyType, ValueType, H>::EntryListVector::iterator bend,
   typename HashMap<KeyType, ValueType, H>::EntryListVector::iterator bit)
   : mBEnd(bend), mBIt(bit) {
 }
 
 template <typename KeyType, typename ValueType, HashFunc H>
-HashMap<KeyType, ValueType, H>::iterator::iterator(
+inline HashMap<KeyType, ValueType, H>::iterator::iterator(
   typename HashMap<KeyType, ValueType, H>::EntryListVector::iterator bend,
   typename HashMap<KeyType, ValueType, H>::EntryListVector::iterator bit,
   typename HashMap<KeyType, ValueType, H>::EntryList::iterator eit)
@@ -263,17 +263,17 @@ HashMap<KeyType, ValueType, H>::iterator::iterator(
 }
 
 template <typename KeyType, typename ValueType, HashFunc H>
-HashMap<KeyType, ValueType, H>::iterator::iterator(
+inline HashMap<KeyType, ValueType, H>::iterator::iterator(
   const typename HashMap<KeyType, ValueType, H>::iterator &rhs)
   : mBEnd(rhs.mBEnd), mBIt(rhs.mBIt), mEIt(rhs.mEIt) {
 }
 
 template <typename KeyType, typename ValueType, HashFunc H>
-HashMap<KeyType, ValueType, H>::iterator::~iterator() {
+inline HashMap<KeyType, ValueType, H>::iterator::~iterator() {
 }
 
 template <typename KeyType, typename ValueType, HashFunc H>
-typename HashMap<KeyType, ValueType, H>::iterator&
+inline typename HashMap<KeyType, ValueType, H>::iterator&
 HashMap<KeyType, ValueType, H>::iterator::operator=(
   const typename HashMap<KeyType, ValueType, H>::iterator &rhs)
 {
@@ -286,7 +286,7 @@ HashMap<KeyType, ValueType, H>::iterator::operator=(
 }
 
 template <typename KeyType, typename ValueType, HashFunc H>
-bool HashMap<KeyType, ValueType, H>::iterator::operator==(
+inline bool HashMap<KeyType, ValueType, H>::iterator::operator==(
   const typename HashMap<KeyType, ValueType, H>::iterator &rhs) const
 {
   if ((mBIt != rhs.mBIt) ||
@@ -297,26 +297,26 @@ bool HashMap<KeyType, ValueType, H>::iterator::operator==(
 }
 
 template <typename KeyType, typename ValueType, HashFunc H>
-bool HashMap<KeyType, ValueType, H>::iterator::operator!=(
+inline bool HashMap<KeyType, ValueType, H>::iterator::operator!=(
   const typename HashMap<KeyType, ValueType, H>::iterator &rhs) const
 {
   return !operator==(rhs);
 }
 
 template <typename KeyType, typename ValueType, HashFunc H>
-typename HashMap<KeyType, ValueType, H>::Entry&
+inline typename HashMap<KeyType, ValueType, H>::Entry&
 HashMap<KeyType, ValueType, H>::iterator::operator*() {
   return *mEIt;
 }
 
 template <typename KeyType, typename ValueType, HashFunc H>
-typename HashMap<KeyType, ValueType, H>::Entry*
+inline typename HashMap<KeyType, ValueType, H>::Entry*
 HashMap<KeyType, ValueType, H>::iterator::operator->() {
   return &(*mEIt);
 }
 
 template <typename KeyType, typename ValueType, HashFunc H>
-typename HashMap<KeyType, ValueType, H>::iterator&
+inline typename HashMap<KeyType, ValueType, H>::iterator&
 HashMap<KeyType, ValueType, H>::iterator::operator++() {
   if (mBIt == mBEnd) {
     return *this;
@@ -333,7 +333,7 @@ HashMap<KeyType, ValueType, H>::iterator::operator++() {
 }
 
 template <typename KeyType, typename ValueType, HashFunc H>
-typename HashMap<KeyType, ValueType, H>::iterator
+inline typename HashMap<KeyType, ValueType, H>::iterator
 HashMap<KeyType, ValueType, H>::iterator::operator++(int) {
   typename HashMap<KeyType, ValueType, H>::iterator rv(*this);
   operator++();
@@ -343,11 +343,11 @@ HashMap<KeyType, ValueType, H>::iterator::operator++(int) {
 // ---
 
 template <typename KeyType, typename ValueType, HashFunc H>
-HashMap<KeyType, ValueType, H>::const_iterator::const_iterator() {
+inline HashMap<KeyType, ValueType, H>::const_iterator::const_iterator() {
 }
 
 template <typename KeyType, typename ValueType, HashFunc H>
-HashMap<KeyType, ValueType, H>::const_iterator::const_iterator(
+inline HashMap<KeyType, ValueType, H>::const_iterator::const_iterator(
   typename HashMap<KeyType, ValueType, H>::EntryListVector::const_iterator bend,
   typename HashMap<KeyType, ValueType, H>::EntryListVector::const_iterator bit)
   : mBEnd(bend), mBIt(bit) {
@@ -355,7 +355,7 @@ HashMap<KeyType, ValueType, H>::const_iterator::const_iterator(
 
 
 template <typename KeyType, typename ValueType, HashFunc H>
-HashMap<KeyType, ValueType, H>::const_iterator::const_iterator(
+inline HashMap<KeyType, ValueType, H>::const_iterator::const_iterator(
   typename HashMap<KeyType, ValueType, H>::EntryListVector::const_iterator bend,
   typename HashMap<KeyType, ValueType, H>::EntryListVector::const_iterator bit,
   typename HashMap<KeyType, ValueType, H>::EntryList::const_iterator eit)
@@ -363,17 +363,17 @@ HashMap<KeyType, ValueType, H>::const_iterator::const_iterator(
 }
 
 template <typename KeyType, typename ValueType, HashFunc H>
-HashMap<KeyType, ValueType, H>::const_iterator::const_iterator(
+inline HashMap<KeyType, ValueType, H>::const_iterator::const_iterator(
   const typename HashMap<KeyType, ValueType, H>::const_iterator &rhs)
   : mBEnd(rhs.mBEnd), mBIt(rhs.mBIt), mEIt(rhs.mEIt) {
 }
 
 template <typename KeyType, typename ValueType, HashFunc H>
-HashMap<KeyType, ValueType, H>::const_iterator::~const_iterator() {
+inline HashMap<KeyType, ValueType, H>::const_iterator::~const_iterator() {
 }
 
 template <typename KeyType, typename ValueType, HashFunc H>
-typename HashMap<KeyType, ValueType, H>::const_iterator&
+inline typename HashMap<KeyType, ValueType, H>::const_iterator&
 HashMap<KeyType, ValueType, H>::const_iterator::operator=(
   const typename HashMap<KeyType, ValueType, H>::const_iterator &rhs)
 {
@@ -386,7 +386,7 @@ HashMap<KeyType, ValueType, H>::const_iterator::operator=(
 }
 
 template <typename KeyType, typename ValueType, HashFunc H>
-bool HashMap<KeyType, ValueType, H>::const_iterator::operator==(
+inline bool HashMap<KeyType, ValueType, H>::const_iterator::operator==(
   const typename HashMap<KeyType, ValueType, H>::const_iterator &rhs) const
 {
   if ((mBIt != rhs.mBIt) ||
@@ -397,26 +397,26 @@ bool HashMap<KeyType, ValueType, H>::const_iterator::operator==(
 }
 
 template <typename KeyType, typename ValueType, HashFunc H>
-bool HashMap<KeyType, ValueType, H>::const_iterator::operator!=(
+inline bool HashMap<KeyType, ValueType, H>::const_iterator::operator!=(
   const typename HashMap<KeyType, ValueType, H>::const_iterator &rhs) const
 {
   return !operator==(rhs);
 }
 
 template <typename KeyType, typename ValueType, HashFunc H>
-const typename HashMap<KeyType, ValueType, H>::Entry&
+inline const typename HashMap<KeyType, ValueType, H>::Entry&
 HashMap<KeyType, ValueType, H>::const_iterator::operator*() {
   return *mEIt;
 }
 
 template <typename KeyType, typename ValueType, HashFunc H>
-const typename HashMap<KeyType, ValueType, H>::Entry*
+inline const typename HashMap<KeyType, ValueType, H>::Entry*
 HashMap<KeyType, ValueType, H>::const_iterator::operator->() {
   return &(*mEIt);
 }
 
 template <typename KeyType, typename ValueType, HashFunc H>
-typename HashMap<KeyType, ValueType, H>::const_iterator&
+inline typename HashMap<KeyType, ValueType, H>::const_iterator&
 HashMap<KeyType, ValueType, H>::const_iterator::operator++() {
   if (mBIt == mBEnd) {
     return *this;
@@ -433,7 +433,7 @@ HashMap<KeyType, ValueType, H>::const_iterator::operator++() {
 }
 
 template <typename KeyType, typename ValueType, HashFunc H>
-typename HashMap<KeyType, ValueType, H>::const_iterator
+inline typename HashMap<KeyType, ValueType, H>::const_iterator
 HashMap<KeyType, ValueType, H>::const_iterator::operator++(int) {
   typename HashMap<KeyType, ValueType, H>::const_iterator rv(*this);
   operator++();
@@ -665,13 +665,13 @@ HashMap<KeyType, ValueType, H>::begin() const {
 }
 
 template <typename KeyType, typename ValueType, HashFunc H>
-typename HashMap<KeyType, ValueType, H>::iterator
+inline typename HashMap<KeyType, ValueType, H>::iterator
 HashMap<KeyType, ValueType, H>::end() {
   return iterator(mBuckets.end(), mBuckets.end());
 }
 
 template <typename KeyType, typename ValueType, HashFunc H>
-typename HashMap<KeyType, ValueType, H>::const_iterator
+inline typename HashMap<KeyType, ValueType, H>::const_iterator
 HashMap<KeyType, ValueType, H>::end() const {
   return const_iterator(mBuckets.end(), mBuckets.end());
 }
@@ -720,8 +720,8 @@ void HashMap<KeyType, ValueType, H>::erase(
 
 template <typename KeyType, typename ValueType, HashFunc H>
 ValueType&
-HashMap<KeyType, ValueType, H>::operator[](const KeyType &k) {
-  
+HashMap<KeyType, ValueType, H>::operator[](const KeyType &key) {
+  /*
   typename HashMap<KeyType, ValueType, H>::iterator it = find(k);
   
   if (it != end()) {
@@ -731,6 +731,7 @@ HashMap<KeyType, ValueType, H>::operator[](const KeyType &k) {
     Entry e;
     e.h = HashValue<KeyType, H>::Compute(k);
     e.first = k;
+    e.second = ValueType();
     unsigned int idx = (e.h % mNumBuckets);
     EntryList &el = mBuckets[idx];
     el.push_back(e);
@@ -744,17 +745,54 @@ HashMap<KeyType, ValueType, H>::operator[](const KeyType &k) {
       return el.back().second;
     }
   }
+  */
+  Entry e;
+  e.h = HashValue<KeyType, H>::Compute(key);
+  e.first = key;
+  unsigned int idx = (e.h % mNumBuckets);
+  EntryList &el = mBuckets[idx];
+  typename EntryList::iterator it = std::find(el.begin(), el.end(), e);
+  if (it == el.end()) {
+    el.push_back(e);
+    el.back().second = ValueType();
+    ++mNumEntries;
+    if (100 * mNumEntries / mNumBuckets > 50) {
+      // load factor above 50%
+      expand();
+      idx = (e.h % mNumBuckets);
+      EntryList &el2 = mBuckets[idx];
+      typename EntryList::iterator it = std::find(el2.begin(), el2.end(), e);
+      return it->second;
+      
+    } else {
+      return el.back().second;
+    }
+  } else {
+    return it->second;
+  }
 }
 
 template <typename KeyType, typename ValueType, HashFunc H>
 const ValueType&
-HashMap<KeyType, ValueType, H>::operator[](const KeyType &k) const {
+HashMap<KeyType, ValueType, H>::operator[](const KeyType &key) const {
+  /*
   typename HashMap<KeyType, ValueType, H>::iterator it = find(k);
-  
   if (it == end()) {
     throw std::runtime_error("Invalid Key");
   }
   return it->second; 
+  */
+  Entry e;
+  e.h = HashValue<KeyType, H>::Compute(key);
+  e.first = key;
+  unsigned int idx = (e.h % mNumBuckets);
+  const EntryList &el = mBuckets[idx];
+  typename EntryList::const_iterator it = std::find(el.begin(), el.end(), e);
+  if (it == el.end()) {
+    throw std::runtime_error("Invalid Key");
+  } else {
+    return it->second;
+  }
 }
 
 template <typename KeyType, typename ValueType, HashFunc H>
