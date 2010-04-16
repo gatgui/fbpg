@@ -112,7 +112,7 @@ class HashMap {
     
   public:
     
-    HashMap(size_t numBuckets=16);
+    HashMap(); //size_t numBuckets=16);
     HashMap(const HashMap &rhs);
     ~HashMap();
     
@@ -152,6 +152,7 @@ class HashMap {
     EntryListVector mBuckets;
     size_t mNumBuckets;
     size_t mNumEntries;
+    size_t mBucketsMask;
     
 };
 
@@ -460,15 +461,15 @@ bool HashMap<KeyType, ValueType, H>::Entry::operator==(
 // ---
 
 template <typename KeyType, typename ValueType, HashFunc H>
-HashMap<KeyType, ValueType, H>::HashMap(size_t numBuckets)
-  : mNumBuckets(numBuckets), mNumEntries(0) {
+HashMap<KeyType, ValueType, H>::HashMap() //size_t numBuckets)
+  : mNumBuckets(16), mNumEntries(0), mBucketsMask(0x0000000F) {
   mBuckets.resize(mNumBuckets);
 }
 
 template <typename KeyType, typename ValueType, HashFunc H>
 HashMap<KeyType, ValueType, H>::HashMap(const HashMap &rhs)
   : mBuckets(rhs.mBuckets), mNumBuckets(rhs.mNumBuckets),
-    mNumEntries(rhs.mNumEntries) {
+    mNumEntries(rhs.mNumEntries), mBucketsMask(rhs.mBucketsMask) {
 }
 
 template <typename KeyType, typename ValueType, HashFunc H>
@@ -484,31 +485,46 @@ HashMap<KeyType, ValueType, H>& HashMap<KeyType, ValueType, H>::operator=(
     mBuckets = rhs.mBuckets;
     mNumEntries = rhs.mNumEntries;
     mNumBuckets = rhs.mNumBuckets;
+    mBucketsMask = rhs.mBucketsMask;
   }
   return *this;
 }
 
 template <typename KeyType, typename ValueType, HashFunc H>
-double HashMap<KeyType, ValueType, H>::loadFactor() const {
+inline double HashMap<KeyType, ValueType, H>::loadFactor() const {
   return (double(mNumEntries) / double(mNumBuckets));
 }
 
 template <typename KeyType, typename ValueType, HashFunc H>
-size_t HashMap<KeyType, ValueType, H>::size() const {
+inline size_t HashMap<KeyType, ValueType, H>::size() const {
   return mNumEntries;
 }
 
 template <typename KeyType, typename ValueType, HashFunc H>
 void HashMap<KeyType, ValueType, H>::insert(const KeyType &key, const ValueType &val) {
-  Entry e;
-  e.h = HashValue<KeyType, H>::Compute(key);
-  e.first = key;
-  unsigned int idx = (e.h % mNumBuckets);
+  //Entry e;
+  //e.h = HashValue<KeyType, H>::Compute(key);
+  //e.first = key;
+  //unsigned int idx = (e.h % mNumBuckets);
+  //EntryList &el = mBuckets[idx];
+  //typename EntryList::iterator it = std::find(el.begin(), el.end(), e);
+  register unsigned int h = HashValue<KeyType, H>::Compute(key);
+  register unsigned int idx = h & mBucketsMask;
   EntryList &el = mBuckets[idx];
-  typename EntryList::iterator it = std::find(el.begin(), el.end(), e);
+  typename EntryList::iterator it = el.begin();
+  while (it != el.end()) {
+    if (it->first == key) {
+      break;
+    }
+    ++it;
+  }
   if (it == el.end()) {
+    Entry e;
+    e.h = h;
+    e.first = key;
+    e.second = val;
     el.push_back(e);
-    el.back().second = val;
+    //el.back().second = val;
     ++mNumEntries;
     if (100 * mNumEntries / mNumBuckets > 50) {
       // load factor above 50%
@@ -521,12 +537,22 @@ void HashMap<KeyType, ValueType, H>::insert(const KeyType &key, const ValueType 
 
 template <typename KeyType, typename ValueType, HashFunc H>
 void HashMap<KeyType, ValueType, H>::erase(const KeyType &k) {
-  Entry e;
-  e.h = HashValue<KeyType, H>::Compute(k);
-  e.first = k;
-  unsigned int idx = (e.h % mNumBuckets);
+  //Entry e;
+  //e.h = HashValue<KeyType, H>::Compute(k);
+  //e.first = k;
+  //unsigned int idx = (e.h % mNumBuckets);
+  //EntryList &el = mBuckets[idx];
+  //typename EntryList::iterator it = std::find(el.begin(), el.end(), e);
+  register unsigned int h = HashValue<KeyType, H>::Compute(k);
+  register unsigned int idx = h & mBucketsMask;
   EntryList &el = mBuckets[idx];
-  typename EntryList::iterator it = std::find(el.begin(), el.end(), e);
+  typename EntryList::iterator it = el.begin();
+  while (it != el.end()) {
+    if (it->first == k) {
+      break;
+    }
+    ++it;
+  }
   if (it != el.end()) {
     el.erase(it);
     --mNumEntries;
@@ -543,23 +569,43 @@ void HashMap<KeyType, ValueType, H>::clear() {
 
 template <typename KeyType, typename ValueType, HashFunc H>
 bool HashMap<KeyType, ValueType, H>::hasKey(const KeyType &key) const {
-  Entry e;
-  e.h = HashValue<KeyType, H>::Compute(key);
-  e.first = key;
-  unsigned int idx = (e.h % mNumBuckets);
+  //Entry e;
+  //e.h = HashValue<KeyType, H>::Compute(key);
+  //e.first = key;
+  //unsigned int idx = (e.h % mNumBuckets);
+  //const EntryList &el = mBuckets[idx];
+  //typename EntryList::const_iterator it = std::find(el.begin(), el.end(), e);
+  register unsigned int h = HashValue<KeyType, H>::Compute(key);
+  register unsigned int idx = h & mBucketsMask;
   const EntryList &el = mBuckets[idx];
-  typename EntryList::const_iterator it = std::find(el.begin(), el.end(), e);
+  typename EntryList::const_iterator it = el.begin();
+  while (it != el.end()) {
+    if (it->first == key) {
+      break;
+    }
+    ++it;
+  }
   return (it != el.end());
 }
 
 template <typename KeyType, typename ValueType, HashFunc H>
 const ValueType& HashMap<KeyType, ValueType, H>::getValue(const KeyType &k) const {
-  Entry e;
-  e.h = HashValue<KeyType, H>::Compute(k);
-  e.first = k;
-  unsigned int idx = (e.h % mNumBuckets);
+  //Entry e;
+  //e.h = HashValue<KeyType, H>::Compute(k);
+  //e.first = k;
+  //unsigned int idx = (e.h % mNumBuckets);
+  //const EntryList &el = mBuckets[idx];
+  //typename EntryList::const_iterator it = std::find(el.begin(), el.end(), e);
+  register unsigned int h = HashValue<KeyType, H>::Compute(k);
+  register unsigned int idx = h & mBucketsMask;
   const EntryList &el = mBuckets[idx];
-  typename EntryList::const_iterator it = std::find(el.begin(), el.end(), e);
+  typename EntryList::const_iterator it = el.begin();
+  while (it != el.end()) {
+    if (it->first == k) {
+      break;
+    }
+    ++it;
+  }
   if (it == el.end()) {
     std::ostringstream oss;
     oss << "Invalid key: " << k;
@@ -570,12 +616,22 @@ const ValueType& HashMap<KeyType, ValueType, H>::getValue(const KeyType &k) cons
 
 template <typename KeyType, typename ValueType, HashFunc H>
 ValueType& HashMap<KeyType, ValueType, H>::getValue(const KeyType &k) {
-  Entry e;
-  e.h = HashValue<KeyType, H>::Compute(k);
-  e.first = k;
-  unsigned int idx = (e.h % mNumBuckets);
+  //Entry e;
+  //e.h = HashValue<KeyType, H>::Compute(k);
+  //e.first = k;
+  //unsigned int idx = (e.h % mNumBuckets);
+  //EntryList &el = mBuckets[idx];
+  //typename EntryList::iterator it = std::find(el.begin(), el.end(), e);
+  register unsigned int h = HashValue<KeyType, H>::Compute(k);
+  register unsigned int idx = h & mBucketsMask;
   EntryList &el = mBuckets[idx];
-  typename EntryList::iterator it = std::find(el.begin(), el.end(), e);
+  typename EntryList::iterator it = el.begin();
+  while (it != el.end()) {
+    if (it->first == k) {
+      break;
+    }
+    ++it;
+  }
   if (it == el.end()) {
     std::ostringstream oss;
     oss << "Invalid key: " << k;
@@ -586,12 +642,22 @@ ValueType& HashMap<KeyType, ValueType, H>::getValue(const KeyType &k) {
 
 template <typename KeyType, typename ValueType, HashFunc H>
 bool HashMap<KeyType, ValueType, H>::getValue(const KeyType &k, ValueType &v) const {
-  Entry e;
-  e.h = HashValue<KeyType, H>::Compute(k);
-  e.first = k;
-  unsigned int idx = (e.h % mNumBuckets);
+  //Entry e;
+  //e.h = HashValue<KeyType, H>::Compute(k);
+  //e.first = k;
+  //unsigned int idx = (e.h % mNumBuckets);
+  //const EntryList &el = mBuckets[idx];
+  //typename EntryList::const_iterator it = std::find(el.begin(), el.end(), e);
+  register unsigned int h = HashValue<KeyType, H>::Compute(k);
+  register unsigned int idx = h & mBucketsMask;
   const EntryList &el = mBuckets[idx];
-  typename EntryList::const_iterator it = std::find(el.begin(), el.end(), e);
+  typename EntryList::const_iterator it = el.begin();
+  while (it != el.end()) {
+    if (it->first == k) {
+      break;
+    }
+    ++it;
+  }
   if (it == el.end()) {
     return false;
   } else {
@@ -688,12 +754,22 @@ HashMap<KeyType, ValueType, H>::end() const {
 template <typename KeyType, typename ValueType, HashFunc H>
 typename HashMap<KeyType, ValueType, H>::iterator
 HashMap<KeyType, ValueType, H>::find(const KeyType &k) {
-  Entry e;
-  e.h = HashValue<KeyType, H>::Compute(k);
-  e.first = k;
-  unsigned int idx = (e.h % mNumBuckets);
+  //Entry e;
+  //e.h = HashValue<KeyType, H>::Compute(k);
+  //e.first = k;
+  //unsigned int idx = (e.h % mNumBuckets);
+  //typename EntryListVector::iterator bit = mBuckets.begin() + idx;
+  //typename EntryList::iterator eit = std::find(bit->begin(), bit->end(), e);
+  register unsigned int h = HashValue<KeyType, H>::Compute(k);
+  register unsigned int idx = h & mBucketsMask;
   typename EntryListVector::iterator bit = mBuckets.begin() + idx;
-  typename EntryList::iterator eit = std::find(bit->begin(), bit->end(), e);
+  typename EntryList::iterator eit = bit->begin();
+  while (eit != bit->end()) {
+    if (eit->first == k) {
+      break;
+    }
+    ++eit;
+  }
   if (eit == bit->end()) {
     return iterator(mBuckets.end(), mBuckets.end());
   } else {
@@ -704,12 +780,22 @@ HashMap<KeyType, ValueType, H>::find(const KeyType &k) {
 template <typename KeyType, typename ValueType, HashFunc H>
 typename HashMap<KeyType, ValueType, H>::const_iterator
 HashMap<KeyType, ValueType, H>::find(const KeyType &k) const {
-  Entry e;
-  e.h = HashValue<KeyType, H>::Compute(k);
-  e.first = k;
-  unsigned int idx = (e.h % mNumBuckets);
+  //Entry e;
+  //e.h = HashValue<KeyType, H>::Compute(k);
+  //e.first = k;
+  //unsigned int idx = (e.h % mNumBuckets);
+  //typename EntryListVector::const_iterator bit = mBuckets.begin() + idx;
+  //typename EntryList::const_iterator eit = std::find(bit->begin(), bit->end(), e);
+  register unsigned int h = HashValue<KeyType, H>::Compute(k);
+  register unsigned int idx = h & mBucketsMask;
   typename EntryListVector::const_iterator bit = mBuckets.begin() + idx;
-  typename EntryList::const_iterator eit = std::find(bit->begin(), bit->end(), e);
+  typename EntryList::const_iterator eit = bit->begin();
+  while (eit != bit->end()) {
+    if (eit->first == k) {
+      break;
+    }
+    ++eit;
+  }
   if (eit == bit->end()) {
     return const_iterator(mBuckets.end(), mBuckets.end());
   } else {
@@ -730,47 +816,44 @@ void HashMap<KeyType, ValueType, H>::erase(
 template <typename KeyType, typename ValueType, HashFunc H>
 ValueType&
 HashMap<KeyType, ValueType, H>::operator[](const KeyType &key) {
-  /*
-  typename HashMap<KeyType, ValueType, H>::iterator it = find(k);
-  
-  if (it != end()) {
-    return it->second;
-    
-  } else {
-    Entry e;
-    e.h = HashValue<KeyType, H>::Compute(k);
-    e.first = k;
-    e.second = ValueType();
-    unsigned int idx = (e.h % mNumBuckets);
-    EntryList &el = mBuckets[idx];
-    el.push_back(e);
-    ++mNumEntries;
-    if (100 * mNumEntries / mNumBuckets > 50) {
-      expand();
-      it = find(k);
-      return it->second;
-      
-    } else {
-      return el.back().second;
-    }
-  }
-  */
-  Entry e;
-  e.h = HashValue<KeyType, H>::Compute(key);
-  e.first = key;
-  unsigned int idx = (e.h % mNumBuckets);
+  //Entry e;
+  //e.h = HashValue<KeyType, H>::Compute(key);
+  //e.first = key;
+  //unsigned int idx = (e.h % mNumBuckets);
+  //EntryList &el = mBuckets[idx];
+  //typename EntryList::iterator it = std::find(el.begin(), el.end(), e);
+  register unsigned int h = HashValue<KeyType, H>::Compute(key);
+  register unsigned int idx = h & mBucketsMask;
   EntryList &el = mBuckets[idx];
-  typename EntryList::iterator it = std::find(el.begin(), el.end(), e);
+  typename EntryList::iterator it = el.begin();
+  while (it != el.end()) {
+    if (it->first == key) {
+      break;
+    }
+    ++it;
+  }
   if (it == el.end()) {
+    Entry e;
+    e.first = key;
+    e.h = h;
+    e.second = ValueType();
     el.push_back(e);
-    el.back().second = ValueType();
+    //el.back().second = ValueType();
     ++mNumEntries;
     if (100 * mNumEntries / mNumBuckets > 50) {
       // load factor above 50%
       expand();
-      idx = (e.h % mNumBuckets);
+      //idx = (e.h % mNumBuckets);
+      idx = e.h & mBucketsMask;
       EntryList &el2 = mBuckets[idx];
-      typename EntryList::iterator it = std::find(el2.begin(), el2.end(), e);
+      //typename EntryList::iterator it = std::find(el2.begin(), el2.end(), e);
+      typename EntryList::iterator it = el2.begin();
+      while (it != el2.end()) {
+        if (it->first == key) {
+          break;
+        }
+        ++it;
+      }
       return it->second;
       
     } else {
@@ -784,19 +867,22 @@ HashMap<KeyType, ValueType, H>::operator[](const KeyType &key) {
 template <typename KeyType, typename ValueType, HashFunc H>
 const ValueType&
 HashMap<KeyType, ValueType, H>::operator[](const KeyType &key) const {
-  /*
-  typename HashMap<KeyType, ValueType, H>::iterator it = find(k);
-  if (it == end()) {
-    throw std::runtime_error("Invalid Key");
-  }
-  return it->second; 
-  */
-  Entry e;
-  e.h = HashValue<KeyType, H>::Compute(key);
-  e.first = key;
-  unsigned int idx = (e.h % mNumBuckets);
+  //Entry e;
+  //e.h = HashValue<KeyType, H>::Compute(key);
+  //e.first = key;
+  //unsigned int idx = (e.h % mNumBuckets);
+  //const EntryList &el = mBuckets[idx];
+  //typename EntryList::const_iterator it = std::find(el.begin(), el.end(), e);
+  register unsigned int h = HashValue<KeyType, H>::Compute(key);
+  register unsigned int idx = h & mBucketsMask;
   const EntryList &el = mBuckets[idx];
-  typename EntryList::const_iterator it = std::find(el.begin(), el.end(), e);
+  typename EntryList::const_iterator it = el.begin();
+  while (it != el.end()) {
+    if (it->first == key) {
+      break;
+    }
+    ++it;
+  }
   if (it == el.end()) {
     throw std::runtime_error("Invalid Key");
   } else {
@@ -806,15 +892,18 @@ HashMap<KeyType, ValueType, H>::operator[](const KeyType &key) const {
 
 template <typename KeyType, typename ValueType, HashFunc H>
 void HashMap<KeyType, ValueType, H>::expand() {
-  size_t oNumBuckets = mNumBuckets;
-  mNumBuckets *= 2;
+  register unsigned int idx;
+  register size_t oNumBuckets = mNumBuckets;
+  mNumBuckets = mNumBuckets << 1; // x2
+  mBucketsMask = (mBucketsMask << 1) | 1;
   EntryListVector buckets(mNumBuckets);
   std::swap(buckets, mBuckets);
   for (size_t i=0; i<oNumBuckets; ++i) {
     EntryList &el = buckets[i];
     typename EntryList::iterator it = el.begin();
     while (it != el.end()) {
-      unsigned int idx = (it->h % mNumBuckets);
+      //unsigned int idx = (it->h % mNumBuckets);
+      idx = it->h & mBucketsMask;
       mBuckets[idx].push_back(*it);
       ++it;
     }
