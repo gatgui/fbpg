@@ -14,7 +14,7 @@ typedef unsigned int (*HashFunc)(const unsigned char *, size_t);
 
 template <typename T, HashFunc H>
 struct HashValue {
-  static unsigned int Compute(const T &val) {
+  inline static unsigned int Compute(const T &val) {
     return H((const unsigned char *)&val, sizeof(T));
   }
 };
@@ -159,84 +159,93 @@ class HashMap {
 
 template <HashFunc H>
 struct HashValue<char*, H> {
-  static unsigned int Compute(const char* &val) {
+  inline static unsigned int Compute(const char* &val) {
     return H((const unsigned char *)val, strlen(val));
   }
 };
 
 template <HashFunc H>
 struct HashValue<std::string, H> {
-  static unsigned int Compute(const std::string &val) {
+  inline static unsigned int Compute(const std::string &val) {
     return H((const unsigned char *)val.c_str(), val.length());
   }
 };
 
 template <HashFunc H>
 struct HashValue<char, H> {
-  static unsigned int Compute(const char &val) {
+  inline static unsigned int Compute(const char &val) {
     return (unsigned int)val;
   }
 };
 
 template <HashFunc H>
 struct HashValue<unsigned char, H> {
-  static unsigned int Compute(const unsigned char &val) {
+  inline static unsigned int Compute(const unsigned char &val) {
     return (unsigned int)val;
   }
 };
 
 template <HashFunc H>
 struct HashValue<short, H> {
-  static unsigned int Compute(const short &val) {
+  inline static unsigned int Compute(const short &val) {
     return (unsigned int)val;
   }
 };
 
 template <HashFunc H>
 struct HashValue<unsigned short, H> {
-  static unsigned int Compute(const unsigned short &val) {
+  inline static unsigned int Compute(const unsigned short &val) {
     return (unsigned int)val;
   }
 };
 
 template <HashFunc H>
 struct HashValue<int, H> {
-  static unsigned int Compute(const int &val) {
+  inline static unsigned int Compute(const int &val) {
     return (unsigned int)val;
   }
 };
 
 template <HashFunc H>
 struct HashValue<unsigned int, H> {
-  static unsigned int Compute(const unsigned int &val) {
+  inline static unsigned int Compute(const unsigned int &val) {
     return (unsigned int)val;
   }
 };
 
 template <HashFunc H>
 struct HashValue<long, H> {
-  static unsigned int Compute(const long &val) {
+  inline static unsigned int Compute(const long &val) {
     return (unsigned int)val;
   }
 };
 
 template <HashFunc H>
 struct HashValue<unsigned long, H> {
-  static unsigned int Compute(const unsigned long &val) {
+  inline static unsigned int Compute(const unsigned long &val) {
     return (unsigned int)val;
   }
 };
 
+/* size_t == unsigned long
+template <HashFunc H>
+struct HashValue<size_t, H> {
+  inline static unsigned int Compute(const size_t &val) {
+    return (unsigned int)val;
+  }
+};
+*/
+
 template <HashFunc H>
 struct HashValue<float, H> {
-  static unsigned int Compute(const float &val) {
+  inline static unsigned int Compute(const float &val) {
     return (unsigned int)(*((unsigned int*)&val));
   }
 };
 
 template <HashFunc H>
 struct HashValue<double, H> {
-  static unsigned int Compute(const double &val) {
+  inline static unsigned int Compute(const double &val) {
     return (unsigned int)(*((unsigned int*)&val));
   }
 };

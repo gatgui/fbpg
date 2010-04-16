@@ -12,11 +12,7 @@ typedef std::map<long, long> LongMap;
 typedef HashMap<std::string, long>  StringHash;
 typedef std::map<std::string, long> StringMap;
 
-// conclusion of those tests
-// Hash map with no conflicting keys is faster than std::map with long keys
-// Is slower than std::map with std::string keys with few elements be rapidly
-// gets faster when the number of elements grows
-// what about conflicting keys?
+// HashMap is slower with small number of elements
 
 int main(int argc, char **argv) {
   
@@ -63,38 +59,45 @@ int main(int argc, char **argv) {
   size_t nstrings = sizeof(strpool) / sizeof(const char*);
   
   // fill elements
-  std::vector<std::string> keys(nelems);
+  std::vector<std::string> skeys(nelems);
+  std::vector<long> lkeys(nelems);
   std::cout << "Buid hash and map with " << nelems << " elements" << std::endl;
-  for (int k=0; k<nelems; ++k) {
-    int v = rand();
+  for (int i=0; i<nelems; ++i) {
+    long k = rand();
+    lkeys[i] = k;
+    long v = rand();
     lhash.insert(k, v);
     lmap[k] = v;
     int p = rand() % nstrings;
     int s = rand() % nstrings;
-    keys[k]  = strpool[p];
-    keys[k] += strpool[s];
-    shash.insert(keys[k], v);
-    smap[keys[k]] = v;
+    skeys[i]  = strpool[p];
+    skeys[i] += strpool[s];
+    shash.insert(skeys[i], v);
+    smap[skeys[i]] = v;
+    //std::cout << "  Add long key: " << lkeys[i] << std::endl;
+    //std::cout << "  Add string key: " << skeys[i] << std::endl;
   }
   
-  // check data
+  // check datas
+  std::cout << "Check data" << std::endl;
   for (int k=0; k<nelems; ++k) {
-    long v0 = lhash.getValue(k);
-    long v1 = lmap[k];
+    long v0 = lhash.getValue(lkeys[k]);
+    long v1 = lmap[lkeys[k]];
     if (v0 != v1) {
-      std::cout << "Data mismatch at long key \"" << k << "\"" << std::endl;
+      std::cout << "Data mismatch at long key \"" << lkeys[k] << "\"" << std::endl;
     }
-    v0 = shash.getValue(keys[k]);
-    v1 = smap[keys[k]];
+    v0 = shash.getValue(skeys[k]);
+    v1 = smap[skeys[k]];
     if (v0 != v1) {
-      std::cout << "Data mismatch at std::string key \"" << keys[k] << "\"" << std::endl;
+      std::cout << "Data mismatch at std::string key \"" << skeys[k] << "\"" << std::endl;
     }
   }
   
+  // test long map
   from = clock();
   for (int i=0; i<naccess; ++i) {
     long k = rand() % nelems;
-    long v = lhash.getValue(k);
+    long v = lhash.getValue(lkeys[k]);
   }
   to = clock();
   diff = double(to - from) / CLOCKS_PER_SEC;
@@ -102,16 +105,17 @@ int main(int argc, char **argv) {
   from = clock();
   for (int i=0; i<naccess; ++i) {
     long k = rand() % nelems;
-    long v = lmap[k];
+    long v = lmap[lkeys[k]];
   }
   to = clock();
   diff = double(to - from) / CLOCKS_PER_SEC;
   std::cout << "LongMap " << naccess << " random access: " << diff << " (s)" << std::endl;
   
+  // test string map
   from = clock();
   for (int i=0; i<naccess; ++i) {
     long k = rand() % nelems;
-    long v = shash.getValue(keys[k]);
+    long v = shash.getValue(skeys[k]);
   }
   to = clock();
   diff = double(to - from) / CLOCKS_PER_SEC;
@@ -119,7 +123,7 @@ int main(int argc, char **argv) {
   from = clock();
   for (int i=0; i<naccess; ++i) {
     long k = rand() % nelems;
-    long v = smap[keys[k]];
+    long v = smap[skeys[k]];
   }
   to = clock();
   diff = double(to - from) / CLOCKS_PER_SEC;
