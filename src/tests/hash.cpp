@@ -102,6 +102,7 @@ int main(int argc, char **argv) {
   to = clock();
   diff = double(to - from) / CLOCKS_PER_SEC;
   std::cout << "LongHash " << naccess << " random access: " << diff << " (s)" << std::endl;
+  
   from = clock();
   for (int i=0; i<naccess; ++i) {
     long k = rand() % nelems;
@@ -120,6 +121,7 @@ int main(int argc, char **argv) {
   to = clock();
   diff = double(to - from) / CLOCKS_PER_SEC;
   std::cout << "StringHash " << naccess << " random access: " << diff << " (s)" << std::endl;
+  
   from = clock();
   for (int i=0; i<naccess; ++i) {
     long k = rand() % nelems;
@@ -128,6 +130,69 @@ int main(int argc, char **argv) {
   to = clock();
   diff = double(to - from) / CLOCKS_PER_SEC;
   std::cout << "StringMap " << naccess << " random access: " << diff << " (s)" << std::endl;
+  
+  // test random keys
+  // should make it so we have around 50% chances to find the element
+  // build a new key array
+  size_t numhits = 0;
+  double hitperc = 0.0;
+  std::vector<long> rkeys(2*nelems);
+  for (size_t i=0; i<lkeys.size(); ++i) {
+    rkeys[i] = lkeys[i];
+  }
+  for (size_t i=nelems; i<2*nelems; ++i) {
+    rkeys[i] = rand();
+  }
+  
+  from = clock();
+  for (int i=0; i<naccess; ++i) {
+    long k = rkeys[rand() % (2 * nelems)];
+    long v;
+    if (lhash.getValue(k, v)) {
+    //if (lhash.hasKey(k)) {
+      ++numhits;
+      //long v = lhash.getValue(k);
+    }
+  }
+  to = clock();
+  diff = double(to - from) / CLOCKS_PER_SEC;
+  hitperc = double(numhits) / double(naccess);
+  std::cout << "LongHash " << naccess << " random keys: "
+            << diff << " (s) [" << (hitperc*100) << " % hit]" << std::endl;
+  
+  HashMap<long, long>::iterator hit;
+  numhits = 0;
+  from = clock();
+  for (int i=0; i<naccess; ++i) {
+    long k = rkeys[rand() % (2 * nelems)];
+    hit = lhash.find(k);
+    if (hit != lhash.end()) {
+      ++numhits;
+      long v = hit->second;
+    }
+  }
+  to = clock();
+  diff = double(to - from) / CLOCKS_PER_SEC;
+  hitperc = double(numhits) / double(naccess);
+  std::cout << "LongHash " << naccess << " random keys: "
+            << diff << " (s) [" << (hitperc*100) << " % hit, using iterators]" << std::endl;
+  
+  std::map<long,long>::iterator mit;
+  numhits = 0;
+  from = clock();
+  for (int i=0; i<naccess; ++i) {
+    long k = rkeys[rand() % (2 * nelems)];
+    mit = lmap.find(k);
+    if (mit != lmap.end()) {
+      ++numhits;
+      long v = mit->second;
+    }
+  }
+  to = clock();
+  diff = double(to - from) / CLOCKS_PER_SEC;
+  hitperc = double(numhits) / double(naccess);
+  std::cout << "LongMap " << naccess << " random keys: "
+            << diff << " (s) [" << (hitperc*100) << " % hit]" << std::endl;
   
   return 0;
 }
