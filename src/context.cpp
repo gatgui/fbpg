@@ -2,6 +2,47 @@
 #include <sstream>
 #include <algorithm>
 
+#ifdef _CTXI
+#include <ctime>
+
+std::map<std::string, double> gTotalTime;
+std::map<std::string, std::vector<clock_t> > gStartTime;
+
+void PrintContextTime() {
+  std::map<std::string, double>::iterator it = gTotalTime.begin();
+  while (it != gTotalTime.end()) {
+    std::cout << it->first << ": " << it->second << " (s)" << std::endl;
+    ++it;
+  }
+}
+
+static void TimerStart(const std::string &info) {
+  gStartTime[info].push_back(clock());
+}
+
+static void TimerEnd(const std::string &info) {
+  clock_t end = clock();
+  std::map<std::string, std::vector<clock_t> >::iterator it = gStartTime.find(info);
+  if (it != gStartTime.end()) {
+    clock_t start = it->second.back();
+    it->second.pop_back();
+    double diff = (double(end) - double(start)) / CLOCKS_PER_SEC;
+    std::map<std::string, double>::iterator dit = gTotalTime.find(info);
+    if (dit != gTotalTime.end()) {
+      dit->second += diff;
+    } else {
+      gTotalTime[info] = diff;
+    }
+  }
+}
+
+#else
+
+#define TimerStart(info)
+#define TimerEnd(info)
+
+#endif
+
 Context::Context()
   : mParent(0), mCallStack(new CallStack()), mRef(1), mCallStackOwned(true) {
 }
@@ -58,6 +99,7 @@ void Context::cleanup() {
 }
 
 void Context::clear() {
+  TimerStart("clear");
 #if defined(_SYMTBL) && defined(_CTXH)
   // expensive !
   ObjectMap::ValueVector values;
@@ -87,9 +129,11 @@ void Context::clear() {
   }
 #endif
   mVars.clear();
+  TimerEnd("clear");
 }
 
 bool Context::hasVar(const Symbol &name, bool inherit) const {
+  TimerStart("hasVar");
 #if defined(_SYMTBL) && defined(_CTXH)
   if (mVars.hasKey(name)) {
 #else
@@ -101,11 +145,14 @@ bool Context::hasVar(const Symbol &name, bool inherit) const {
   } else {
     return false;
   }
+  TimerEnd("hasVar");
 }
 
 void Context::setVar(const Symbol &name, Object *v, bool inherit) {
+  TimerStart("setVar");
   if (mParent && inherit && mParent->hasVar(name, true)) {
     mParent->setVar(name, v, true);
+    TimerEnd("setVar");
     return;
   }
 #if defined(_SYMTBL) && defined(_CTXH)
@@ -117,6 +164,7 @@ void Context::setVar(const Symbol &name, Object *v, bool inherit) {
       }
       e->second = v;
     } else {
+      TimerEnd("setVar");
       return;
     }
   } else {
@@ -131,6 +179,7 @@ void Context::setVar(const Symbol &name, Object *v, bool inherit) {
       }
       it->second = v;
     } else {
+      TimerEnd("setVar");
       return;
     }
   } else {
@@ -140,15 +189,18 @@ void Context::setVar(const Symbol &name, Object *v, bool inherit) {
   if (v) {
     v->incRef();
   }
+  TimerEnd("setVar");
 }
 
 Object* Context::getVar(const Symbol &name, bool inherit) const {
+  TimerStart("getVar");
 #if defined(_SYMTBL) && defined(_CTXH)
   Object *o = 0;
   if (mVars.getValue(name, o)) {
     if (o) {
       o->incRef();
     }
+    TimerEnd("getVar");
     return o;
 #else
   ObjectMap::const_iterator it = mVars.find(name);
@@ -157,40 +209,51 @@ Object* Context::getVar(const Symbol &name, bool inherit) const {
     if (o) {
       o->incRef();
     }
+    TimerEnd("getVar");
     return o;
 #endif
   } else {
     if (mParent && inherit) {
-      return mParent->getVar(name);
+      Object *o = mParent->getVar(name);
+      TimerEnd("getVar");
+      return o;
     } else {
+      TimerEnd("getVar");
       return 0;
     }
   }
 }
 
 Callable* Context::getCallable(const Symbol &name, bool inherit) const {
+  TimerStart("getCallable");
 #if defined(_SYMTBL) && defined(_CTXH)
   Object *o = 0;
   if (mVars.getValue(name, o) && o && o->isCallable()) {
     o->incRef();
+    TimerEnd("getCallable");
     return (Callable*) o;
 #else
   ObjectMap::const_iterator it = mVars.find(name);
   if (it != mVars.end() && it->second && it->second->isCallable()) {
     Object *o = it->second;
     o->incRef();
+    TimerEnd("getCallable");
     return (Callable*) o;
 #endif
   } else {
     if (mParent && inherit) {
-      return mParent->getCallable(name);
+      Callable *c = mParent->getCallable(name);
+      TimerEnd("getCallable");
+      return c;
     } else {
+      TimerEnd("getCallable");
       return 0;
     }
   }
 }
 
 void Context::toStream(std::ostream &os, const std::string &indent) const {
+  TimerStart("toStream");
 #if defined(_SYMTBL) && defined(_CTXH)
   ObjectMap::KeyValueVector kv;
   size_t n = mVars.getPairs(kv);
@@ -212,4 +275,5 @@ void Context::toStream(std::ostream &os, const std::string &indent) const {
     os << indent << "From parent context:" << std::endl;
     mParent->toStream(os, indent+"  ");
   }
+  TimerEnd("toStream");
 }

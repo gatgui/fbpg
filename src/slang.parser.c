@@ -2453,6 +2453,10 @@ int main(int argc, char **argv) {
   hm.status();
 #endif
   
+#if defined(_CTXI)
+  extern void PrintContextTime();
+  PrintContextTime();
+#endif
   return rv;
 }
 

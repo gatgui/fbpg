@@ -6,6 +6,7 @@ verbose = 0
 memmgr = 1
 symtbl = 1
 ctxh = 0
+ctxi = 1
 # Should change the .y depending on symtbl
 
 ifeq ($(debug),0)
@@ -26,6 +27,10 @@ CCFLAGS:=$(CCFLAGS) -D_SYMTBL
 ifeq ($(ctxh),1)
 CCFLAGS:=$(CCFLAGS) -D_CTXH
 endif
+endif
+
+ifeq ($(ctxi),1)
+CCFLAGS:=$(CCFLAGS) -D_CTXI
 endif
 
 
