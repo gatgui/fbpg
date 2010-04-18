@@ -16,6 +16,10 @@ typedef std::map<std::string, long> StringMap;
 
 int main(int argc, char **argv) {
   
+#ifdef _MEMMGR
+  HeapManager heap;
+#endif
+  
   clock_t from, to;
   double diff;
   
@@ -65,20 +69,44 @@ int main(int argc, char **argv) {
   for (int i=0; i<nelems; ++i) {
     long k = rand();
     lkeys[i] = k;
-    long v = rand();
-    lhash.insert(k, v);
-    lmap[k] = v;
     int p = rand() % nstrings;
     int s = rand() % nstrings;
     skeys[i]  = strpool[p];
     skeys[i] += strpool[s];
-    shash.insert(skeys[i], v);
-    smap[skeys[i]] = v;
-    //std::cout << "  Add long key: " << lkeys[i] << std::endl;
-    //std::cout << "  Add string key: " << skeys[i] << std::endl;
   }
   
+  from = clock();
+  for (int i=0; i<nelems; ++i) {
+    lhash.insert(lkeys[i], rand());
+  }
+  to = clock();
+  diff = double(to - from) / CLOCKS_PER_SEC;
+  std::cout << "LongHash fill " << nelems << " values: " << diff << " (s)" << std::endl;
+  from = clock();
+  for (int i=0; i<nelems; ++i) {
+    lmap[lkeys[i]] = rand();
+  }
+  to = clock();
+  diff = double(to - from) / CLOCKS_PER_SEC;
+  std::cout << "LongMap fill " << nelems << " values: " << diff << " (s)" << std::endl;
+  from = clock();
+  for (int i=0; i<nelems; ++i) {
+    shash.insert(skeys[i], rand());
+  }
+  to = clock();
+  diff = double(to - from) / CLOCKS_PER_SEC;
+  std::cout << "StringHash fill " << nelems << " values: " << diff << " (s)" << std::endl;
+  from = clock();
+  for (int i=0; i<nelems; ++i) {
+    smap[skeys[i]] = rand();
+  }
+  to = clock();
+  diff = double(to - from) / CLOCKS_PER_SEC;
+  std::cout << "StringMap fill " << nelems << " values: " << diff << " (s)" << std::endl;
+  
+  
   // check datas
+  /*
   std::cout << "Check data" << std::endl;
   for (int k=0; k<nelems; ++k) {
     long v0 = lhash.getValue(lkeys[k]);
@@ -92,6 +120,7 @@ int main(int argc, char **argv) {
       std::cout << "Data mismatch at std::string key \"" << skeys[k] << "\"" << std::endl;
     }
   }
+  */
   
   // test long map
   from = clock();
@@ -140,7 +169,7 @@ int main(int argc, char **argv) {
   for (size_t i=0; i<lkeys.size(); ++i) {
     rkeys[i] = lkeys[i];
   }
-  for (size_t i=nelems; i<2*nelems; ++i) {
+  for (size_t i=nelems; i<size_t(2 * nelems); ++i) {
     rkeys[i] = rand();
   }
   
