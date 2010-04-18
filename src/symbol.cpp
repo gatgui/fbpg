@@ -1,16 +1,33 @@
 #include "symbol.h"
 
+SymbolTable *gInstance = 0;
+
+/*
 SymbolTable& SymbolTable::Instance() {
   static SymbolTable instance;
   return instance;
 }
+*/
+
+void SymbolTable::Clear() {
+  if (gInstance) {
+    delete gInstance;
+    gInstance = 0;
+  }
+}
 
 const char* SymbolTable::GetString(const Symbol &s) {
-  return Instance().getString(s);
+  if (!gInstance) {
+    gInstance = new SymbolTable();
+  }
+  return gInstance->getString(s);
 }
 
 Symbol SymbolTable::GetSymbol(const std::string &name) {
-  return Instance().getSymbol(name);
+  if (!gInstance) {
+    gInstance = new SymbolTable();
+  }
+  return gInstance->getSymbol(name);
 }
 
 SymbolTable::SymbolTable() {

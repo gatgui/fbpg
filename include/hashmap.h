@@ -72,6 +72,7 @@ class HashMap {
     
     // implement iterators
     
+    /*
     class iterator {
       public:
         friend class HashMap;
@@ -123,6 +124,7 @@ class HashMap {
         size_t mCurBucket;
         const Entry *mEntry;
     };
+    */
     
   public:
     
@@ -147,6 +149,7 @@ class HashMap {
     size_t getValues(ValueVector &vl) const;
     size_t getPairs(KeyValueVector &kvl) const;
     
+    /*
     iterator begin();
     iterator end();
     iterator find(const KeyType &k);
@@ -156,6 +159,10 @@ class HashMap {
     void erase(const iterator &it);
     ValueType& operator[](const KeyType &k);
     const ValueType& operator[](const KeyType &k) const;
+    */
+    Entry* find(const KeyType &key);
+    const Entry* find(const KeyType &key) const;
+    void erase(Entry *e);
     
   protected:
     
@@ -268,6 +275,7 @@ struct HashValue<double, H> {
 
 // ---
 
+/*
 template <typename KeyType, typename ValueType, HashFunc H>
 inline HashMap<KeyType, ValueType, H>::iterator::iterator()
   : mBuckets(0), mNumBuckets(0), mCurBucket(0), mEntry(0) {
@@ -352,9 +360,11 @@ HashMap<KeyType, ValueType, H>::iterator::operator++(int) {
   operator++();
   return rv;
 }
+*/
 
 // ---
 
+/*
 template <typename KeyType, typename ValueType, HashFunc H>
 inline HashMap<KeyType, ValueType, H>::const_iterator::const_iterator()
   : mBuckets(0), mNumBuckets(0), mCurBucket(0), mEntry(0) {
@@ -439,6 +449,7 @@ HashMap<KeyType, ValueType, H>::const_iterator::operator++(int) {
   operator++();
   return rv;
 }
+*/
 
 // ---
 
@@ -755,6 +766,7 @@ size_t HashMap<KeyType, ValueType, H>::getPairs(KeyValueVector &kvl) const {
   return kvl.size();
 }
 
+/*
 template <typename KeyType, typename ValueType, HashFunc H>
 typename HashMap<KeyType, ValueType, H>::iterator
 HashMap<KeyType, ValueType, H>::begin() {
@@ -900,6 +912,56 @@ HashMap<KeyType, ValueType, H>::operator[](const KeyType &key) const {
     throw std::runtime_error("Invalid Key");
   } else {
     return e->second;
+  }
+}
+*/
+
+template <typename KeyType, typename ValueType, HashFunc H>
+typename HashMap<KeyType, ValueType, H>::Entry*
+HashMap<KeyType, ValueType, H>::find(const KeyType &key) {
+  register unsigned int h = HashValue<KeyType, H>::Compute(key);
+  register unsigned int idx = h & mBucketsMask;
+  Entry *e = mBuckets[idx];
+  while (e) {
+    if (e->first == key) {
+      break;
+    }
+    e = e->next;
+  }
+  return e;
+}
+
+template <typename KeyType, typename ValueType, HashFunc H>
+const typename HashMap<KeyType, ValueType, H>::Entry*
+HashMap<KeyType, ValueType, H>::find(const KeyType &key) const {
+  register unsigned int h = HashValue<KeyType, H>::Compute(key);
+  register unsigned int idx = h & mBucketsMask;
+  const Entry *e = mBuckets[idx];
+  while (e) {
+    if (e->first == key) {
+      break;
+    }
+    e = e->next;
+  }
+  return e;
+}
+
+template <typename KeyType, typename ValueType, HashFunc H>
+void HashMap<KeyType, ValueType, H>::erase(typename HashMap<KeyType, ValueType, H>::Entry *e) {
+  register unsigned int idx = e->h & mBucketsMask;
+  Entry *c = mBuckets[idx];
+  Entry *p = 0;
+  while (c) {
+    if (e == c) {
+      if (p) {
+        p->next = e->next;
+      }
+      delete e;
+      --mNumEntries;
+      return;
+    }
+    p = c;
+    c = c->next;
   }
 }
 

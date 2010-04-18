@@ -14,7 +14,7 @@ typedef std::string Symbol;
 class Context {
   public:
     
-    #if defined(_SYMTBL) && (defined(_CTXH) || defined(_CTXH_ASMAP))
+    #if defined(_SYMTBL) && defined(_CTXH)
     typedef HashMap<Symbol, Object*> ObjectMap;
     #else
     typedef std::map<Symbol, Object*> ObjectMap;

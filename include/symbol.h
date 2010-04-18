@@ -36,7 +36,8 @@ class SymbolTable {
     
   public:
     
-    static SymbolTable& Instance();
+    //static SymbolTable& Instance();
+    static void Clear();
     static const char* GetString(const Symbol &s);
     static Symbol GetSymbol(const std::string &name);
     

@@ -59,6 +59,7 @@ void Context::cleanup() {
 
 void Context::clear() {
 #if defined(_SYMTBL) && defined(_CTXH)
+  // expensive !
   ObjectMap::ValueVector values;
   size_t n = mVars.getValues(values);
   for (size_t i=0; i<n; ++i) {
@@ -103,18 +104,18 @@ bool Context::hasVar(const Symbol &name, bool inherit) const {
 }
 
 void Context::setVar(const Symbol &name, Object *v, bool inherit) {
-#if defined(_SYMTBL) && defined(_CTXH)
   if (mParent && inherit && mParent->hasVar(name, true)) {
     mParent->setVar(name, v, true);
     return;
   }
-  Object *oldVal = 0;
-  if (mVars.getValue(name, oldVal)) {
-    if (!oldVal) {
-      mVars.insert(name, v);
-    } else if (oldVal != v) {
-      oldVal->decRef();
-      mVars.insert(name, v);
+#if defined(_SYMTBL) && defined(_CTXH)
+  ObjectMap::Entry *e = mVars.find(name);
+  if (e) {
+    if (e->second != v) {
+      if (e->second) {
+        e->second->decRef();
+      }
+      e->second = v;
     } else {
       return;
     }
@@ -122,10 +123,6 @@ void Context::setVar(const Symbol &name, Object *v, bool inherit) {
     mVars.insert(name, v);
   }
 #else
-  if (mParent && inherit && mParent->hasVar(name, true)) {
-    mParent->setVar(name, v, true);
-    return;
-  }
   ObjectMap::iterator it = mVars.find(name);
   if (it != mVars.end()) {
     if (it->second != v) {

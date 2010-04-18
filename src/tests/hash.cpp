@@ -189,6 +189,7 @@ int main(int argc, char **argv) {
   std::cout << "LongHash " << naccess << " random keys: "
             << diff << " (s) [" << (hitperc*100) << " % hit]" << std::endl;
   
+  /*
   HashMap<long, long>::iterator hit;
   numhits = 0;
   from = clock();
@@ -205,6 +206,7 @@ int main(int argc, char **argv) {
   hitperc = double(numhits) / double(naccess);
   std::cout << "LongHash " << naccess << " random keys: "
             << diff << " (s) [" << (hitperc*100) << " % hit, using iterators]" << std::endl;
+  */
   
   std::map<long,long>::iterator mit;
   numhits = 0;

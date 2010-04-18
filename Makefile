@@ -6,7 +6,6 @@ verbose = 0
 memmgr = 1
 symtbl = 1
 ctxh = 0
-ctxh_asmap = 0
 # Should change the .y depending on symtbl
 
 ifeq ($(debug),0)
@@ -26,9 +25,6 @@ ifeq ($(symtbl),1)
 CCFLAGS:=$(CCFLAGS) -D_SYMTBL
 ifeq ($(ctxh),1)
 CCFLAGS:=$(CCFLAGS) -D_CTXH
-endif
-ifeq ($(ctxh_asmap), 1)
-CCFLAGS:=$(CCFLAGS) -D_CTXH_ASMAP
 endif
 endif
 
