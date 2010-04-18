@@ -686,7 +686,7 @@ ValueType& HashMap<KeyType, ValueType, H>::getValue(const KeyType &k) {
     }
     e = e->next;
   }
-  if (e != 0) {
+  if (e == 0) {
     std::ostringstream oss;
     oss << "Invalid key: " << k;
     throw std::runtime_error(oss.str());
@@ -910,6 +910,7 @@ void HashMap<KeyType, ValueType, H>::expand() {
   mNumBuckets = mNumBuckets << 1;
   mBucketsMask = (mBucketsMask << 1) | 1;
   Entry **newBuckets = new Entry*[mNumBuckets];
+  memset(newBuckets, 0, mNumBuckets*sizeof(Entry*));
   for (size_t i=0; i<oNumBuckets; ++i) {
     Entry *e = mBuckets[i];
     Entry *n = 0;
