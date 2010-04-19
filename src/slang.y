@@ -473,7 +473,7 @@ int main(int argc, char **argv) {
     ctx->cleanup();
     ctx->decRef();
     delete stack;
-#ifndef _SYMTBL
+#ifdef _SYMTBL
     SymbolTable::Clear();
 #endif
     
