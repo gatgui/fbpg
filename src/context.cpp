@@ -102,6 +102,7 @@ void Context::clear() {
   TimerStart("clear");
 #if defined(_SYMTBL) && defined(_CTXH)
   // expensive !
+  /*
   ObjectMap::ValueVector values;
   size_t n = mVars.getValues(values);
   for (size_t i=0; i<n; ++i) {
@@ -113,6 +114,19 @@ void Context::clear() {
       }
       values[i]->decRef();
     }
+  }
+  */
+  ObjectMap::Entry *entry = mVars.first();
+  while (entry) {
+    if (entry->second) {
+      if (entry->second->refCount() <= 0) {
+        std::ostringstream oss;
+        oss << "*** Object in context has already been deleted";
+        throw std::runtime_error(oss.str());
+      }
+      entry->second->decRef();
+    }
+    entry = mVars.next();
   }
 #else
   ObjectMap::iterator it = mVars.begin();

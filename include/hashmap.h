@@ -60,75 +60,14 @@ class HashMap {
         Entry *next;
     };
     
-    /*
-    typedef typename std::list<Entry> EntryList;
-    typedef typename std::vector<Entry> EntryList;
-    typedef typename std::vector<EntryList> EntryListVector;
-    */
     typedef typename std::vector<KeyType> KeyVector;
     typedef typename std::vector<ValueType> ValueVector;
     typedef typename std::pair<KeyType, ValueType> KeyValuePair;
     typedef typename std::vector<KeyValuePair> KeyValueVector;
     
-    // implement iterators
-    
-    /*
-    class iterator {
-      public:
-        friend class HashMap;
-        
-        iterator();
-        iterator(const iterator &rhs);
-        ~iterator();
-        
-        iterator& operator=(const iterator &rhs);
-        bool operator==(const iterator &rhs) const;
-        bool operator!=(const iterator &rhs) const;
-        Entry& operator*();
-        Entry* operator->();
-        iterator& operator++();
-        iterator operator++(int);
-        
-      protected:
-        iterator(Entry **buckets, size_t n, size_t i, Entry *e);
-        
-      protected:
-        Entry **mBuckets;
-        size_t mNumBuckets;
-        size_t mCurBucket;
-        Entry *mEntry;
-    };
-    
-    class const_iterator {
-      public:
-        friend class HashMap;
-        
-        const_iterator();
-        const_iterator(const const_iterator &rhs);
-        ~const_iterator();
-        
-        const_iterator& operator=(const const_iterator &rhs);
-        bool operator==(const const_iterator &rhs) const;
-        bool operator!=(const const_iterator &rhs) const;
-        const Entry& operator*();
-        const Entry* operator->();
-        const_iterator& operator++();
-        const_iterator operator++(int);
-        
-      protected:
-        const_iterator(const Entry **buckets, size_t n, size_t i, const Entry *e);
-        
-      protected:
-        const Entry **mBuckets;
-        size_t mNumBuckets;
-        size_t mCurBucket;
-        const Entry *mEntry;
-    };
-    */
-    
   public:
     
-    HashMap(); //size_t numBuckets=16);
+    HashMap();
     HashMap(const HashMap &rhs);
     ~HashMap();
     
@@ -149,20 +88,15 @@ class HashMap {
     size_t getValues(ValueVector &vl) const;
     size_t getPairs(KeyValueVector &kvl) const;
     
-    /*
-    iterator begin();
-    iterator end();
-    iterator find(const KeyType &k);
-    const_iterator begin() const;
-    const_iterator end() const;
-    const_iterator find(const KeyType &k) const;
-    void erase(const iterator &it);
-    ValueType& operator[](const KeyType &k);
-    const ValueType& operator[](const KeyType &k) const;
-    */
     Entry* find(const KeyType &key);
     const Entry* find(const KeyType &key) const;
     void erase(Entry *e);
+    
+    Entry* first();
+    Entry* next();
+    
+    const Entry* first() const;
+    const Entry* next() const;
     
   protected:
     
@@ -170,12 +104,13 @@ class HashMap {
     
   protected:
     
-    //EntryListVector mBuckets;
     Entry **mBuckets;
     size_t mNumBuckets;
     size_t mNumEntries;
     size_t mBucketsMask;
     
+    mutable size_t mItCurBucket;
+    mutable Entry *mItCurEntry;
 };
 
 // ---
@@ -250,15 +185,6 @@ struct HashValue<unsigned long, H> {
   }
 };
 
-/* size_t == unsigned long
-template <HashFunc H>
-struct HashValue<size_t, H> {
-  inline static unsigned int Compute(const size_t &val) {
-    return (unsigned int)val;
-  }
-};
-*/
-
 template <HashFunc H>
 struct HashValue<float, H> {
   inline static unsigned int Compute(const float &val) {
@@ -272,184 +198,6 @@ struct HashValue<double, H> {
     return (unsigned int)(*((unsigned int*)&val));
   }
 };
-
-// ---
-
-/*
-template <typename KeyType, typename ValueType, HashFunc H>
-inline HashMap<KeyType, ValueType, H>::iterator::iterator()
-  : mBuckets(0), mNumBuckets(0), mCurBucket(0), mEntry(0) {
-}
-
-template <typename KeyType, typename ValueType, HashFunc H>
-inline HashMap<KeyType, ValueType, H>::iterator::iterator(
-  typename HashMap<KeyType, ValueType, H>::Entry** buckets, size_t n, size_t i,
-  typename HashMap<KeyType, ValueType, H>::Entry* e)
-  : mBuckets(buckets), mNumBuckets(n), mCurBucket(i), mEntry(e) {
-}
-
-template <typename KeyType, typename ValueType, HashFunc H>
-inline HashMap<KeyType, ValueType, H>::iterator::iterator(
-  const typename HashMap<KeyType, ValueType, H>::iterator &rhs)
-  : mBuckets(rhs.mBuckets),
-    mNumBuckets(rhs.mNumBuckets),
-    mCurBucket(rhs.mCurBucket),
-    mEntry(rhs.mEntry) {
-}
-
-template <typename KeyType, typename ValueType, HashFunc H>
-inline HashMap<KeyType, ValueType, H>::iterator::~iterator() {
-}
-
-template <typename KeyType, typename ValueType, HashFunc H>
-inline typename HashMap<KeyType, ValueType, H>::iterator&
-HashMap<KeyType, ValueType, H>::iterator::operator=(
-  const typename HashMap<KeyType, ValueType, H>::iterator &rhs)
-{
-  if (this != &rhs) {
-    mBuckets = rhs.mBuckets;
-    mNumBuckets = rhs.mNumBuckets;
-    mCurBucket = rhs.mCurBucket;
-    mEntry = rhs.mEntry;
-  }
-  return *this;
-}
-
-template <typename KeyType, typename ValueType, HashFunc H>
-inline bool HashMap<KeyType, ValueType, H>::iterator::operator==(
-  const typename HashMap<KeyType, ValueType, H>::iterator &rhs) const
-{
-  return (mEntry == rhs.mEntry);
-}
-
-template <typename KeyType, typename ValueType, HashFunc H>
-inline bool HashMap<KeyType, ValueType, H>::iterator::operator!=(
-  const typename HashMap<KeyType, ValueType, H>::iterator &rhs) const
-{
-  return !operator==(rhs);
-}
-
-template <typename KeyType, typename ValueType, HashFunc H>
-inline typename HashMap<KeyType, ValueType, H>::Entry&
-HashMap<KeyType, ValueType, H>::iterator::operator*() {
-  return *mEntry;
-}
-
-template <typename KeyType, typename ValueType, HashFunc H>
-inline typename HashMap<KeyType, ValueType, H>::Entry*
-HashMap<KeyType, ValueType, H>::iterator::operator->() {
-  return mEntry;
-}
-
-template <typename KeyType, typename ValueType, HashFunc H>
-inline typename HashMap<KeyType, ValueType, H>::iterator&
-HashMap<KeyType, ValueType, H>::iterator::operator++() {
-  if (mEntry != 0) {
-    mEntry = mEntry->next;
-    while (mEntry == 0 && ++mCurBucket < mNumBuckets) {
-      mEntry = mBuckets[mCurBucket];
-    }
-  }
-  return *this;
-}
-
-template <typename KeyType, typename ValueType, HashFunc H>
-inline typename HashMap<KeyType, ValueType, H>::iterator
-HashMap<KeyType, ValueType, H>::iterator::operator++(int) {
-  typename HashMap<KeyType, ValueType, H>::iterator rv(*this);
-  operator++();
-  return rv;
-}
-*/
-
-// ---
-
-/*
-template <typename KeyType, typename ValueType, HashFunc H>
-inline HashMap<KeyType, ValueType, H>::const_iterator::const_iterator()
-  : mBuckets(0), mNumBuckets(0), mCurBucket(0), mEntry(0) {
-}
-
-template <typename KeyType, typename ValueType, HashFunc H>
-inline HashMap<KeyType, ValueType, H>::const_iterator::const_iterator(
-  const typename HashMap<KeyType, ValueType, H>::Entry** buckets, size_t n, size_t i,
-  const typename HashMap<KeyType, ValueType, H>::Entry* e)
-  : mBuckets(buckets), mNumBuckets(n), mCurBucket(i), mEntry(e) {
-}
-
-template <typename KeyType, typename ValueType, HashFunc H>
-inline HashMap<KeyType, ValueType, H>::const_iterator::const_iterator(
-  const typename HashMap<KeyType, ValueType, H>::const_iterator &rhs)
-  : mBuckets(rhs.mBuckets),
-    mNumBuckets(rhs.mNumBuckets),
-    mCurBucket(rhs.mCurBucket),
-    mEntry(rhs.mEntry) {
-}
-
-template <typename KeyType, typename ValueType, HashFunc H>
-inline HashMap<KeyType, ValueType, H>::const_iterator::~const_iterator() {
-}
-
-template <typename KeyType, typename ValueType, HashFunc H>
-inline typename HashMap<KeyType, ValueType, H>::const_iterator&
-HashMap<KeyType, ValueType, H>::const_iterator::operator=(
-  const typename HashMap<KeyType, ValueType, H>::const_iterator &rhs)
-{
-  if (this != &rhs) {
-    mBuckets = rhs.mBuckets;
-    mNumBuckets = rhs.mNumBuckets;
-    mCurBucket = rhs.mCurBucket;
-    mEntry = rhs.mEntry;
-  }
-  return *this;
-}
-
-template <typename KeyType, typename ValueType, HashFunc H>
-inline bool HashMap<KeyType, ValueType, H>::const_iterator::operator==(
-  const typename HashMap<KeyType, ValueType, H>::const_iterator &rhs) const
-{
-  return (mEntry == rhs.mEntry);
-}
-
-template <typename KeyType, typename ValueType, HashFunc H>
-inline bool HashMap<KeyType, ValueType, H>::const_iterator::operator!=(
-  const typename HashMap<KeyType, ValueType, H>::const_iterator &rhs) const
-{
-  return !operator==(rhs);
-}
-
-template <typename KeyType, typename ValueType, HashFunc H>
-inline const typename HashMap<KeyType, ValueType, H>::Entry&
-HashMap<KeyType, ValueType, H>::const_iterator::operator*() {
-  return *mEntry;
-}
-
-template <typename KeyType, typename ValueType, HashFunc H>
-inline const typename HashMap<KeyType, ValueType, H>::Entry*
-HashMap<KeyType, ValueType, H>::const_iterator::operator->() {
-  return mEntry;
-}
-
-template <typename KeyType, typename ValueType, HashFunc H>
-inline typename HashMap<KeyType, ValueType, H>::const_iterator&
-HashMap<KeyType, ValueType, H>::const_iterator::operator++() {
-  if (mEntry != 0) {
-    mEntry = mEntry->next;
-    while (mEntry == 0 && ++mCurBucket < mNumBuckets) {
-      mEntry = mBuckets[mCurBucket];
-    }
-  }
-  return *this;
-}
-
-template <typename KeyType, typename ValueType, HashFunc H>
-inline typename HashMap<KeyType, ValueType, H>::const_iterator
-HashMap<KeyType, ValueType, H>::const_iterator::operator++(int) {
-  typename HashMap<KeyType, ValueType, H>::const_iterator rv(*this);
-  operator++();
-  return rv;
-}
-*/
 
 // ---
 
@@ -490,9 +238,9 @@ bool HashMap<KeyType, ValueType, H>::Entry::operator==(
 // ---
 
 template <typename KeyType, typename ValueType, HashFunc H>
-HashMap<KeyType, ValueType, H>::HashMap() //size_t numBuckets)
-  : mNumBuckets(16), mNumEntries(0), mBucketsMask(0x0000000F) {
-  //mBuckets.resize(mNumBuckets);
+HashMap<KeyType, ValueType, H>::HashMap()
+  : mNumBuckets(16), mNumEntries(0), mBucketsMask(0x0000000F),
+    mItCurBucket(0), mItCurEntry(0) {
   mBuckets = new Entry*[16];
   memset(mBuckets, 0, 16*sizeof(Entry*));
 }
@@ -500,7 +248,8 @@ HashMap<KeyType, ValueType, H>::HashMap() //size_t numBuckets)
 template <typename KeyType, typename ValueType, HashFunc H>
 HashMap<KeyType, ValueType, H>::HashMap(const HashMap &rhs)
   : mBuckets(0), mNumBuckets(rhs.mNumBuckets),
-    mNumEntries(rhs.mNumEntries), mBucketsMask(rhs.mBucketsMask) {
+    mNumEntries(rhs.mNumEntries), mBucketsMask(rhs.mBucketsMask),
+    mItCurBucket(0), mItCurEntry(0) {
   Entry *c=0, *f=0, *e=0, *p=0;
   mBuckets = new Entry*[mNumBuckets];
   for (size_t i=0; i<mNumBuckets; ++i) {
@@ -569,9 +318,77 @@ HashMap<KeyType, ValueType, H>& HashMap<KeyType, ValueType, H>::operator=(
       }
       mBuckets[i] = f;
     }
+    mItCurBucket = 0;
+    mItCurEntry = 0;
   }
   return *this;
 }
+
+template <typename KeyType, typename ValueType, HashFunc H>
+inline typename HashMap<KeyType, ValueType, H>::Entry*
+HashMap<KeyType, ValueType, H>::first() {
+  mItCurBucket = 0;
+  while (mItCurBucket < mNumBuckets) {
+    if (mBuckets[mItCurBucket] != 0) {
+      mItCurEntry = mBuckets[mItCurBucket];
+      return mItCurEntry;
+    }
+    ++mItCurBucket;
+  }
+  return 0;
+}
+
+template <typename KeyType, typename ValueType, HashFunc H>
+inline typename HashMap<KeyType, ValueType, H>::Entry*
+HashMap<KeyType, ValueType, H>::next() {
+  if (mItCurEntry) {
+    mItCurEntry = mItCurEntry->next;
+    if (!mItCurEntry) {
+      while (++mItCurBucket < mNumBuckets) {
+        if (mBuckets[mItCurBucket] != 0) {
+          mItCurEntry = mBuckets[mItCurBucket];
+          return mItCurEntry;
+        }
+      }
+    }
+  }
+  return 0;
+}
+
+template <typename KeyType, typename ValueType, HashFunc H>
+inline const typename HashMap<KeyType, ValueType, H>::Entry*
+HashMap<KeyType, ValueType, H>::first() const {
+  mItCurBucket = 0;
+  while (mItCurBucket < mNumBuckets) {
+    if (mBuckets[mItCurBucket] != 0) {
+      mItCurEntry = mBuckets[mItCurBucket];
+      return mItCurEntry;
+    }
+    ++mItCurBucket;
+  }
+  return 0;
+}
+
+template <typename KeyType, typename ValueType, HashFunc H>
+inline const typename HashMap<KeyType, ValueType, H>::Entry*
+HashMap<KeyType, ValueType, H>::next() const {
+  if (mItCurEntry) {
+    mItCurEntry = mItCurEntry->next;
+    if (!mItCurEntry) {
+      while (++mItCurBucket < mNumBuckets) {
+        if (mBuckets[mItCurBucket] != 0) {
+          mItCurEntry = mBuckets[mItCurBucket];
+          return mItCurEntry;
+        }
+      }
+      return 0;
+    } else {
+      return mItCurEntry;
+    }
+  }
+  return 0;
+}
+
 
 template <typename KeyType, typename ValueType, HashFunc H>
 inline double HashMap<KeyType, ValueType, H>::loadFactor() const {

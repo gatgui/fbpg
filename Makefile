@@ -6,7 +6,7 @@ verbose = 0
 memmgr = 1
 symtbl = 1
 ctxh = 0
-ctxi = 1
+ctxi = 0
 # Should change the .y depending on symtbl
 
 ifeq ($(debug),0)

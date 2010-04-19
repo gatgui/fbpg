@@ -473,6 +473,9 @@ int main(int argc, char **argv) {
     ctx->cleanup();
     ctx->decRef();
     delete stack;
+#ifndef _SYMTBL
+    SymbolTable::Clear();
+#endif
     
   } catch (Exception &e) {
     std::cerr << "*** Caught exception ***" << std::endl;
