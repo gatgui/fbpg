@@ -14,11 +14,11 @@ typedef std::string Symbol;
 class Context {
   public:
     
-    #if defined(_SYMTBL) && defined(_CTXH)
+#ifdef _CTXH
     typedef HashMap<Symbol, Object*> ObjectMap;
-    #else
+#else
     typedef std::map<Symbol, Object*> ObjectMap;
-    #endif
+#endif
     
     Context();
     Context(CallStack *cs);

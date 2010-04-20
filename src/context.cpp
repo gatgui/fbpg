@@ -100,22 +100,7 @@ void Context::cleanup() {
 
 void Context::clear() {
   TimerStart("clear");
-#if defined(_SYMTBL) && defined(_CTXH)
-  // expensive !
-  /*
-  ObjectMap::ValueVector values;
-  size_t n = mVars.getValues(values);
-  for (size_t i=0; i<n; ++i) {
-    if (values[i]) {
-      if (values[i]->refCount() <= 0) {
-        std::ostringstream oss;
-        oss << "*** Object in context has already been deleted";
-        throw std::runtime_error(oss.str());
-      }
-      values[i]->decRef();
-    }
-  }
-  */
+#ifdef _CTXH
   ObjectMap::Entry *entry = mVars.first();
   while (entry) {
     if (entry->second) {
@@ -148,7 +133,7 @@ void Context::clear() {
 
 bool Context::hasVar(const Symbol &name, bool inherit) const {
   TimerStart("hasVar");
-#if defined(_SYMTBL) && defined(_CTXH)
+#ifdef _CTXH
   if (mVars.hasKey(name)) {
 #else
   if (mVars.find(name) != mVars.end()) {
@@ -169,7 +154,7 @@ void Context::setVar(const Symbol &name, Object *v, bool inherit) {
     TimerEnd("setVar");
     return;
   }
-#if defined(_SYMTBL) && defined(_CTXH)
+#ifdef _CTXH
   ObjectMap::Entry *e = mVars.find(name);
   if (e) {
     if (e->second != v) {
@@ -208,7 +193,7 @@ void Context::setVar(const Symbol &name, Object *v, bool inherit) {
 
 Object* Context::getVar(const Symbol &name, bool inherit) const {
   TimerStart("getVar");
-#if defined(_SYMTBL) && defined(_CTXH)
+#ifdef _CTXH
   Object *o = 0;
   if (mVars.getValue(name, o)) {
     if (o) {
@@ -240,7 +225,7 @@ Object* Context::getVar(const Symbol &name, bool inherit) const {
 
 Callable* Context::getCallable(const Symbol &name, bool inherit) const {
   TimerStart("getCallable");
-#if defined(_SYMTBL) && defined(_CTXH)
+#ifdef _CTXH
   Object *o = 0;
   if (mVars.getValue(name, o) && o && o->isCallable()) {
     o->incRef();
@@ -268,7 +253,7 @@ Callable* Context::getCallable(const Symbol &name, bool inherit) const {
 
 void Context::toStream(std::ostream &os, const std::string &indent) const {
   TimerStart("toStream");
-#if defined(_SYMTBL) && defined(_CTXH)
+#ifdef _CTXH
   ObjectMap::KeyValueVector kv;
   size_t n = mVars.getPairs(kv);
   for (size_t i=0; i<n; ++i) {

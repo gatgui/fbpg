@@ -3,11 +3,12 @@ CC=g++
 
 debug = 0
 verbose = 0
+
 memmgr = 1
 symtbl = 1
+symtblh = 1
 ctxh = 0
 ctxi = 0
-# Should change the .y depending on symtbl
 
 ifeq ($(debug),0)
 CCFLAGS=-MMD -O2 -W -Wall -Wno-unused -Iinclude -DYYERROR_VERBOSE
@@ -22,17 +23,20 @@ ifeq ($(memmgr),1)
 CCFLAGS:=$(CCFLAGS) -D_MEMMGR
 endif
 
-ifeq ($(symtbl),1)
-CCFLAGS:=$(CCFLAGS) -D_SYMTBL
 ifeq ($(ctxh),1)
 CCFLAGS:=$(CCFLAGS) -D_CTXH
-endif
 endif
 
 ifeq ($(ctxi),1)
 CCFLAGS:=$(CCFLAGS) -D_CTXI
 endif
 
+ifeq ($(symtbl),1)
+CCFLAGS:=$(CCFLAGS) -D_SYMTBL
+ifeq ($(symtblh),1)
+CCFLAGS:=$(CCFLAGS) -D_SYMTBLH
+endif
+endif
 
 LINKFLAGS=-L. -lcore
 

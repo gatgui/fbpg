@@ -7,32 +7,45 @@
 
 class Symbol {
   public:
+    
     Symbol();
     Symbol(size_t v);
     Symbol(const std::string &s);
     Symbol(const Symbol &rhs);
     ~Symbol();
+    
     Symbol& operator=(const Symbol &rhs);
     bool operator==(const Symbol &rhs) const;
+    bool operator!=(const Symbol &rhs) const;
+    
     bool valid() const;
     size_t id() const;
+    
     friend bool operator<(const Symbol &s0, const Symbol &s1);
     friend std::ostream& operator<<(std::ostream &os, const Symbol &s);
+    
   protected:
+    
     size_t mID;
 };
 
+#ifdef _SYMTBLH
 template <HashFunc H>
 struct HashValue<Symbol, H> {
   static unsigned int Compute(const Symbol &val) {
     return (unsigned int)val.id();
   }
 };
+#endif
 
 class SymbolTable {
   public:
     
+#ifdef _SYMTBLH
     typedef HashMap<std::string, size_t> HashType;
+#else
+    typedef std::map<std::string, size_t> HashType;
+#endif
     
   public:
     
@@ -86,6 +99,10 @@ inline Symbol& Symbol::operator=(const Symbol &rhs) {
 
 inline bool Symbol::operator==(const Symbol &rhs) const {
   return (mID == rhs.mID);
+}
+
+inline bool Symbol::operator!=(const Symbol &rhs) const {
+  return (mID != rhs.mID);
 }
 
 inline bool Symbol::valid() const {

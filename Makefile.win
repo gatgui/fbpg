@@ -3,7 +3,9 @@ debug = 0
 verbose = 0
 memmgr = 1
 symtbl = 1
+symtblh = 1
 ctxh = 0
+ctxi = 0
 # Should change the .y depending on symtbl
 
 CORE_SRC=\
@@ -44,10 +46,18 @@ CCFLAGS=$(CCFLAGS) /D_DEBUG_VERBOSE
 CCFLAGS=$(CCFLAGS) /D_MEMMGR
 !ENDIF
 
-!IF $(symtbl) == 1
-CCFLAGS=$(CCFLAGS) /D_SYMTBL
 !IF $(ctxh) == 1
 CCFLAGS=$(CCFLAGS) /D_CTXH
+!ENDIF
+
+!IF $(ctxi) == 1
+CCFLAGS=$(CCFLAGS) /D_CTXI
+!ENDIF
+
+!IF $(symtbl) == 1
+CCFLAGS=$(CCFLAGS) /D_SYMTBL
+!IF $(symtblh) == 1
+CCFLAGS=$(CCFLAGS) /D_SYMTBLH
 !ENDIF
 !ENDIF
 

@@ -2,13 +2,6 @@
 
 SymbolTable *gInstance = 0;
 
-/*
-SymbolTable& SymbolTable::Instance() {
-  static SymbolTable instance;
-  return instance;
-}
-*/
-
 void SymbolTable::Clear() {
   if (gInstance) {
     delete gInstance;
@@ -39,14 +32,27 @@ SymbolTable::~SymbolTable() {
 }
 
 Symbol SymbolTable::getSymbol(const std::string &name) {
-  if (mSyms.hasKey(name)) {
-    return Symbol(mSyms.getValue(name));
+#ifdef _SYMTBLH
+  size_t sym;
+  if (mSyms.getValue(name, sym)) {
+    return Symbol(sym);
   } else {
-    size_t id = mStrs.size();
-    mSyms.insert(name, id);
+    sym = mStrs.size();
+    mSyms.insert(name, sym);
     mStrs.push_back(name);
-    return Symbol(id);
+    return Symbol(sym);
   }
+#else
+  HashType::iterator it = mSyms.find(name);
+  if (it != mSyms.end()) {
+    return Symbol(it->second);
+  } else {
+    size_t sym = mStrs.size();
+    mSyms[name] = sym;
+    mStrs.push_back(name);
+    return Symbol(sym);
+  }
+#endif
 }
 
 const char* SymbolTable::getString(const Symbol &s) {

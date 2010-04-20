@@ -218,7 +218,7 @@ HashMap<KeyType, ValueType, H>::Entry::~Entry() {
 template <typename KeyType, typename ValueType, HashFunc H>
 typename HashMap<KeyType, ValueType, H>::Entry&
 HashMap<KeyType, ValueType, H>::Entry::operator=(
-  const HashMap<KeyType, ValueType, H>::Entry &rhs)
+  const typename HashMap<KeyType, ValueType, H>::Entry &rhs)
 {
   if (this != &rhs) {
     first = rhs.first;
@@ -273,8 +273,9 @@ template <typename KeyType, typename ValueType, HashFunc H>
 HashMap<KeyType, ValueType, H>::~HashMap() {
   for (size_t i=0; i<mNumBuckets; ++i) {
     Entry *c = mBuckets[i];
+    Entry *n = 0;
     while (c) {
-      Entry *n = c->next;
+      n = c->next;
       delete c;
       c = n;
     }
@@ -298,10 +299,15 @@ HashMap<KeyType, ValueType, H>& HashMap<KeyType, ValueType, H>::operator=(
       }
       delete[] mBuckets;
     }
+    
     mNumEntries = rhs.mNumEntries;
     mNumBuckets = rhs.mNumBuckets;
     mBucketsMask = rhs.mBucketsMask;
+    mItCurBucket = 0;
+    mItCurEntry = 0;
+    
     mBuckets = new Entry*[mNumBuckets];
+    
     for (size_t i=0; i<mNumBuckets; ++i) {
       Entry *c = rhs.mBuckets[i];
       Entry *f = 0;
@@ -318,8 +324,6 @@ HashMap<KeyType, ValueType, H>& HashMap<KeyType, ValueType, H>::operator=(
       }
       mBuckets[i] = f;
     }
-    mItCurBucket = 0;
-    mItCurEntry = 0;
   }
   return *this;
 }
@@ -328,14 +332,11 @@ template <typename KeyType, typename ValueType, HashFunc H>
 inline typename HashMap<KeyType, ValueType, H>::Entry*
 HashMap<KeyType, ValueType, H>::first() {
   mItCurBucket = 0;
-  while (mItCurBucket < mNumBuckets) {
-    if (mBuckets[mItCurBucket] != 0) {
-      mItCurEntry = mBuckets[mItCurBucket];
-      return mItCurEntry;
-    }
-    ++mItCurBucket;
+  mItCurEntry  = mBuckets[mItCurBucket];
+  while (mItCurEntry == 0 && (mItCurBucket+1) < mNumBuckets) {
+    mItCurEntry = mBuckets[++mItCurBucket];
   }
-  return 0;
+  return mItCurEntry;
 }
 
 template <typename KeyType, typename ValueType, HashFunc H>
@@ -347,26 +348,23 @@ HashMap<KeyType, ValueType, H>::next() {
       while (++mItCurBucket < mNumBuckets) {
         if (mBuckets[mItCurBucket] != 0) {
           mItCurEntry = mBuckets[mItCurBucket];
-          return mItCurEntry;
+          break;
         }
       }
     }
   }
-  return 0;
+  return mItCurEntry;
 }
 
 template <typename KeyType, typename ValueType, HashFunc H>
 inline const typename HashMap<KeyType, ValueType, H>::Entry*
 HashMap<KeyType, ValueType, H>::first() const {
   mItCurBucket = 0;
-  while (mItCurBucket < mNumBuckets) {
-    if (mBuckets[mItCurBucket] != 0) {
-      mItCurEntry = mBuckets[mItCurBucket];
-      return mItCurEntry;
-    }
-    ++mItCurBucket;
+  mItCurEntry  = mBuckets[mItCurBucket];
+  while (mItCurEntry == 0 && (mItCurBucket+1) < mNumBuckets) {
+    mItCurEntry = mBuckets[++mItCurBucket];
   }
-  return 0;
+  return mItCurEntry;
 }
 
 template <typename KeyType, typename ValueType, HashFunc H>
@@ -378,15 +376,12 @@ HashMap<KeyType, ValueType, H>::next() const {
       while (++mItCurBucket < mNumBuckets) {
         if (mBuckets[mItCurBucket] != 0) {
           mItCurEntry = mBuckets[mItCurBucket];
-          return mItCurEntry;
+          break;
         }
       }
-      return 0;
-    } else {
-      return mItCurEntry;
     }
   }
-  return 0;
+  return mItCurEntry;
 }
 
 
@@ -405,12 +400,7 @@ void HashMap<KeyType, ValueType, H>::insert(const KeyType &key, const ValueType 
   register unsigned int h = HashValue<KeyType, H>::Compute(key);
   register unsigned int idx = h & mBucketsMask;
   Entry *e = mBuckets[idx];
-  Entry *l = 0;
-  while (e) {
-    if (e->first == key) {
-      break;
-    }
-    l = e;
+  while (e && e->first != key) {
     e = e->next;
   }
   if (e == 0) {
@@ -418,11 +408,8 @@ void HashMap<KeyType, ValueType, H>::insert(const KeyType &key, const ValueType 
     e->h = h;
     e->first = key;
     e->second = val;
-    if (l) {
-      l->next = e;
-    } else {
-      mBuckets[idx] = e;
-    }
+    e->next = mBuckets[idx];
+    mBuckets[idx] = e;
     ++mNumEntries;
     if ((mNumEntries << 1) > mNumBuckets) {
       expand();
@@ -438,10 +425,7 @@ void HashMap<KeyType, ValueType, H>::erase(const KeyType &k) {
   register unsigned int idx = h & mBucketsMask;
   Entry *e = mBuckets[idx];
   Entry *p = 0;
-  while (e) {
-    if (e->first == k) {
-      break;
-    }
+  while (e && e->first != k) {
     p = e;
     e = e->next;
   }
@@ -461,8 +445,9 @@ void HashMap<KeyType, ValueType, H>::clear() {
   mNumEntries = 0;
   for (size_t i=0; i<mNumBuckets; ++i) {
     Entry *c = mBuckets[i];
+    Entry *n = 0;
     while (c) {
-      Entry *n = c->next;
+      n = c->next;
       delete c;
       c = n;
     }
@@ -475,10 +460,7 @@ bool HashMap<KeyType, ValueType, H>::hasKey(const KeyType &key) const {
   register unsigned int h = HashValue<KeyType, H>::Compute(key);
   register unsigned int idx = h & mBucketsMask;
   const Entry *e = mBuckets[idx];
-  while (e) {
-    if (e->first == key) {
-      break;
-    }
+  while (e && e->first != key) {
     e = e->next;
   }
   return (e != 0);
@@ -489,10 +471,7 @@ const ValueType& HashMap<KeyType, ValueType, H>::getValue(const KeyType &k) cons
   register unsigned int h = HashValue<KeyType, H>::Compute(k);
   register unsigned int idx = h & mBucketsMask;
   const Entry *e = mBuckets[idx];
-  while (e) {
-    if (e->first == k) {
-      break;
-    }
+  while (e && e->first != k) {
     e = e->next;
   }
   if (e == 0) {
@@ -508,10 +487,7 @@ ValueType& HashMap<KeyType, ValueType, H>::getValue(const KeyType &k) {
   register unsigned int h = HashValue<KeyType, H>::Compute(k);
   register unsigned int idx = h & mBucketsMask;
   Entry *e = mBuckets[idx];
-  while (e) {
-    if (e->first == k) {
-      break;
-    }
+  while (e && e->first != k) {
     e = e->next;
   }
   if (e == 0) {
@@ -527,10 +503,7 @@ bool HashMap<KeyType, ValueType, H>::getValue(const KeyType &k, ValueType &v) co
   register unsigned int h = HashValue<KeyType, H>::Compute(k);
   register unsigned int idx = h & mBucketsMask;
   const Entry *e = mBuckets[idx];
-  while (e) {
-    if (e->first == k) {
-      break;
-    }
+  while (e && e->first != k) {
     e = e->next;
   }
   if (e == 0) {
@@ -547,8 +520,7 @@ size_t HashMap<KeyType, ValueType, H>::getKeys(KeyVector &kl) const {
   for (size_t i=0, j=0; i<mNumBuckets; ++i) {
     const Entry *e = mBuckets[i];
     while (e) {
-      kl[j] = e->first;
-      ++j;
+      kl[j++] = e->first;
       e = e->next;
     }
   }
@@ -561,8 +533,7 @@ size_t HashMap<KeyType, ValueType, H>::getValues(ValueVector &vl) const {
   for (size_t i=0, j=0; i<mNumBuckets; ++i) {
     const Entry *e = mBuckets[i];
     while (e) {
-      vl[j] = e->second;
-      ++j;
+      vl[j++] = e->second;
       e = e->next;
     }
   }
@@ -575,163 +546,12 @@ size_t HashMap<KeyType, ValueType, H>::getPairs(KeyValueVector &kvl) const {
   for (size_t i=0, j=0; i<mNumBuckets; ++i) {
     const Entry *e = mBuckets[i];
     while (e) {
-      kvl[j] = KeyValuePair(e->first, e->second);
-      ++j;
+      kvl[j++] = KeyValuePair(e->first, e->second);
       e = e->next;
     }
   }
   return kvl.size();
 }
-
-/*
-template <typename KeyType, typename ValueType, HashFunc H>
-typename HashMap<KeyType, ValueType, H>::iterator
-HashMap<KeyType, ValueType, H>::begin() {
-  for (size_t i=0; i<mNumBuckets; ++i) {
-    if (mBuckets[i] != 0) {
-      return iterator(mBuckets, mNumBuckets, i, mBuckets[i]);
-    }
-  }
-  return iterator(mBuckets, mNumBuckets, mNumBuckets, 0);
-}
-
-template <typename KeyType, typename ValueType, HashFunc H>
-typename HashMap<KeyType, ValueType, H>::const_iterator
-HashMap<KeyType, ValueType, H>::begin() const {
-  for (size_t i=0; i<mNumBuckets; ++i) {
-    if (mBuckets[i] != 0) {
-      return const_iterator(mBuckets, mNumBuckets, i, mBuckets[i]);
-    }
-  }
-  return const_iterator(mBuckets, mNumBuckets, mNumBuckets, 0);
-}
-
-template <typename KeyType, typename ValueType, HashFunc H>
-inline typename HashMap<KeyType, ValueType, H>::iterator
-HashMap<KeyType, ValueType, H>::end() {
-  return iterator(mBuckets, mNumBuckets, mNumBuckets, 0);
-}
-
-template <typename KeyType, typename ValueType, HashFunc H>
-inline typename HashMap<KeyType, ValueType, H>::const_iterator
-HashMap<KeyType, ValueType, H>::end() const {
-  return const_iterator(mBuckets, mNumBuckets, mNumBuckets, 0);
-}
-
-template <typename KeyType, typename ValueType, HashFunc H>
-typename HashMap<KeyType, ValueType, H>::iterator
-HashMap<KeyType, ValueType, H>::find(const KeyType &k) {
-  register unsigned int h = HashValue<KeyType, H>::Compute(k);
-  register unsigned int idx = h & mBucketsMask;
-  Entry *e = mBuckets[idx];
-  while (e) {
-    if (e->first == k) {
-      break;
-    }
-    e = e->next;
-  }
-  if (e == 0) {
-    return iterator(mBuckets, mNumBuckets, mNumBuckets, 0);
-  } else {
-    return iterator(mBuckets, mNumBuckets, idx, e);
-  }
-}
-
-template <typename KeyType, typename ValueType, HashFunc H>
-typename HashMap<KeyType, ValueType, H>::const_iterator
-HashMap<KeyType, ValueType, H>::find(const KeyType &k) const {
-  register unsigned int h = HashValue<KeyType, H>::Compute(k);
-  register unsigned int idx = h & mBucketsMask;
-  const Entry *e = mBuckets[idx];
-  while (e) {
-    if (e->first == k) {
-      break;
-    }
-    e = e->next;
-  }
-  if (e == 0) {
-    return const_iterator(mBuckets, mNumBuckets, mNumBuckets, 0);
-  } else {
-    return const_iterator(mBuckets, mNumBuckets, idx, e);
-  }
-}
-
-template <typename KeyType, typename ValueType, HashFunc H>
-void HashMap<KeyType, ValueType, H>::erase(
-  const typename HashMap<KeyType, ValueType, H>::iterator &it)
-{
-  register unsigned int idx;
-  if (it != end()) {
-    idx = it->h & mBucketsMask;
-    Entry *e = mBuckets[idx];
-    Entry *p = 0;
-    while (e) {
-      if (e->key == it->key) {
-        if (p) {
-          p->next = e->next;
-        } else {
-          mBuckets[idx] = e->next;
-        }
-        delete e;
-        break;
-      }
-      p = e;
-      e = e->next;
-    }
-  }
-}
-
-template <typename KeyType, typename ValueType, HashFunc H>
-ValueType&
-HashMap<KeyType, ValueType, H>::operator[](const KeyType &key) {
-  register unsigned int h = HashValue<KeyType, H>::Compute(key);
-  register unsigned int idx = h & mBucketsMask;
-  Entry *e = mBuckets[idx];
-  Entry *l = 0;
-  while (e) {
-    if (e->first == key) {
-      break;
-    }
-    l = e;
-    e = e->next;
-  }
-  if (e == 0) {
-    e = new Entry();
-    e->h = h;
-    e->first = key;
-    e->second = ValueType();
-    if (l) {
-      l->next = e;
-    } else {
-      mBuckets[idx] = e;
-    }
-    ++mNumEntries;
-    if ((mNumEntries << 1) > mNumBuckets) {
-      expand();
-    }
-  }
-  return e->second;
-}
-
-template <typename KeyType, typename ValueType, HashFunc H>
-const ValueType&
-HashMap<KeyType, ValueType, H>::operator[](const KeyType &key) const {
-  register unsigned int h = HashValue<KeyType, H>::Compute(key);
-  register unsigned int idx = h & mBucketsMask;
-  const Entry *e = mBuckets[idx];
-  while (e) {
-    if (e->first == key) {
-      break;
-    }
-    e = e->next;
-  }
-  if (e == 0) {
-    throw std::runtime_error("Invalid Key");
-  } else {
-    return e->second;
-  }
-}
-*/
 
 template <typename KeyType, typename ValueType, HashFunc H>
 typename HashMap<KeyType, ValueType, H>::Entry*
@@ -739,10 +559,7 @@ HashMap<KeyType, ValueType, H>::find(const KeyType &key) {
   register unsigned int h = HashValue<KeyType, H>::Compute(key);
   register unsigned int idx = h & mBucketsMask;
   Entry *e = mBuckets[idx];
-  while (e) {
-    if (e->first == key) {
-      break;
-    }
+  while (e && e->first != key) {
     e = e->next;
   }
   return e;
@@ -754,10 +571,7 @@ HashMap<KeyType, ValueType, H>::find(const KeyType &key) const {
   register unsigned int h = HashValue<KeyType, H>::Compute(key);
   register unsigned int idx = h & mBucketsMask;
   const Entry *e = mBuckets[idx];
-  while (e) {
-    if (e->first == key) {
-      break;
-    }
+  while (e && e->first != key) {
     e = e->next;
   }
   return e;
@@ -768,17 +582,18 @@ void HashMap<KeyType, ValueType, H>::erase(typename HashMap<KeyType, ValueType, 
   register unsigned int idx = e->h & mBucketsMask;
   Entry *c = mBuckets[idx];
   Entry *p = 0;
-  while (c) {
-    if (e == c) {
-      if (p) {
-        p->next = e->next;
-      }
-      delete e;
-      --mNumEntries;
-      return;
-    }
+  while (c && c != e) {
     p = c;
     c = c->next;
+  }
+  if (e != 0) {
+    if (p != 0) {
+      p->next = e->next;
+    } else {
+      mBuckets[idx] = e->next;
+    }
+    delete e;
+    --mNumEntries;
   }
 }
 
@@ -796,11 +611,7 @@ void HashMap<KeyType, ValueType, H>::expand() {
     while (e) {
       n = e->next;
       idx = e->h & mBucketsMask;
-      if (newBuckets[idx]) {
-        e->next = newBuckets[idx];
-      } else {
-        e->next = 0;
-      }
+      e->next = newBuckets[idx];
       newBuckets[idx] = e;
       e = n;
     }
