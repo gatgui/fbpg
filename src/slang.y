@@ -87,6 +87,17 @@ typedef struct YYLTYPE {
 %token <sym> SYMBOL
 %type <syml> paramlist
 
+%destructor { delete $$; } <s>
+%destructor { delete $$; } <d>
+%destructor { delete $$; } <i>
+%destructor { delete $$; } <b>
+%destructor { delete $$; } <o>
+%destructor { delete $$; } <blk>
+%destructor { delete $$; } <inst>
+%destructor { for (size_t i=0; i<$$->size(); ++i) {delete (*$$)[i];}; delete $$; } <sl>
+%destructor { delete $$; } <syml>
+%destructor { delete $$; } <cs>
+
 %right '='
 %left CONCAT
 %left AND OR
