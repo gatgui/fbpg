@@ -3,12 +3,7 @@
 
 #include <string>
 #include <vector>
-
-#ifdef _SYMTBL
-# include "symbol.h"
-#else
-typedef std::string Symbol;
-#endif
+#include "symbol.h"
 
 class Location {
   public:

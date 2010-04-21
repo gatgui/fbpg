@@ -336,7 +336,7 @@ extern int yylex \
 #undef YY_DECL
 #endif
 
-#line 162 "src/slang.l"
+#line 158 "src/slang.l"
 
 
 #line 343 "src/slang.lexer.h"

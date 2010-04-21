@@ -58,12 +58,7 @@ CallInfo& CallInfo::operator=(const CallInfo &rhs) {
 std::string CallInfo::toString() const {
   std::ostringstream oss;
   oss << "From " << mLocation.toString();
-#ifdef _SYMTBL
-  if (mFuncname.valid())
-#else
-  if (mFuncname.length() > 0)
-#endif
-  {
+  if (mFuncname.valid()) {
     oss << ": function \"" << mFuncname << "\"";
   }
   return oss.str();

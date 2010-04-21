@@ -9,9 +9,7 @@
 #ifdef _MEMMGR
 # include "heap.h"
 #endif
-#ifdef _SYMTBL
-# include "symbol.h"
-#endif
+#include "symbol.h"
 
 #ifdef _MSC_VER
 # pragma warning(disable:4290)
@@ -276,11 +274,7 @@ class Block : public Callable {
     virtual int call(class Stack *stack, class Context *ctx, bool &errored);
     virtual void toStream(std::ostream &os, const std::string &heading="") const;
     
-#ifdef _SYMTBL
     void addArgument(const Symbol &s);
-#else
-    void addArgument(const std::string &name);
-#endif
     void addInstruction(class Instruction *i);
     void setCode(class CodeSegment *);
     
@@ -295,11 +289,7 @@ class Block : public Callable {
   protected:
     
     class CodeSegment *mCode;
-#ifdef _SYMTBL
     std::vector<Symbol> mArgs;
-#else
-    std::vector<std::string> mArgs;
-#endif
 };
 
 #endif

@@ -181,22 +181,21 @@ typedef union YYSTYPE
 /* Line 214 of yacc.c  */
 #line 62 "src/slang.y"
 
-  String  *s;
-  Double  *d;
+  String *s;
+  Double *d;
   Integer *i;
   Boolean *b;
-  Object  *o;
-  Block   *blk;
-  size_t   sym;
+  Object *o;
+  Block *blk;
+  size_t sym;
   Instruction *inst;
-  std::vector<String*> *sl;
   std::vector<size_t> *syml;
   CodeSegment *cs;
 
 
 
 /* Line 214 of yacc.c  */
-#line 200 "src/slang.parser.c"
+#line 199 "src/slang.parser.c"
 } YYSTYPE;
 # define YYSTYPE_IS_TRIVIAL 1
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */
@@ -221,7 +220,7 @@ typedef struct YYLTYPE
 
 
 /* Line 264 of yacc.c  */
-#line 225 "src/slang.parser.c"
+#line 224 "src/slang.parser.c"
 /* Unqualified %code blocks.  */
 
 /* Line 265 of yacc.c  */
@@ -247,7 +246,7 @@ typedef struct YYLTYPE
 
 
 /* Line 265 of yacc.c  */
-#line 251 "src/slang.parser.c"
+#line 250 "src/slang.parser.c"
 
 #ifdef short
 # undef short
@@ -553,11 +552,11 @@ static const yytype_int8 yyrhs[] =
 /* YYRLINE[YYN] -- source line where rule number YYN was defined.  */
 static const yytype_uint16 yyrline[] =
 {
-       0,   114,   114,   117,   125,   131,   137,   143,   149,   155,
-     161,   167,   173,   179,   185,   191,   197,   203,   209,   213,
-     217,   221,   225,   229,   233,   242,   245,   249,   271,   272,
-     273,   280,   288,   298,   306,   310,   314,   318,   323,   348,
-     357,   379,   382,   389,   392,   395,   406,   410,   414
+       0,   108,   108,   111,   115,   121,   127,   133,   139,   145,
+     151,   157,   163,   169,   175,   181,   187,   193,   199,   203,
+     207,   211,   215,   219,   223,   227,   230,   234,   245,   246,
+     247,   254,   262,   272,   280,   284,   288,   292,   297,   311,
+     315,   326,   329,   336,   339,   342,   353,   357,   361
 };
 #endif
 
@@ -1249,137 +1248,137 @@ yydestruct (yymsg, yytype, yyvaluep, yylocationp, pd)
       case 3: /* "INTEGER" */
 
 /* Line 1000 of yacc.c  */
-#line 92 "src/slang.y"
+#line 87 "src/slang.y"
 	{ delete (yyvaluep->i); };
 
 /* Line 1000 of yacc.c  */
-#line 1257 "src/slang.parser.c"
+#line 1256 "src/slang.parser.c"
 	break;
       case 4: /* "REAL" */
 
 /* Line 1000 of yacc.c  */
-#line 91 "src/slang.y"
+#line 86 "src/slang.y"
 	{ delete (yyvaluep->d); };
 
 /* Line 1000 of yacc.c  */
-#line 1266 "src/slang.parser.c"
+#line 1265 "src/slang.parser.c"
 	break;
       case 5: /* "STRING" */
 
 /* Line 1000 of yacc.c  */
-#line 90 "src/slang.y"
+#line 85 "src/slang.y"
 	{ delete (yyvaluep->s); };
 
 /* Line 1000 of yacc.c  */
-#line 1275 "src/slang.parser.c"
+#line 1274 "src/slang.parser.c"
 	break;
       case 6: /* "TRUE" */
 
 /* Line 1000 of yacc.c  */
-#line 93 "src/slang.y"
+#line 88 "src/slang.y"
 	{ delete (yyvaluep->b); };
 
 /* Line 1000 of yacc.c  */
-#line 1284 "src/slang.parser.c"
+#line 1283 "src/slang.parser.c"
 	break;
       case 7: /* "FALSE" */
 
 /* Line 1000 of yacc.c  */
-#line 93 "src/slang.y"
+#line 88 "src/slang.y"
 	{ delete (yyvaluep->b); };
 
 /* Line 1000 of yacc.c  */
-#line 1293 "src/slang.parser.c"
+#line 1292 "src/slang.parser.c"
 	break;
       case 8: /* "RETURN" */
 
 /* Line 1000 of yacc.c  */
-#line 96 "src/slang.y"
+#line 91 "src/slang.y"
 	{ delete (yyvaluep->inst); };
 
 /* Line 1000 of yacc.c  */
-#line 1302 "src/slang.parser.c"
+#line 1301 "src/slang.parser.c"
 	break;
       case 9: /* "BREAK" */
 
 /* Line 1000 of yacc.c  */
-#line 96 "src/slang.y"
+#line 91 "src/slang.y"
 	{ delete (yyvaluep->inst); };
 
 /* Line 1000 of yacc.c  */
-#line 1311 "src/slang.parser.c"
+#line 1310 "src/slang.parser.c"
 	break;
       case 10: /* "CONTINUE" */
 
 /* Line 1000 of yacc.c  */
-#line 96 "src/slang.y"
+#line 91 "src/slang.y"
 	{ delete (yyvaluep->inst); };
 
 /* Line 1000 of yacc.c  */
-#line 1320 "src/slang.parser.c"
+#line 1319 "src/slang.parser.c"
 	break;
       case 42: /* "paramlist" */
 
 /* Line 1000 of yacc.c  */
-#line 98 "src/slang.y"
+#line 92 "src/slang.y"
 	{ delete (yyvaluep->syml); };
 
 /* Line 1000 of yacc.c  */
-#line 1329 "src/slang.parser.c"
+#line 1328 "src/slang.parser.c"
 	break;
       case 43: /* "expr" */
 
 /* Line 1000 of yacc.c  */
-#line 99 "src/slang.y"
+#line 93 "src/slang.y"
 	{ delete (yyvaluep->cs); };
 
 /* Line 1000 of yacc.c  */
-#line 1338 "src/slang.parser.c"
+#line 1337 "src/slang.parser.c"
 	break;
       case 44: /* "exprlist" */
 
 /* Line 1000 of yacc.c  */
-#line 99 "src/slang.y"
+#line 93 "src/slang.y"
 	{ delete (yyvaluep->cs); };
 
 /* Line 1000 of yacc.c  */
-#line 1347 "src/slang.parser.c"
+#line 1346 "src/slang.parser.c"
 	break;
       case 45: /* "stmt" */
 
 /* Line 1000 of yacc.c  */
-#line 99 "src/slang.y"
+#line 93 "src/slang.y"
 	{ delete (yyvaluep->cs); };
 
 /* Line 1000 of yacc.c  */
-#line 1356 "src/slang.parser.c"
+#line 1355 "src/slang.parser.c"
 	break;
       case 46: /* "stmtlist" */
 
 /* Line 1000 of yacc.c  */
-#line 99 "src/slang.y"
+#line 93 "src/slang.y"
 	{ delete (yyvaluep->cs); };
 
 /* Line 1000 of yacc.c  */
-#line 1365 "src/slang.parser.c"
+#line 1364 "src/slang.parser.c"
 	break;
       case 47: /* "body" */
 
 /* Line 1000 of yacc.c  */
-#line 99 "src/slang.y"
+#line 93 "src/slang.y"
 	{ delete (yyvaluep->cs); };
 
 /* Line 1000 of yacc.c  */
-#line 1374 "src/slang.parser.c"
+#line 1373 "src/slang.parser.c"
 	break;
       case 48: /* "block" */
 
 /* Line 1000 of yacc.c  */
-#line 99 "src/slang.y"
+#line 93 "src/slang.y"
 	{ delete (yyvaluep->cs); };
 
 /* Line 1000 of yacc.c  */
-#line 1383 "src/slang.parser.c"
+#line 1382 "src/slang.parser.c"
 	break;
 
       default:
@@ -1710,7 +1709,7 @@ yyreduce:
         case 2:
 
 /* Line 1455 of yacc.c  */
-#line 114 "src/slang.y"
+#line 108 "src/slang.y"
     {
                                     (yyval.syml) = NULL;
                                   ;}
@@ -1719,13 +1718,9 @@ yyreduce:
   case 3:
 
 /* Line 1455 of yacc.c  */
-#line 117 "src/slang.y"
+#line 111 "src/slang.y"
     {
-                                    #ifdef _SYMTBL
-                                     (yyval.syml) = new std::vector<size_t>();
-                                    #else
-                                     (yyval.syml) = new std::vector<String*>();
-                                    #endif
+                                    (yyval.syml) = new std::vector<size_t>();
                                     (yyval.syml)->push_back((yyvsp[(1) - (1)].sym));
                                   ;}
     break;
@@ -1733,7 +1728,7 @@ yyreduce:
   case 4:
 
 /* Line 1455 of yacc.c  */
-#line 125 "src/slang.y"
+#line 115 "src/slang.y"
     {
                                     (yyvsp[(1) - (3)].syml)->push_back((yyvsp[(3) - (3)].sym));
                                     (yyval.syml) = (yyvsp[(1) - (3)].syml);
@@ -1743,7 +1738,7 @@ yyreduce:
   case 5:
 
 /* Line 1455 of yacc.c  */
-#line 131 "src/slang.y"
+#line 121 "src/slang.y"
     {
                           (yyvsp[(1) - (3)].cs)->merge((yyvsp[(3) - (3)].cs));
                           delete (yyvsp[(3) - (3)].cs);
@@ -1755,7 +1750,7 @@ yyreduce:
   case 6:
 
 /* Line 1455 of yacc.c  */
-#line 137 "src/slang.y"
+#line 127 "src/slang.y"
     {
                           (yyvsp[(1) - (3)].cs)->merge((yyvsp[(3) - (3)].cs));
                           delete (yyvsp[(3) - (3)].cs);
@@ -1767,7 +1762,7 @@ yyreduce:
   case 7:
 
 /* Line 1455 of yacc.c  */
-#line 143 "src/slang.y"
+#line 133 "src/slang.y"
     {
                           (yyvsp[(1) - (3)].cs)->merge((yyvsp[(3) - (3)].cs));
                           delete (yyvsp[(3) - (3)].cs);
@@ -1779,7 +1774,7 @@ yyreduce:
   case 8:
 
 /* Line 1455 of yacc.c  */
-#line 149 "src/slang.y"
+#line 139 "src/slang.y"
     {
                           (yyvsp[(1) - (3)].cs)->merge((yyvsp[(3) - (3)].cs));
                           delete (yyvsp[(3) - (3)].cs);
@@ -1791,7 +1786,7 @@ yyreduce:
   case 9:
 
 /* Line 1455 of yacc.c  */
-#line 155 "src/slang.y"
+#line 145 "src/slang.y"
     {
                           (yyvsp[(1) - (3)].cs)->merge((yyvsp[(3) - (3)].cs));
                           delete (yyvsp[(3) - (3)].cs);
@@ -1803,7 +1798,7 @@ yyreduce:
   case 10:
 
 /* Line 1455 of yacc.c  */
-#line 161 "src/slang.y"
+#line 151 "src/slang.y"
     {
                           (yyvsp[(1) - (3)].cs)->merge((yyvsp[(3) - (3)].cs));
                           delete (yyvsp[(3) - (3)].cs);
@@ -1815,7 +1810,7 @@ yyreduce:
   case 11:
 
 /* Line 1455 of yacc.c  */
-#line 167 "src/slang.y"
+#line 157 "src/slang.y"
     {
                           (yyvsp[(1) - (3)].cs)->merge((yyvsp[(3) - (3)].cs));
                           delete (yyvsp[(3) - (3)].cs);
@@ -1827,7 +1822,7 @@ yyreduce:
   case 12:
 
 /* Line 1455 of yacc.c  */
-#line 173 "src/slang.y"
+#line 163 "src/slang.y"
     {
                           (yyvsp[(1) - (3)].cs)->merge((yyvsp[(3) - (3)].cs));
                           delete (yyvsp[(3) - (3)].cs);
@@ -1839,7 +1834,7 @@ yyreduce:
   case 13:
 
 /* Line 1455 of yacc.c  */
-#line 179 "src/slang.y"
+#line 169 "src/slang.y"
     {
                           (yyvsp[(1) - (3)].cs)->merge((yyvsp[(3) - (3)].cs));
                           delete (yyvsp[(3) - (3)].cs);
@@ -1851,7 +1846,7 @@ yyreduce:
   case 14:
 
 /* Line 1455 of yacc.c  */
-#line 185 "src/slang.y"
+#line 175 "src/slang.y"
     {
                           (yyvsp[(1) - (3)].cs)->merge((yyvsp[(3) - (3)].cs));
                           delete (yyvsp[(3) - (3)].cs);
@@ -1863,7 +1858,7 @@ yyreduce:
   case 15:
 
 /* Line 1455 of yacc.c  */
-#line 191 "src/slang.y"
+#line 181 "src/slang.y"
     {
                           (yyvsp[(1) - (3)].cs)->merge((yyvsp[(3) - (3)].cs));
                           delete (yyvsp[(3) - (3)].cs);
@@ -1875,7 +1870,7 @@ yyreduce:
   case 16:
 
 /* Line 1455 of yacc.c  */
-#line 197 "src/slang.y"
+#line 187 "src/slang.y"
     {
                           (yyvsp[(1) - (3)].cs)->merge((yyvsp[(3) - (3)].cs));
                           delete (yyvsp[(3) - (3)].cs);
@@ -1887,7 +1882,7 @@ yyreduce:
   case 17:
 
 /* Line 1455 of yacc.c  */
-#line 203 "src/slang.y"
+#line 193 "src/slang.y"
     {
                           (yyvsp[(1) - (3)].cs)->merge((yyvsp[(3) - (3)].cs));
                           delete (yyvsp[(3) - (3)].cs);
@@ -1899,7 +1894,7 @@ yyreduce:
   case 18:
 
 /* Line 1455 of yacc.c  */
-#line 209 "src/slang.y"
+#line 199 "src/slang.y"
     {
                           (yyvsp[(2) - (2)].cs)->append(new Call(MakeLocation((yyloc)), Symbol("not")));
                           (yyval.cs) = (yyvsp[(2) - (2)].cs);
@@ -1909,7 +1904,7 @@ yyreduce:
   case 19:
 
 /* Line 1455 of yacc.c  */
-#line 213 "src/slang.y"
+#line 203 "src/slang.y"
     {
                           (yyval.cs) = new CodeSegment();
                           (yyval.cs)->push_back(new Push(MakeLocation((yyloc)), (yyvsp[(1) - (1)].i)));
@@ -1919,7 +1914,7 @@ yyreduce:
   case 20:
 
 /* Line 1455 of yacc.c  */
-#line 217 "src/slang.y"
+#line 207 "src/slang.y"
     {
                           (yyval.cs) = new CodeSegment();
                           (yyval.cs)->push_back(new Push(MakeLocation((yyloc)), (yyvsp[(1) - (1)].d)));
@@ -1929,7 +1924,7 @@ yyreduce:
   case 21:
 
 /* Line 1455 of yacc.c  */
-#line 221 "src/slang.y"
+#line 211 "src/slang.y"
     {
                           (yyval.cs) = new CodeSegment();
                           (yyval.cs)->push_back(new Push(MakeLocation((yyloc)), (yyvsp[(1) - (1)].s)));
@@ -1939,7 +1934,7 @@ yyreduce:
   case 22:
 
 /* Line 1455 of yacc.c  */
-#line 225 "src/slang.y"
+#line 215 "src/slang.y"
     {
                           (yyval.cs) = new CodeSegment();
                           (yyval.cs)->push_back(new Push(MakeLocation((yyloc)), (yyvsp[(1) - (1)].b)));
@@ -1949,7 +1944,7 @@ yyreduce:
   case 23:
 
 /* Line 1455 of yacc.c  */
-#line 229 "src/slang.y"
+#line 219 "src/slang.y"
     {
                           (yyval.cs) = new CodeSegment();
                           (yyval.cs)->push_back(new Push(MakeLocation((yyloc)), (yyvsp[(1) - (1)].b)));
@@ -1959,22 +1954,17 @@ yyreduce:
   case 24:
 
 /* Line 1455 of yacc.c  */
-#line 233 "src/slang.y"
+#line 223 "src/slang.y"
     {
                           (yyval.cs) = new CodeSegment();
-                          #ifdef _SYMTBL
-                           (yyval.cs)->push_back(new Get(MakeLocation((yyloc)), Symbol((yyvsp[(1) - (1)].sym))));
-                          #else
-                           (yyval.cs)->push_back(new Get(MakeLocation((yyloc)), (yyvsp[(1) - (1)].sym)->getValue()));
-                           delete (yyvsp[(1) - (1)].sym);
-                          #endif
+                          (yyval.cs)->push_back(new Get(MakeLocation((yyloc)), Symbol((yyvsp[(1) - (1)].sym))));
                         ;}
     break;
 
   case 25:
 
 /* Line 1455 of yacc.c  */
-#line 242 "src/slang.y"
+#line 227 "src/slang.y"
     {
                           (yyval.cs) = (yyvsp[(2) - (3)].cs);
                         ;}
@@ -1983,7 +1973,7 @@ yyreduce:
   case 26:
 
 /* Line 1455 of yacc.c  */
-#line 245 "src/slang.y"
+#line 230 "src/slang.y"
     {
                                   (yyvsp[(2) - (2)].cs)->append(new Call(MakeLocation((yyloc)), Symbol("__uminus__")));
                                   (yyval.cs) = (yyvsp[(2) - (2)].cs);
@@ -1993,47 +1983,36 @@ yyreduce:
   case 27:
 
 /* Line 1455 of yacc.c  */
-#line 249 "src/slang.y"
+#line 234 "src/slang.y"
     {
                                   if ((yyvsp[(3) - (4)].cs) != NULL) {
-                                    #ifdef _SYMTBL
-                                     (yyvsp[(3) - (4)].cs)->append(new Call(MakeLocation((yyloc)), Symbol((yyvsp[(1) - (4)].sym))));
-                                    #else
-                                     (yyvsp[(3) - (4)].cs)->append(new Call(MakeLocation((yyloc)), (yyvsp[(1) - (4)].sym)->getValue()));
-                                    #endif
+                                    (yyvsp[(3) - (4)].cs)->append(new Call(MakeLocation((yyloc)), Symbol((yyvsp[(1) - (4)].sym))));
                                     (yyval.cs) = (yyvsp[(3) - (4)].cs);
                                   } else {
                                     (yyval.cs) = new CodeSegment();
-                                    #ifdef _SYMTBL
-                                     (yyval.cs)->append(new Call(MakeLocation((yyloc)), Symbol((yyvsp[(1) - (4)].sym))));
-                                    #else
-                                     (yyval.cs)->append(new Call(MakeLocation((yyloc)), (yyvsp[(1) - (4)].sym)->getValue()));
-                                    #endif
+                                    (yyval.cs)->append(new Call(MakeLocation((yyloc)), Symbol((yyvsp[(1) - (4)].sym))));
                                   }
-                                  #ifndef _SYMTBL
-                                   delete (yyvsp[(1) - (4)].sym);
-                                  #endif
                                 ;}
     break;
 
   case 28:
 
 /* Line 1455 of yacc.c  */
-#line 271 "src/slang.y"
+#line 245 "src/slang.y"
     { (yyval.cs) = NULL; ;}
     break;
 
   case 29:
 
 /* Line 1455 of yacc.c  */
-#line 272 "src/slang.y"
+#line 246 "src/slang.y"
     { (yyval.cs) = (yyvsp[(1) - (1)].cs); ;}
     break;
 
   case 30:
 
 /* Line 1455 of yacc.c  */
-#line 273 "src/slang.y"
+#line 247 "src/slang.y"
     {
                                 (yyvsp[(1) - (3)].cs)->merge((yyvsp[(3) - (3)].cs));
                                 delete (yyvsp[(3) - (3)].cs);
@@ -2044,7 +2023,7 @@ yyreduce:
   case 31:
 
 /* Line 1455 of yacc.c  */
-#line 280 "src/slang.y"
+#line 254 "src/slang.y"
     {
                                                       Block *cond = new Block();
                                                       Block *body = new Block();
@@ -2058,7 +2037,7 @@ yyreduce:
   case 32:
 
 /* Line 1455 of yacc.c  */
-#line 288 "src/slang.y"
+#line 262 "src/slang.y"
     {
                                                       Block *cond = new Block();
                                                       Block *body1 = new Block();
@@ -2074,7 +2053,7 @@ yyreduce:
   case 33:
 
 /* Line 1455 of yacc.c  */
-#line 298 "src/slang.y"
+#line 272 "src/slang.y"
     {
                                                       Block *cond = new Block();
                                                       Block *body = new Block();
@@ -2088,7 +2067,7 @@ yyreduce:
   case 34:
 
 /* Line 1455 of yacc.c  */
-#line 306 "src/slang.y"
+#line 280 "src/slang.y"
     {
                                                       (yyval.cs) = new CodeSegment();
                                                       (yyval.cs)->push_back((yyvsp[(1) - (1)].inst));
@@ -2098,7 +2077,7 @@ yyreduce:
   case 35:
 
 /* Line 1455 of yacc.c  */
-#line 310 "src/slang.y"
+#line 284 "src/slang.y"
     {
                                                       (yyval.cs) = (yyvsp[(2) - (2)].cs);
                                                       (yyvsp[(2) - (2)].cs)->push_back((yyvsp[(1) - (2)].inst));
@@ -2108,7 +2087,7 @@ yyreduce:
   case 36:
 
 /* Line 1455 of yacc.c  */
-#line 314 "src/slang.y"
+#line 288 "src/slang.y"
     {
                                                       (yyval.cs) = new CodeSegment();
                                                       (yyval.cs)->push_back((yyvsp[(1) - (1)].inst));
@@ -2118,7 +2097,7 @@ yyreduce:
   case 37:
 
 /* Line 1455 of yacc.c  */
-#line 318 "src/slang.y"
+#line 292 "src/slang.y"
     {
                                                       (yyval.cs) = new CodeSegment();
                                                       (yyval.cs)->push_back((yyvsp[(1) - (1)].inst));
@@ -2128,45 +2107,29 @@ yyreduce:
   case 38:
 
 /* Line 1455 of yacc.c  */
-#line 323 "src/slang.y"
+#line 297 "src/slang.y"
     {
                                                       // DefFunc
                                                       Block *fn = new Block();
                                                       if ((yyvsp[(4) - (7)].syml) != NULL) {
                                                         for (size_t i=0; i<(yyvsp[(4) - (7)].syml)->size(); ++i) {
-                                                          #ifdef _SYMTBL
-                                                           Symbol s((*((yyvsp[(4) - (7)].syml)))[i]);
-                                                           fn->addArgument(s);
-                                                          #else
-                                                           String *s = (*((yyvsp[(4) - (7)].syml)))[i];
-                                                           fn->addArgument(s->getValue());
-                                                           delete s;
-                                                          #endif
+                                                          Symbol s((*((yyvsp[(4) - (7)].syml)))[i]);
+                                                          fn->addArgument(s);
                                                         }
                                                         delete (yyvsp[(4) - (7)].syml);
                                                       }
                                                       fn->setCode((yyvsp[(6) - (7)].cs));
                                                       (yyval.cs) = new CodeSegment();
-                                                      #ifdef _SYMTBL
-                                                       (yyval.cs)->append(new DefFunc(MakeLocation((yyloc)), Symbol((yyvsp[(2) - (7)].sym)), fn));
-                                                      #else
-                                                       (yyval.cs)->append(new DefFunc(MakeLocation((yyloc)), (yyvsp[(2) - (7)].sym)->getValue(), fn));
-                                                       delete (yyvsp[(2) - (7)].sym);
-                                                      #endif
+                                                      (yyval.cs)->append(new DefFunc(MakeLocation((yyloc)), Symbol((yyvsp[(2) - (7)].sym)), fn));
                                                     ;}
     break;
 
   case 39:
 
 /* Line 1455 of yacc.c  */
-#line 348 "src/slang.y"
+#line 311 "src/slang.y"
     {
-                                                      #ifdef _SYMTBL
-                                                       (yyvsp[(3) - (3)].cs)->append(new Set(MakeLocation((yyloc)), Symbol((yyvsp[(1) - (3)].sym))));
-                                                      #else
-                                                       (yyvsp[(3) - (3)].cs)->append(new Set(MakeLocation((yyloc)), (yyvsp[(1) - (3)].sym)->getValue()));
-                                                       delete (yyvsp[(1) - (3)].sym);
-                                                      #endif
+                                                      (yyvsp[(3) - (3)].cs)->append(new Set(MakeLocation((yyloc)), Symbol((yyvsp[(1) - (3)].sym))));
                                                       (yyval.cs) = (yyvsp[(3) - (3)].cs);
                                                     ;}
     break;
@@ -2174,33 +2137,22 @@ yyreduce:
   case 40:
 
 /* Line 1455 of yacc.c  */
-#line 357 "src/slang.y"
+#line 315 "src/slang.y"
     {
                                                       if ((yyvsp[(3) - (4)].cs) != NULL) {
-                                                        #ifdef _SYMTBL
-                                                         (yyvsp[(3) - (4)].cs)->append(new Call(MakeLocation((yyloc)), Symbol((yyvsp[(1) - (4)].sym))));
-                                                        #else
-                                                         (yyvsp[(3) - (4)].cs)->append(new Call(MakeLocation((yyloc)), (yyvsp[(1) - (4)].sym)->getValue()));
-                                                        #endif
+                                                        (yyvsp[(3) - (4)].cs)->append(new Call(MakeLocation((yyloc)), Symbol((yyvsp[(1) - (4)].sym))));
                                                         (yyval.cs) = (yyvsp[(3) - (4)].cs);
                                                       } else {
                                                         (yyval.cs) = new CodeSegment();
-                                                        #ifdef _SYMTBL
-                                                         (yyval.cs)->append(new Call(MakeLocation((yyloc)), Symbol((yyvsp[(1) - (4)].sym))));
-                                                        #else
-                                                         (yyval.cs)->append(new Call(MakeLocation((yyloc)), (yyvsp[(1) - (4)].sym)->getValue()));
-                                                        #endif
+                                                        (yyval.cs)->append(new Call(MakeLocation((yyloc)), Symbol((yyvsp[(1) - (4)].sym))));
                                                       }
-                                                      #ifndef _SYMTBL
-                                                       delete (yyvsp[(1) - (4)].sym);
-                                                      #endif
                                                     ;}
     break;
 
   case 41:
 
 /* Line 1455 of yacc.c  */
-#line 379 "src/slang.y"
+#line 326 "src/slang.y"
     {
                                 (yyval.cs) = (yyvsp[(1) - (1)].cs);
                               ;}
@@ -2209,7 +2161,7 @@ yyreduce:
   case 42:
 
 /* Line 1455 of yacc.c  */
-#line 382 "src/slang.y"
+#line 329 "src/slang.y"
     {
                                 (yyvsp[(1) - (3)].cs)->merge((yyvsp[(3) - (3)].cs));
                                 delete (yyvsp[(3) - (3)].cs);
@@ -2220,7 +2172,7 @@ yyreduce:
   case 43:
 
 /* Line 1455 of yacc.c  */
-#line 389 "src/slang.y"
+#line 336 "src/slang.y"
     {
                         (yyval.cs) = NULL;
                       ;}
@@ -2229,7 +2181,7 @@ yyreduce:
   case 44:
 
 /* Line 1455 of yacc.c  */
-#line 392 "src/slang.y"
+#line 339 "src/slang.y"
     {
                         (yyval.cs) = (yyvsp[(1) - (2)].cs);
                       ;}
@@ -2238,7 +2190,7 @@ yyreduce:
   case 45:
 
 /* Line 1455 of yacc.c  */
-#line 395 "src/slang.y"
+#line 342 "src/slang.y"
     {
                         if ((yyvsp[(1) - (2)].cs) != NULL) {
                           (yyvsp[(1) - (2)].cs)->merge((yyvsp[(2) - (2)].cs));
@@ -2253,7 +2205,7 @@ yyreduce:
   case 46:
 
 /* Line 1455 of yacc.c  */
-#line 406 "src/slang.y"
+#line 353 "src/slang.y"
     {
                         (yyval.cs) = pd->code;
                         YYABORT;
@@ -2263,7 +2215,7 @@ yyreduce:
   case 47:
 
 /* Line 1455 of yacc.c  */
-#line 410 "src/slang.y"
+#line 357 "src/slang.y"
     {
                         (yyval.cs) = pd->code;
                         YYACCEPT;
@@ -2273,10 +2225,11 @@ yyreduce:
   case 48:
 
 /* Line 1455 of yacc.c  */
-#line 414 "src/slang.y"
+#line 361 "src/slang.y"
     {
                         pd->code->merge((yyvsp[(1) - (2)].cs));
                         delete (yyvsp[(1) - (2)].cs);
+                        (yyval.cs) = pd->code;
                         YYACCEPT;
                       ;}
     break;
@@ -2284,7 +2237,7 @@ yyreduce:
 
 
 /* Line 1455 of yacc.c  */
-#line 2288 "src/slang.parser.c"
+#line 2241 "src/slang.parser.c"
       default: break;
     }
   YY_SYMBOL_PRINT ("-> $$ =", yyr1[yyn], &yyval, &yyloc);
@@ -2503,7 +2456,7 @@ yyreturn:
 
 
 /* Line 1675 of yacc.c  */
-#line 421 "src/slang.y"
+#line 369 "src/slang.y"
 
 
 int main(int argc, char **argv) {
@@ -2570,9 +2523,7 @@ int main(int argc, char **argv) {
     ctx->cleanup();
     ctx->decRef();
     delete stack;
-#ifdef _SYMTBL
     SymbolTable::Clear();
-#endif
     
   } catch (Exception &e) {
     std::cerr << "*** Caught exception ***" << std::endl;

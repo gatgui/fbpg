@@ -124,22 +124,21 @@ typedef union YYSTYPE
 /* Line 1676 of yacc.c  */
 #line 62 "src/slang.y"
 
-  String  *s;
-  Double  *d;
+  String *s;
+  Double *d;
   Integer *i;
   Boolean *b;
-  Object  *o;
-  Block   *blk;
-  size_t   sym;
+  Object *o;
+  Block *blk;
+  size_t sym;
   Instruction *inst;
-  std::vector<String*> *sl;
   std::vector<size_t> *syml;
   CodeSegment *cs;
 
 
 
 /* Line 1676 of yacc.c  */
-#line 143 "src/slang.parser.h"
+#line 142 "src/slang.parser.h"
 } YYSTYPE;
 # define YYSTYPE_IS_TRIVIAL 1
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */

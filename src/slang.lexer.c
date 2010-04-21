@@ -1067,18 +1067,14 @@ case 39:
 YY_RULE_SETUP
 #line 102 "src/slang.l"
 {
-                                  #ifdef _SYMTBL
-                                   yylval->sym = SymbolTable::GetSymbol(yytext).id();
-                                  #else
-                                   yylval->s = new String(yytext);
-                                  #endif
+                                  yylval->sym = SymbolTable::GetSymbol(yytext).id();
                                   return SYMBOL;
                                 }
 	YY_BREAK
 case 40:
 /* rule 40 can match eol */
 YY_RULE_SETUP
-#line 110 "src/slang.l"
+#line 106 "src/slang.l"
 {
                                   static std::string escChars = "\\\"nrtv";
                                   static std::string repChars = "\\\"\n\r\t\v";
@@ -1118,39 +1114,39 @@ case 41:
 yyg->yy_c_buf_p = yy_cp -= 1;
 YY_DO_BEFORE_ACTION; /* set up yytext again */
 YY_RULE_SETUP
-#line 144 "src/slang.l"
+#line 140 "src/slang.l"
 { /* do nothing */ }
 	YY_BREAK
 case 42:
 YY_RULE_SETUP
-#line 145 "src/slang.l"
+#line 141 "src/slang.l"
 { BEGIN MULTILINE_COMMENT; }
 	YY_BREAK
 case 43:
 YY_RULE_SETUP
-#line 146 "src/slang.l"
+#line 142 "src/slang.l"
 { BEGIN INITIAL; }
 	YY_BREAK
 case 44:
 /* rule 44 can match eol */
 YY_RULE_SETUP
-#line 147 "src/slang.l"
+#line 143 "src/slang.l"
 { /* yycolumn = 1; */ }
 	YY_BREAK
 case 45:
 YY_RULE_SETUP
-#line 148 "src/slang.l"
+#line 144 "src/slang.l"
 { /* do nothing */ }
 	YY_BREAK
 case YY_STATE_EOF(MULTILINE_COMMENT):
-#line 149 "src/slang.l"
+#line 145 "src/slang.l"
 { yyerror(yylloc, pd, "unclosed comment"); }
 	YY_BREAK
 /* Whitespaces */
 case 46:
 /* rule 46 can match eol */
 YY_RULE_SETUP
-#line 152 "src/slang.l"
+#line 148 "src/slang.l"
 {
                                   // yycolumn = 1;
                                   return EOL;
@@ -1158,12 +1154,12 @@ YY_RULE_SETUP
 	YY_BREAK
 case 47:
 YY_RULE_SETUP
-#line 156 "src/slang.l"
+#line 152 "src/slang.l"
 { /* ignore whitespace */ }
 	YY_BREAK
 case 48:
 YY_RULE_SETUP
-#line 157 "src/slang.l"
+#line 153 "src/slang.l"
 {
                                   fprintf(stderr, "Mystery character: %c\n", yytext[0]);
                                   exit(0);
@@ -1171,10 +1167,10 @@ YY_RULE_SETUP
 	YY_BREAK
 case 49:
 YY_RULE_SETUP
-#line 162 "src/slang.l"
+#line 158 "src/slang.l"
 YY_FATAL_ERROR( "flex scanner jammed" );
 	YY_BREAK
-#line 1178 "src/slang.lexer.c"
+#line 1174 "src/slang.lexer.c"
 case YY_STATE_EOF(INITIAL):
 	yyterminate();
 
@@ -2363,7 +2359,7 @@ void yyfree (void * ptr , yyscan_t yyscanner)
 
 #define YYTABLES_NAME "yytables"
 
-#line 162 "src/slang.l"
+#line 158 "src/slang.l"
 
 
 

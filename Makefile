@@ -31,11 +31,8 @@ ifeq ($(ctxi),1)
 CCFLAGS:=$(CCFLAGS) -D_CTXI
 endif
 
-ifeq ($(symtbl),1)
-CCFLAGS:=$(CCFLAGS) -D_SYMTBL
 ifeq ($(symtblh),1)
 CCFLAGS:=$(CCFLAGS) -D_SYMTBLH
-endif
 endif
 
 LINKFLAGS=-L. -lcore

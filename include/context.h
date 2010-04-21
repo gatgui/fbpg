@@ -5,11 +5,7 @@
 #include "callstack.h"
 #include <map>
 #include <vector>
-#ifdef _SYMTBL
-# include "symbol.h"
-#else
-typedef std::string Symbol;
-#endif
+#include "symbol.h"
 
 class Context {
   public:

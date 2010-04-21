@@ -100,11 +100,7 @@ struct ParserData *pd = yyextra;
                                   return REAL;
                                 }
 {ALPHA}{WORD}*                  {
-                                  #ifdef _SYMTBL
-                                   yylval->sym = SymbolTable::GetSymbol(yytext).id();
-                                  #else
-                                   yylval->s = new String(yytext);
-                                  #endif
+                                  yylval->sym = SymbolTable::GetSymbol(yytext).id();
                                   return SYMBOL;
                                 }
 \"(\\.|[^"])*\"                 {
