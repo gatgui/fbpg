@@ -104,14 +104,15 @@ typedef struct YYLTYPE {
      END = 275,
      EOL = 276,
      FUNC = 277,
-     IF = 278,
-     THEN = 279,
-     ELSE = 280,
-     DO = 281,
-     WHILE = 282,
-     SYMBOL = 283,
-     CONCAT = 284,
-     UMINUS = 285
+     CLOSURE = 278,
+     IF = 279,
+     THEN = 280,
+     ELSE = 281,
+     DO = 282,
+     WHILE = 283,
+     SYMBOL = 284,
+     CONCAT = 285,
+     UMINUS = 286
    };
 #endif
 
@@ -138,7 +139,7 @@ typedef union YYSTYPE
 
 
 /* Line 1676 of yacc.c  */
-#line 142 "src/slang.parser.h"
+#line 143 "src/slang.parser.h"
 } YYSTYPE;
 # define YYSTYPE_IS_TRIVIAL 1
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */

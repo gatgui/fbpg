@@ -77,7 +77,7 @@ typedef struct YYLTYPE {
 %token <s> STRING
 %token <b> TRUE FALSE
 %token <inst> RETURN BREAK CONTINUE
-%token NEQ EQ LT GT LTE GTE AND OR NOT END EOL FUNC IF THEN ELSE DO WHILE
+%token NEQ EQ LT GT LTE GTE AND OR NOT END EOL FUNC CLOSURE IF THEN ELSE DO WHILE
 %token <sym> SYMBOL
 %type <cs> expr exprlist stmt stmtlist block body
 %type <syml> paramlist
@@ -293,7 +293,19 @@ stmt  : IF expr THEN body END                       {
                                                       $$ = new CodeSegment();
                                                       $$->push_back($1);
                                                     }
-      // | SYMBOL '=' FUNC '(' paramlist ')' body END  {
+      | SYMBOL '=' FUNC '(' paramlist ')' body END  {
+                                                      Block *fn = new Block();
+                                                      if ($5 != NULL) {
+                                                        for (size_t i=0; i<$5->size(); ++i) {
+                                                          Symbol s((*($5))[i]);
+                                                          fn->addArgument(s);
+                                                        }
+                                                        delete $5;
+                                                      }
+                                                      fn->setCode($7);
+                                                      $$ = new CodeSegment();
+                                                      $$->append(new DefFunc(MakeLocation(@$), Symbol($1), fn));
+                                                    }
       | FUNC SYMBOL '(' paramlist ')' body END      {
                                                       // DefFunc
                                                       Block *fn = new Block();

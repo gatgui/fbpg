@@ -149,6 +149,48 @@ bool Context::hasVar(const Symbol &name, bool inherit) const {
 
 void Context::setVar(const Symbol &name, Object *v, bool inherit) {
   TimerStart("setVar");
+#ifdef _CTXH
+  ObjectMap::Entry *e = mVars.find(name);
+  if (e) {
+    if (e->second != v) {
+      if (e->second) {
+        e->second->decRef();
+      }
+      e->second = v;
+    } else {
+      TimerEnd("setVar");
+      return;
+    }
+  } else {
+    if (mParent && inherit && mParent->hasVar(name, true)) {
+      mParent->setVar(name, v, true);
+      TimerEnd("setVar");
+      return;
+    }
+    mVars.insert(name, v);
+  }
+#else
+  ObjectMap::iterator it = mVars.find(name);
+  if (it != mVars.end()) {
+    if (it->second != v) {
+      if (it->second) {
+        it->second->decRef();
+      }
+      it->second = v;
+    } else {
+      TimerEnd("setVar");
+      return;
+    }
+  } else {
+    if (mParent && inherit && mParent->hasVar(name, true)) {
+      mParent->setVar(name, v, true);
+      TimerEnd("setVar");
+      return;
+    }
+    mVars[name] = v;
+  }
+#endif
+  /*
   if (mParent && inherit && mParent->hasVar(name, true)) {
     mParent->setVar(name, v, true);
     TimerEnd("setVar");
@@ -185,6 +227,7 @@ void Context::setVar(const Symbol &name, Object *v, bool inherit) {
     mVars[name] = v;
   }
 #endif
+  */
   if (v) {
     v->incRef();
   }
